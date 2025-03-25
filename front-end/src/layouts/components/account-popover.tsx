@@ -1,5 +1,5 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
-
+import { useAuth } from 'src/context/AuthContext';
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -31,6 +31,8 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const router = useRouter();
 
   const pathname = usePathname();
+
+  const { logout } = useAuth();
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
@@ -129,9 +131,15 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth color="error" size="medium" variant="text">
-            Logout
-          </Button>
+        <Button
+            fullWidth
+            color="error"
+            size="medium"
+             variant="text"
+            onClick={logout}
+>
+              Logout
+        </Button>
         </Box>
       </Popover>
     </>

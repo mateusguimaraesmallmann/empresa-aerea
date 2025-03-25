@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom/client';
 import { Suspense, StrictMode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-
+import { AuthProvider } from './context/AuthContext';
 import App from './app';
 
 // ----------------------------------------------------------------------
@@ -14,7 +14,9 @@ root.render(
     <HelmetProvider>
       <BrowserRouter>
         <Suspense>
+        <AuthProvider>
           <App />
+          </AuthProvider>
         </Suspense>
       </BrowserRouter>
     </HelmetProvider>
