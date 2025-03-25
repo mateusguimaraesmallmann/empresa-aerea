@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
-
+import { useAuth } from 'src/context/AuthContext';
 import { useRouter } from 'src/routes/hooks';
 
 import { Iconify } from 'src/components/iconify';
@@ -17,12 +17,15 @@ import { Iconify } from 'src/components/iconify';
 
 export function SignInView() {
   const router = useRouter();
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSignIn = useCallback(() => {
-    router.push('/');
-  }, [router]);
+    login(email, password);
+  }, [login, email, password]);
 
   const renderForm = (
     <Box display="flex" flexDirection="column" alignItems="flex-end">
@@ -30,7 +33,8 @@ export function SignInView() {
         fullWidth
         name="email"
         label="Email address"
-        defaultValue="hello@gmail.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         InputLabelProps={{ shrink: true }}
         sx={{ mb: 3 }}
       />
@@ -43,7 +47,8 @@ export function SignInView() {
         fullWidth
         name="password"
         label="Password"
-        defaultValue="@demo1234"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         InputLabelProps={{ shrink: true }}
         type={showPassword ? 'text' : 'password'}
         InputProps={{
