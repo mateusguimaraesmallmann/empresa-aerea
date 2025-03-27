@@ -26,7 +26,7 @@ import type { UserProps } from '../user-table-row';
 
 // ----------------------------------------------------------------------
 
-export function UserView() {
+export function TelaInicialView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
@@ -43,7 +43,7 @@ export function UserView() {
     <DashboardContent>
       <Box display="flex" alignItems="center" mb={5}>
         <Typography variant="h4" flexGrow={1}>
-          Users
+          Olá, Cliente!
         </Typography>
         <Button
           variant="contained"

@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback((email: string, password: string) => {
     if (email && password) {
       setIsAuthenticated(true);
-      navigate('/');
+      navigate('/tela-inicial-cliente');
     }
      }, [navigate]);
 

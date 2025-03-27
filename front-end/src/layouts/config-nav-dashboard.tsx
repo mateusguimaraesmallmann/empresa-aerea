@@ -9,38 +9,23 @@ const icon = (name: string) => (
 
 export const navData = [
   {
-    title: 'Dashboard',
-    path: '/',
-    icon: icon('ic-analytics'),
-  },
-  {
-    title: 'User',
-    path: '/user',
+    title: 'Tela Inicial',
+    path: '/tela-inicial-cliente',
     icon: icon('ic-user'),
   },
   {
-    title: 'Product',
-    path: '/products',
+    title: 'Milhas',
+    path: '/comprar-milhas',
     icon: icon('ic-cart'),
-    info: (
-      <Label color="error" variant="inverted">
-        +3
-      </Label>
-    ),
   },
   {
-    title: 'Blog',
-    path: '/blog',
+    title: 'Reservas',
+    path: '/efetuar-reserva',
     icon: icon('ic-blog'),
   },
   {
-    title: 'Sign in',
-    path: '/sign-in',
-    icon: icon('ic-lock'),
-  },
-  {
-    title: 'Not found',
-    path: '/404',
+    title: 'Check-in',
+    path: '/check-in',
     icon: icon('ic-disabled'),
   },
 ];

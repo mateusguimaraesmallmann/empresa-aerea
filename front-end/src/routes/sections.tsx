@@ -15,7 +15,7 @@ export const HomePage = lazy(() => import('src/pages/cliente/home'));
 export const BlogPage = lazy(() => import('src/pages/blog'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/cliente/sign-in'));
-export const ProductsPage = lazy(() => import('src/pages/products'));
+export const ProductsPage = lazy(() => import('src/pages/milhas'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 // ----------------------------------------------------------------------
@@ -47,8 +47,9 @@ export function Router() {
       ),
       children: [
         { element: <HomePage />, index: true },
-        { path: 'products', element: <ProductsPage /> },
-        { path: 'user', element: <UserPage /> },
+        { path: 'comprar-milhas', element: <ProductsPage /> },
+        { path: 'tela-inicial-cliente', element: <UserPage /> },
+        { path: 'efetuar-reserva', element: <BlogPage /> }
       ],
     },
     {
@@ -60,7 +61,7 @@ export function Router() {
       ),
     },
     {
-      path: '404',
+      path: 'check-in',
       element: <Page404 />,
     },
     {
