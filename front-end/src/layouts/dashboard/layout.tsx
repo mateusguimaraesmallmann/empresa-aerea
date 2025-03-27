@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 
-import { _langs, _notifications } from 'src/_mock';
+import { _langs } from 'src/_mock';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -15,13 +15,11 @@ import { layoutClasses } from '../classes';
 import { NavMobile, NavDesktop } from './nav';
 import { navData } from '../config-nav-dashboard';
 import { Searchbar } from '../components/searchbar';
-import { _workspaces } from '../config-nav-workspace';
+
 import { MenuButton } from '../components/menu-button';
 import { LayoutSection } from '../core/layout-section';
 import { HeaderSection } from '../core/header-section';
 import { AccountPopover } from '../components/account-popover';
-import { LanguagePopover } from '../components/language-popover';
-import { NotificationsPopover } from '../components/notifications-popover';
 
 // ----------------------------------------------------------------------
 
@@ -74,15 +72,12 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
                   data={navData}
                   open={navOpen}
                   onClose={() => setNavOpen(false)}
-                  workspaces={_workspaces}
                 />
               </>
             ),
             rightArea: (
               <Box gap={1} display="flex" alignItems="center">
                 <Searchbar />
-                <LanguagePopover data={_langs} />
-                <NotificationsPopover data={_notifications} />
                 <AccountPopover
                   data={[
                     {
@@ -111,7 +106,7 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
        * Sidebar
        *************************************** */
       sidebarSection={
-        <NavDesktop data={navData} layoutQuery={layoutQuery} workspaces={_workspaces} />
+        <NavDesktop data={navData} layoutQuery={layoutQuery} />
       }
       /** **************************************
        * Footer

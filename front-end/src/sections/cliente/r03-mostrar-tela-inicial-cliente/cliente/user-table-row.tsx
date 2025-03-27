@@ -12,6 +12,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
+import { _times, _codigosReservas } from 'src/_mock';
 
 // ----------------------------------------------------------------------
 
@@ -51,25 +52,24 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
 
         <TableCell component="th" scope="row">
           <Box gap={2} display="flex" alignItems="center">
-            <Avatar alt={row.name} src={row.avatarUrl} />
-            {row.name}
+            {/* {_times(index)} */}
           </Box>
         </TableCell>
 
-        <TableCell>{row.company}</TableCell>
+        {/* <TableCell>{row.company}</TableCell>
 
-        <TableCell>{row.role}</TableCell>
+        <TableCell>{row.company}</TableCell> */}
 
         <TableCell align="center">
-          {row.isVerified ? (
+          {/* {row.isVerified ? (
             <Iconify width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
           ) : (
             '-'
-          )}
+          )} */}
         </TableCell>
 
         <TableCell>
-          <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
+          {/* <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label> */}
         </TableCell>
 
         <TableCell align="right">
@@ -103,13 +103,13 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           }}
         >
           <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:pen-bold" />
-            Edit
+            <Iconify icon="ic:round-remove-red-eye" width={18} />
+            Ver Reserva
           </MenuItem>
 
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" />
-            Delete
+            Cancelar
           </MenuItem>
         </MenuList>
       </Popover>

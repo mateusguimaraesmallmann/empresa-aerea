@@ -9,38 +9,28 @@ const icon = (name: string) => (
 
 export const navData = [
   {
-    title: 'Dashboard',
-    path: '/',
-    icon: icon('ic-analytics'),
-  },
-  {
-    title: 'User',
-    path: '/user',
+    title: 'Tela Inicial',
+    path: '/tela-inicial-cliente',
     icon: icon('ic-user'),
   },
   {
-    title: 'Product',
-    path: '/products',
+    title: 'Comprar Milhas',
+    path: '/comprar-milhas',
     icon: icon('ic-cart'),
-    info: (
-      <Label color="error" variant="inverted">
-        +3
-      </Label>
-    ),
   },
   {
-    title: 'Blog',
-    path: '/blog',
+    title: 'Efetuar Reservas',
+    path: '/efetuar-reserva',
     icon: icon('ic-blog'),
   },
   {
-    title: 'Sign in',
-    path: '/sign-in',
-    icon: icon('ic-lock'),
+    title: 'Consultar Reservas',
+    path: '/',
+    icon: icon('ic-blog'),
   },
   {
-    title: 'Not found',
-    path: '/404',
+    title: 'Fazer Check-in',
+    path: '/check-in',
     icon: icon('ic-disabled'),
   },
 ];
