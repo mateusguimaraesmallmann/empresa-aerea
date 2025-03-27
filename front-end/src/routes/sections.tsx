@@ -17,6 +17,7 @@ export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/cliente/sign-in'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
+export const AutoCadastroPage = lazy(() => import('src/pages/cliente/autocadastro'));
 
 // ----------------------------------------------------------------------
 
@@ -59,6 +60,15 @@ export function Router() {
         </AuthLayout>
       ),
     },
+
+    /* Informa ao React Router que quando o usuário acessar /autocadastro, a aplicação 
+       deve carregar a página AutoCadastroPage, que por sua vez renderiza AutoCadastroView.
+    */
+    {
+      path: 'autocadastro',
+      element: <AutoCadastroPage />, 
+    },    
+
     {
       path: '404',
       element: <Page404 />,
