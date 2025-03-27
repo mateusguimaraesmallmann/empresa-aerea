@@ -14,17 +14,22 @@ export const navData = [
     icon: icon('ic-user'),
   },
   {
-    title: 'Milhas',
+    title: 'Comprar Milhas',
     path: '/comprar-milhas',
     icon: icon('ic-cart'),
   },
   {
-    title: 'Reservas',
+    title: 'Efetuar Reservas',
     path: '/efetuar-reserva',
     icon: icon('ic-blog'),
   },
   {
-    title: 'Check-in',
+    title: 'Consultar Reservas',
+    path: '/',
+    icon: icon('ic-blog'),
+  },
+  {
+    title: 'Fazer Check-in',
     path: '/check-in',
     icon: icon('ic-disabled'),
   },

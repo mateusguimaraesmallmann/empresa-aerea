@@ -29,6 +29,9 @@ export const _times = (index: number) =>
     '08/09/2024',
   ][index];
 
+
+export const _codigosReservas = [...Array(24)].map((_, index) => (10000000 + index).toString());
+
 export const _fullName = (index: number) =>
   [
     'Billy Stoltenberg',
@@ -65,30 +68,30 @@ export const _price = (index: number) =>
 
 export const _company = (index: number) =>
   [
-    'Medhurst, Moore and Franey',
-    'Hahn, Homenick and Lind',
-    'Larkin LLC',
-    'Stamm, Larson and Mertz',
-    'Spencer, Raynor and Langosh',
-    'Lehner - Feeney',
-    'Leuschke, Harris and Kuhlman',
-    'Gutmann - Kassulke',
-    'Turcotte - Runolfsson',
-    'Howe - Anderson',
-    'Sipes - Yost',
-    'Johns - Aufderhar',
-    'Schmidt LLC',
-    'Smitham - Gerlach',
-    'Waelchi - VonRueden',
-    'Padberg - Macejkovic',
-    'Lemke - Ferry',
-    'Koch and Sons',
-    'Klein - Rolfson',
-    'Weimann LLC',
-    'White, Cassin and Goldner',
-    'Mohr, Langworth and Hills',
-    'Mitchell, Volkman and Prosacco',
-    'Streich Group',
+    "Aeroporto Internacional de Guarulhos (GRU)",
+    "Aeroporto Santos Dumont (SDU)",
+    "Aeroporto do Galeão (GIG)",
+    "Aeroporto Internacional de Brasília (BSB)",
+    "Aeroporto Internacional de Confins (CNF)",
+    "Aeroporto Internacional de Porto Alegre (POA)",
+    "Aeroporto de Recife/Guararapes (REC)",
+    "Aeroporto Internacional de Fortaleza (FOR)",
+    "Aeroporto Internacional de Curitiba (CWB)",
+    "Aeroporto Internacional de Salvador (SSA)",
+    "Aeroporto Internacional de Manaus (MAO)",
+    "Aeroporto Internacional de Campinas (VCP)",
+    "Aeroporto de Florianópolis (FLN)",
+    "Aeroporto Internacional de Vitória (VIX)",
+    "Aeroporto Internacional de Foz do Iguaçu (IGU)",
+    "Aeroporto Internacional de Belém/Val de Cans (BEL)",
+    "Aeroporto Internacional de Maceió (MCZ)",
+    "Aeroporto Internacional de João Pessoa (JPA)",
+    "Aeroporto Internacional de Teresina (THE)",
+    "Aeroporto Internacional de Palmas (PMW)",
+    "Aeroporto de Macapá (MCP)",
+    "Aeroporto de Aracaju (AJU)",
+    "Aeroporto de Imperatriz (IMP)",
+    "Aeroporto de Porto Seguro (BPS)",
   ][index];
 
 export const _boolean = (index: number) =>

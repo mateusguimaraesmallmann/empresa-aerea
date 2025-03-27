@@ -45,13 +45,13 @@ export function TelaInicialView() {
         <Typography variant="h4" flexGrow={1}>
           Olá, Cliente!
         </Typography>
-        <Button
+        {/* <Button
           variant="contained"
           color="inherit"
           startIcon={<Iconify icon="mingcute:add-line" />}
         >
-          New user
-        </Button>
+          Novo
+        </Button> */}
       </Box>
 
       <Card>
@@ -80,10 +80,10 @@ export function TelaInicialView() {
                   )
                 }
                 headLabel={[
-                  { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
-                  { id: 'isVerified', label: 'Verified', align: 'center' },
+                  { id: 'name', label: 'Data e Hora' },
+                  { id: 'company', label: 'Aeroporto Origem' },
+                  { id: 'role', label: 'Aeroporto Destino' },
+                  { id: 'isVerified', label: 'Código da Reserva', align: 'center' },
                   { id: 'status', label: 'Status' },
                   { id: '' },
                 ]}
