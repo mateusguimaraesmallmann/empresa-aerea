@@ -13,8 +13,8 @@ import { RouterLink } from 'src/routes/components';
 
 import { varAlpha } from 'src/theme/styles';
 
-import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
+import { Iconify } from 'src/components/iconify';
 
 
 // ----------------------------------------------------------------------
@@ -112,7 +112,7 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
 
   return (
     <>
-      <Logo />
+      <Iconify icon="mdi:airplane" width={40} height={40} sx={{ color: 'primary.main' }}/>
 
       {slots?.topArea}
 
