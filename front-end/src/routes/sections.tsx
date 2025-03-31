@@ -12,7 +12,7 @@ import { ProtectedRoute } from 'src/routes/ProtectedRoute';
 // ----------------------------------------------------------------------
 
 export const HomePage = lazy(() => import('src/pages/cliente/home'));
-export const BlogPage = lazy(() => import('src/pages/blog'));
+export const ReservaPage = lazy(() => import('src/pages/cliente/reserva'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const SignInPage = lazy(() => import('src/pages/cliente/sign-in'));
 export const ProductsPage = lazy(() => import('src/pages/milhas'));
@@ -50,7 +50,7 @@ export function Router() {
         { element: <HomePage />, index: true },
         { path: 'comprar-milhas', element: <ProductsPage /> },
         { path: 'tela-inicial-cliente', element: <UserPage /> },
-        { path: 'efetuar-reserva', element: <BlogPage /> }
+        { path: 'efetuar-reserva', element: <ReservaPage /> }
       ],
     },
     {
