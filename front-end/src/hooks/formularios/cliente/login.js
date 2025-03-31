@@ -5,8 +5,8 @@ const schemaLogin = yup.object().shape({
   password: yup
     .string()
     .required('A senha é obrigatória!')
-    .min(8, 'A senha deve ter no mínimo 8 caracteres')
-    .max(8, 'A senha pode ter até 8 caracteres'),
+    .min(4, 'A senha deve ter no mínimo 4 caracteres')
+    .max(4, 'A senha pode ter até 4 caracteres'),
 });
 
 export default schemaLogin;
