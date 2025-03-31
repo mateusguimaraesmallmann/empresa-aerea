@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     setIsAuthenticated(false);
-    navigate('/sign-in');
+    navigate('/login');
      }, [navigate]);
 
 
