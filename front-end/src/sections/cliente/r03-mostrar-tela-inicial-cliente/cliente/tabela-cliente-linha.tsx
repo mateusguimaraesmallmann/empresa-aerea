@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
-import Avatar from '@mui/material/Avatar';
 import Popover from '@mui/material/Popover';
 import TableRow from '@mui/material/TableRow';
 import Checkbox from '@mui/material/Checkbox';
@@ -10,9 +9,7 @@ import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
-import { _times, _codigosReservas } from 'src/_mock';
 
 // ----------------------------------------------------------------------
 
@@ -51,25 +48,7 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
         </TableCell>
 
         <TableCell component="th" scope="row">
-          <Box gap={2} display="flex" alignItems="center">
-            {/* {_times(index)} */}
-          </Box>
-        </TableCell>
-
-        {/* <TableCell>{row.company}</TableCell>
-
-        <TableCell>{row.company}</TableCell> */}
-
-        <TableCell align="center">
-          {/* {row.isVerified ? (
-            <Iconify width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
-          ) : (
-            '-'
-          )} */}
-        </TableCell>
-
-        <TableCell>
-          {/* <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label> */}
+          <Box gap={2} display="flex" alignItems="center" />
         </TableCell>
 
         <TableCell align="right">
