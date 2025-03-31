@@ -188,7 +188,7 @@ export function AutoCadastroView() {
               color="inherit"
               variant="contained"
               disabled={!autocadastroSucesso} // Só habilita após sucesso
-              onClick={() => router.push('/sign-in')}
+              onClick={() => router.push('/login')}
             >
               Ir para Login
             </Button>

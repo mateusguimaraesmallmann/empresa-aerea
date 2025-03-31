@@ -13,8 +13,8 @@ import { ProtectedRoute } from 'src/routes/ProtectedRoute';
 
 export const HomePage = lazy(() => import('src/pages/cliente/home'));
 export const ReservaPage = lazy(() => import('src/pages/cliente/reserva'));
-export const UserPage = lazy(() => import('src/pages/user'));
-export const SignInPage = lazy(() => import('src/pages/cliente/sign-in'));
+export const UserPage = lazy(() => import('src/pages/cliente/tela-inicial'));
+export const SignInPage = lazy(() => import('src/pages/cliente/login'));
 export const ProductsPage = lazy(() => import('src/pages/milhas'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const AutoCadastroPage = lazy(() => import('src/pages/cliente/autocadastro'));
@@ -54,7 +54,7 @@ export function Router() {
       ],
     },
     {
-      path: 'sign-in',
+      path: 'login',
       element: (
         <AuthLayout>
           <SignInPage />

@@ -24,11 +24,6 @@ export const navData = [
     icon: icon('ic-blog'),
   },
   {
-    title: 'Consultar Reservas',
-    path: '/',
-    icon: icon('ic-blog'),
-  },
-  {
     title: 'Fazer Check-in',
     path: '/check-in',
     icon: icon('ic-disabled'),
