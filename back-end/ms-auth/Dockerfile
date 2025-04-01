@@ -1,5 +1,6 @@
-FROM eclipse-temurin:21-jdk
-WORKDIR /app
-COPY target/*.jar app.jar
+FROM tomcat:10.1-jdk21
+WORKDIR /usr/local/tomcat/webapps/
+COPY target/*.war ms-auth.war
+EXPOSE 8080
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["catalina.sh", "run"]

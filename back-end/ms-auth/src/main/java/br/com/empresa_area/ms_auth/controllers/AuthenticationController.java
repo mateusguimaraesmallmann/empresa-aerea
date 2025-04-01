@@ -32,5 +32,10 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+
+    @GetMapping("/register")
+    public ResponseEntity<Object> test() {
+        return ResponseEntity.status(HttpStatus.OK).body("Teste OK!");
+    }
     
 }
