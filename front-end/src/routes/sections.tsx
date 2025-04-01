@@ -18,6 +18,7 @@ export const SignInPage = lazy(() => import('src/pages/cliente/login'));
 export const ProductsPage = lazy(() => import('src/pages/milhas'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const AutoCadastroPage = lazy(() => import('src/pages/cliente/autocadastro'));
+export const ExtratoMilhasPage = lazy(() => import('src/pages/cliente/extrato-milhas'));
 
 // ----------------------------------------------------------------------
 
@@ -50,7 +51,8 @@ export function Router() {
         { element: <HomePage />, index: true },
         { path: 'comprar-milhas', element: <ProductsPage /> },
         { path: 'tela-inicial-cliente', element: <UserPage /> },
-        { path: 'efetuar-reserva', element: <ReservaPage /> }
+        { path: 'efetuar-reserva', element: <ReservaPage /> },
+        { path: 'extrato-milhas', element: <ExtratoMilhasPage /> }
       ],
     },
     {
@@ -61,15 +63,10 @@ export function Router() {
         </AuthLayout>
       ),
     },
-
-    /* Informa ao React Router que quando o usuário acessar /autocadastro, a aplicação 
-       deve carregar a página AutoCadastroPage, que por sua vez renderiza AutoCadastroView.
-    */
     {
       path: 'autocadastro',
-      element: <AutoCadastroPage />, 
+      element: <AutoCadastroPage />,
     },    
-
     {
       path: 'check-in',
       element: <Page404 />,
