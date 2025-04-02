@@ -9,6 +9,7 @@ import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 import { ProtectedRoute } from 'src/routes/ProtectedRoute';
 
+
 // ----------------------------------------------------------------------
 
 export const HomePage = lazy(() => import('src/pages/cliente/home'));
@@ -19,6 +20,9 @@ export const ProductsPage = lazy(() => import('src/pages/milhas'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const AutoCadastroPage = lazy(() => import('src/pages/cliente/autocadastro'));
 export const ExtratoMilhasPage = lazy(() => import('src/pages/cliente/extrato-milhas'));
+export const ComprarMilhasView = lazy(() => import('src/sections/cliente/r05-comprar-milhas/comprar-milhas-view'));
+
+
 
 // ----------------------------------------------------------------------
 
@@ -49,7 +53,7 @@ export function Router() {
       ),
       children: [
         { element: <HomePage />, index: true },
-        { path: 'comprar-milhas', element: <ProductsPage /> },
+        { path: 'comprar-milhas', element: <ComprarMilhasView /> },
         { path: 'tela-inicial-cliente', element: <UserPage /> },
         { path: 'efetuar-reserva', element: <ReservaPage /> },
         { path: 'extrato-milhas', element: <ExtratoMilhasPage /> }
