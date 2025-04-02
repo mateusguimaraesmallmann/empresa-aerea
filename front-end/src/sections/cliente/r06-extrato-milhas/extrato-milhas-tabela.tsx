@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -15,7 +16,8 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Label } from 'src/components/label';
 import { format } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
+import { ptBR } from 'date-fns/locale/pt-BR';
+
 
 export type TransacaoMilhas = {
   id: string;
@@ -35,9 +37,10 @@ export function ExtratoMilhasTabela({ transacoes }: Props) {
   const [page, setPage] = useState(0);
   const rowsPerPage = 5;
 
-  const formatarData = useCallback((dataISO: string) => {
-    return format(new Date(dataISO), 'dd/MM/yyyy HH:mm', { locale: ptBR });
-  }, []);
+  const formatarData = useCallback(
+    (dataISO: string) => format(new Date(dataISO), 'dd/MM/yyyy HH:mm', { locale: ptBR }),
+    []
+  );
 
   const formatarMoeda = useCallback((valor: number | null) => {
     if (!valor) return '-';
