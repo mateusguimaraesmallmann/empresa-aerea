@@ -1,4 +1,3 @@
-// front-end/src/sections/reserva/components/detalhes-reservas.tsx
 import { useState } from 'react';
 import {
   Box,
@@ -15,10 +14,14 @@ import {
 } from '@mui/material';
 import { Voo } from './tabela-voos';
 
-function gerarCodigoReserva() {
-  const letras = Math.random().toString(36).substring(2, 5).toUpperCase();
-  const numeros = Math.floor(100 + Math.random() * 900);
-  return letras + numeros;
+function gerarCodigoReservaExistente(codigosExistentes: string[]): string {
+  let novoCodigo = '';
+  do {
+    const letras = Math.random().toString(36).substring(2, 5).toUpperCase();
+    const numeros = Math.floor(100 + Math.random() * 900);
+    novoCodigo = letras + numeros;
+  } while (codigosExistentes.includes(novoCodigo));
+  return novoCodigo;
 }
 
 type Props = {
@@ -32,11 +35,8 @@ export function DetalhesReserva({ voo }: Props) {
   const [milhasUsadas, setMilhasUsadas] = useState(0);
   const restanteEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
 
-  // Estados para o Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-
-  // Estado para o Dialog de confirmação
   const [openDialog, setOpenDialog] = useState(false);
 
   const handleSnackbarClose = () => {
@@ -48,30 +48,29 @@ export function DetalhesReserva({ voo }: Props) {
   };
 
   const confirmarReserva = () => {
-    // Ao clicar, abre o diálogo de confirmação mostrando o saldo atual e o saldo após a reserva
     setOpenDialog(true);
   };
 
   const handleConfirmDialog = () => {
-    // O cliente confirmou a operação no diálogo, então finalizamos a reserva
-    const codigo = gerarCodigoReserva();
-    const valorEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
+    const reservasSalvas = JSON.parse(localStorage.getItem('reservas') || '[]');
+
+    const codigosExistentes = reservasSalvas.map((r: any) => r.codigo);
+    const codigo = gerarCodigoReservaExistente(codigosExistentes);
 
     const novaReserva = {
       codigo,
       voo,
       quantidade,
       milhasUsadas,
-      restanteEmDinheiro: valorEmDinheiro,
+      restanteEmDinheiro,
       status: 'CRIADA',
     };
 
-    const reservasSalvas = JSON.parse(localStorage.getItem('reservas') || '[]');
     reservasSalvas.push(novaReserva);
     localStorage.setItem('reservas', JSON.stringify(reservasSalvas));
 
     // Atualizar saldo de milhas
-    const milhasAtual = Number(localStorage.getItem('milhas')) || 1000; // assume saldo inicial
+    const milhasAtual = Number(localStorage.getItem('milhas')) || 1000;
     const novoSaldo = milhasAtual - milhasUsadas;
     localStorage.setItem('milhas', JSON.stringify(novoSaldo));
 
@@ -86,23 +85,12 @@ export function DetalhesReserva({ voo }: Props) {
         Detalhes da Reserva
       </Typography>
 
-      <Typography>
-        <strong>Origem:</strong> {voo.origem}
-      </Typography>
-      <Typography>
-        <strong>Destino:</strong> {voo.destino}
-      </Typography>
-      <Typography>
-        <strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}
-      </Typography>
-      <Typography>
-        <strong>Preço unitário:</strong> R$ {voo.preco.toFixed(2)}
-      </Typography>
-      <Typography>
-        <strong>Milhas disponíveis:</strong> {milhasDisponiveis}
-      </Typography>
+      <Typography><strong>Origem:</strong> {voo.origem}</Typography>
+      <Typography><strong>Destino:</strong> {voo.destino}</Typography>
+      <Typography><strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}</Typography>
+      <Typography><strong>Preço unitário:</strong> R$ {voo.preco.toFixed(2)}</Typography>
+      <Typography><strong>Milhas disponíveis:</strong> {milhasDisponiveis}</Typography>
 
-      {/* Campos exibidos lado a lado */}
       <Box display="flex" gap={2} my={2}>
         <TextField
           type="number"
@@ -123,15 +111,12 @@ export function DetalhesReserva({ voo }: Props) {
       </Box>
 
       <Typography>Milhas necessárias: {milhasNecessarias}</Typography>
-      <Typography>
-        Valor a pagar em dinheiro: R$ {restanteEmDinheiro.toFixed(2)}
-      </Typography>
+      <Typography>Valor a pagar em dinheiro: R$ {restanteEmDinheiro.toFixed(2)}</Typography>
 
       <Button variant="contained" color="primary" sx={{ mt: 3 }} onClick={confirmarReserva}>
         Confirmar Reserva
       </Button>
 
-      {/* Dialog de confirmação */}
       <Dialog open={openDialog} onClose={handleDialogClose}>
         <DialogTitle>Confirmar Reserva</DialogTitle>
         <DialogContent>
