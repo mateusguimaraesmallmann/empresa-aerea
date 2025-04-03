@@ -16,6 +16,8 @@ const reservasMock = [
     codigo: 'ABC123',
     status: 'Reservada',
     statusVoo: 'Reservado',
+    valorReais: 350.0,   
+    milhasGastas: 500,     
   },
   {
     id: '2',
@@ -25,6 +27,8 @@ const reservasMock = [
     codigo: 'XYZ789',
     status: 'Cancelada',
     statusVoo: 'Cancelado',
+    valorReais: 200.0,
+    milhasGastas: 300,
   },
 ];
 

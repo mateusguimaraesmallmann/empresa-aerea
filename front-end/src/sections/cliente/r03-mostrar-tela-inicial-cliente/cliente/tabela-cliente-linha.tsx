@@ -10,6 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { Iconify } from 'src/components/iconify';
+import { VerReservaDialog } from '../../r04-ver-reserva/ver-reserva';
 
 // ----------------------------------------------------------------------
 
@@ -29,69 +30,78 @@ type UserTableRowProps = {
   onSelectRow: () => void;
 };
 
-export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) {
-  const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+type Reserva = {
+  dataHora: string;
+  codigo: string;
+  origem: string;
+  destino: string;
+  valorReais: number;
+  milhasGastas: number;
+  estado: string;
+};
 
-  const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    setOpenPopover(event.currentTarget);
-  }, []);
+type TabelaClienteLinhaProps = {
+  reserva: Reserva;
+};
 
-  const handleClosePopover = useCallback(() => {
-    setOpenPopover(null);
-  }, []);
+export function TabelaClienteLinha({ reserva }: TabelaClienteLinhaProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDialogOpen = () => {
+    try {
+      setDialogOpen(true);
+      handleMenuClose();
+    } catch (error) {
+      console.error('Erro ao abrir o diálogo:', error);
+    }
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
 
   return (
     <>
-      <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
-        </TableCell>
-
-        <TableCell component="th" scope="row">
-          <Box gap={2} display="flex" alignItems="center" />
-        </TableCell>
-
+      <TableRow hover tabIndex={-1}>
+        {/* Outras células da tabela */}
         <TableCell align="right">
-          <IconButton onClick={handleOpenPopover}>
+          <IconButton onClick={handleMenuOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
       </TableRow>
 
       <Popover
-        open={!!openPopover}
-        anchorEl={openPopover}
-        onClose={handleClosePopover}
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={handleMenuClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        disableEnforceFocus
       >
-        <MenuList
-          disablePadding
-          sx={{
-            p: 0.5,
-            gap: 0.5,
-            width: 140,
-            display: 'flex',
-            flexDirection: 'column',
-            [`& .${menuItemClasses.root}`]: {
-              px: 1,
-              gap: 2,
-              borderRadius: 0.75,
-              [`&.${menuItemClasses.selected}`]: { bgcolor: 'action.selected' },
-            },
-          }}
-        >
-          <MenuItem onClick={handleClosePopover}>
+        <MenuList>
+          <MenuItem onClick={handleDialogOpen}>
             <Iconify icon="ic:round-remove-red-eye" width={18} />
             Ver Reserva
           </MenuItem>
-
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Cancelar
-          </MenuItem>
+          {/* Outros itens do menu */}
         </MenuList>
       </Popover>
+
+      <VerReservaDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        reserva={reserva}
+      />
     </>
   );
 }
