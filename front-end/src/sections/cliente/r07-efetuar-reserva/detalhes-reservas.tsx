@@ -27,7 +27,7 @@ type Props = {
 
 export function DetalhesReserva({ voo }: Props) {
   const [quantidade, setQuantidade] = useState(1);
-  const [milhasDisponiveis] = useState(1200); // mock de saldo atual de milhas
+  const [milhasDisponiveis] = useState(1000); // mock de saldo atual de milhas
   const milhasNecessarias = voo.preco * quantidade;
   const [milhasUsadas, setMilhasUsadas] = useState(0);
   const restanteEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
@@ -55,18 +55,25 @@ export function DetalhesReserva({ voo }: Props) {
   const handleConfirmDialog = () => {
     // O cliente confirmou a operação no diálogo, então finalizamos a reserva
     const codigo = gerarCodigoReserva();
+    const valorEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
+
     const novaReserva = {
       codigo,
       voo,
       quantidade,
       milhasUsadas,
-      restanteEmDinheiro,
+      restanteEmDinheiro: valorEmDinheiro,
       status: 'CRIADA',
     };
 
     const reservasSalvas = JSON.parse(localStorage.getItem('reservas') || '[]');
     reservasSalvas.push(novaReserva);
     localStorage.setItem('reservas', JSON.stringify(reservasSalvas));
+
+    // Atualizar saldo de milhas
+    const milhasAtual = Number(localStorage.getItem('milhas')) || 1000; // assume saldo inicial
+    const novoSaldo = milhasAtual - milhasUsadas;
+    localStorage.setItem('milhas', JSON.stringify(novoSaldo));
 
     setSnackbarMessage(`Reserva criada com sucesso! Código: ${codigo}`);
     setSnackbarOpen(true);
