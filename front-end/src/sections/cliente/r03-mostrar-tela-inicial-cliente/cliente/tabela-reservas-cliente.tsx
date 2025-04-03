@@ -21,34 +21,28 @@ import Box from '@mui/material/Box';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Label } from 'src/components/label';
+import { useRouter } from 'src/routes/hooks';
+import { Reserva } from 'src/sections/cliente/types/reserva';
 import { VerReservaDialog } from '../../r04-ver-reserva/ver-reserva';
-
-type Reserva = {
-  id: string;
-  dataHora: string;
-  origem: string;
-  destino: string;
-  codigo: string;
-  status: string;
-  statusVoo: string;
-  valorReais: number;
-  milhasGastas: number;
-};
+import { CancelarReservaDialog } from '../../r08-cancelar-reserva/cancelar-reserva';
 
 type Props = {
   reservas: Reserva[];
   milhas: number;
+  onAtualizarReservas: () => void;
 };
 
-export function TabelaReservasCliente({ reservas, milhas }: Props) {
+export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }: Props) {
   const [page, setPage] = useState(0);
   const [orderBy] = useState<'asc' | 'desc'>('asc');
   const [filter, setFilter] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogCancelarOpen, setDialogCancelarOpen] = useState(false);
 
   const rowsPerPage = 5;
+  const router = useRouter();
 
   const filteredData = reservas
     .filter((r) => r.codigo.toLowerCase().includes(filter.toLowerCase()))
@@ -68,12 +62,25 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
   };
 
   const handleOpenDialog = () => {
-    handleClosePopover(); // Garante que o Popover feche antes de abrir o Dialog
+    handleClosePopover();
     setDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
+  };
+
+  const handleOpenDialogCancelar = () => {
+    handleClosePopover();
+    setDialogCancelarOpen(true);
+  };
+
+  const handleCloseDialogCancelar = () => {
+    setDialogCancelarOpen(false);
+  };
+
+  const handleReservaCancelada = () => {
+    onAtualizarReservas(); 
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -153,21 +160,21 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
                     <TableCell>{reserva.destino}</TableCell>
                     <TableCell align="center">{reserva.codigo}</TableCell>
                     <TableCell>
-                      <Label color={reserva.status === 'Cancelada' ? 'error' : 'success'}>
-                        {reserva.status}
+                      <Label color={reserva.estado === 'CANCELADA' ? 'error' : 'success'}>
+                        {reserva.estado}
                       </Label>
                     </TableCell>
                     <TableCell>
                       <Label
                         color={
-                          reserva.statusVoo === 'Realizado'
+                          reserva.estado === 'REALIZADA'
                             ? 'info'
-                            : reserva.statusVoo === 'Cancelado'
+                            : reserva.estado === 'CANCELADA'
                             ? 'error'
                             : 'warning'
                         }
                       >
-                        {reserva.statusVoo}
+                        {reserva.estado === 'REALIZADA' ? 'Realizado' : reserva.estado === 'CANCELADA' ? 'Cancelado' : 'Reservado'}
                       </Label>
                     </TableCell>
                     <TableCell align="right">
@@ -200,7 +207,6 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
         labelRowsPerPage=""
       />
 
-      {/* Popover com opções */}
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
@@ -213,32 +219,25 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
             <Iconify icon="ic:round-remove-red-eye" width={18} />
             Ver Reserva
           </MenuItem>
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          <MenuItem onClick={handleOpenDialogCancelar} sx={{ color: 'error.main' }}>
             <Iconify icon="solar:trash-bin-trash-bold" width={18} />
             Cancelar
           </MenuItem>
         </MenuList>
       </Popover>
 
-      {/* Diálogo com os dados da reserva selecionada */}
       <VerReservaDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
-        reserva={
-          selectedReserva
-            ? {
-                dataHora: selectedReserva.dataHora,
-                codigo: selectedReserva.codigo,
-                origem: selectedReserva.origem,
-                destino: selectedReserva.destino,
-                valorReais: selectedReserva.valorReais,
-                milhasGastas: selectedReserva.milhasGastas,
-                estado: selectedReserva.status,
-              }
-            : null
-        }
+        reserva={selectedReserva}
+      />
+
+      <CancelarReservaDialog
+        open={dialogCancelarOpen}
+        onClose={handleCloseDialogCancelar}
+        reserva={selectedReserva}
+        onReservaCancelada={handleReservaCancelada}
       />
     </Card>
   );
 }
-
