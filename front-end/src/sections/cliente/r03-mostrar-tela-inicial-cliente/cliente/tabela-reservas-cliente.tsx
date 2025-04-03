@@ -21,6 +21,7 @@ import Box from '@mui/material/Box';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Label } from 'src/components/label';
+import { VerReservaDialog } from '../../r04-ver-reserva/ver-reserva';
 
 type Reserva = {
   id: string;
@@ -30,6 +31,8 @@ type Reserva = {
   codigo: string;
   status: string;
   statusVoo: string;
+  valorReais: number;
+  milhasGastas: number;
 };
 
 type Props = {
@@ -39,10 +42,11 @@ type Props = {
 
 export function TabelaReservasCliente({ reservas, milhas }: Props) {
   const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState<'asc' | 'desc'>('asc');
+  const [orderBy] = useState<'asc' | 'desc'>('asc');
   const [filter, setFilter] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const rowsPerPage = 5;
 
@@ -61,7 +65,15 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
 
   const handleClosePopover = () => {
     setAnchorEl(null);
-    setSelectedReserva(null);
+  };
+
+  const handleOpenDialog = () => {
+    handleClosePopover(); // Garante que o Popover feche antes de abrir o Dialog
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -96,13 +108,13 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
             value={`Saldo atual em Milhas: ${milhas}`}
             readOnly
             sx={{
-              minWidth: 300,          
-              maxWidth: 500,          
-              flexShrink: 0,           
+              minWidth: 300,
+              maxWidth: 500,
+              flexShrink: 0,
               fontWeight: 'bold',
               '& .MuiInputBase-input': {
                 color: 'text.primary',
-                whiteSpace: 'nowrap', // evita quebra de linha
+                whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
               },
@@ -136,7 +148,7 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((reserva) => (
                   <TableRow key={reserva.id}>
-                    <TableCell>{reserva.dataHora}</TableCell>
+                    <TableCell>{new Date(reserva.dataHora).toLocaleString('pt-BR')}</TableCell>
                     <TableCell>{reserva.origem}</TableCell>
                     <TableCell>{reserva.destino}</TableCell>
                     <TableCell align="center">{reserva.codigo}</TableCell>
@@ -151,8 +163,8 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
                           reserva.statusVoo === 'Realizado'
                             ? 'info'
                             : reserva.statusVoo === 'Cancelado'
-                              ? 'error'
-                              : 'warning'
+                            ? 'error'
+                            : 'warning'
                         }
                       >
                         {reserva.statusVoo}
@@ -188,6 +200,7 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
         labelRowsPerPage=""
       />
 
+      {/* Popover com opções */}
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
@@ -196,7 +209,7 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <MenuList sx={{ p: 1, width: 160 }}>
-          <MenuItem onClick={handleClosePopover}>
+          <MenuItem onClick={handleOpenDialog}>
             <Iconify icon="ic:round-remove-red-eye" width={18} />
             Ver Reserva
           </MenuItem>
@@ -206,6 +219,25 @@ export function TabelaReservasCliente({ reservas, milhas }: Props) {
           </MenuItem>
         </MenuList>
       </Popover>
+
+      {/* Diálogo com os dados da reserva selecionada */}
+      <VerReservaDialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        reserva={
+          selectedReserva
+            ? {
+                dataHora: selectedReserva.dataHora,
+                codigo: selectedReserva.codigo,
+                origem: selectedReserva.origem,
+                destino: selectedReserva.destino,
+                valorReais: selectedReserva.valorReais,
+                milhasGastas: selectedReserva.milhasGastas,
+                estado: selectedReserva.status,
+              }
+            : null
+        }
+      />
     </Card>
   );
 }

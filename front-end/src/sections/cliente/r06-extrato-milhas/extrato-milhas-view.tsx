@@ -12,9 +12,9 @@ import {
 } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { ExtratoMilhasTabela } from './components/extrato-milhas-tabela';
-import { TransacaoMilhas } from './components/types';
 import axios from 'axios';
+import { ExtratoMilhasTabela } from './extrato-milhas-tabela';
+import { TransacaoMilhas } from './types';
 
 export function ExtratoMilhasView() {
   const [transacoes, setTransacoes] = useState<TransacaoMilhas[]>([]);
