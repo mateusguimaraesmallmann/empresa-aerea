@@ -1,6 +1,17 @@
 import { useState } from 'react';
-import { Box, Button, Typography, Autocomplete, TextField, Snackbar, Alert } from '@mui/material';
-import { voosMockados } from 'src/_mock/voos-mock'; // Importa o mock simplificado
+import {
+  Box,
+  Button,
+  Typography,
+  Autocomplete,
+  TextField,
+  Snackbar,
+  Alert,
+} from '@mui/material';
+import { Helmet } from 'react-helmet-async';
+
+import { DashboardContent } from 'src/layouts/dashboard';
+import { voosMockados } from 'src/_mock/voos-mock';
 import { TabelaVoos, Voo } from './tabela-voos';
 import { DetalhesReserva } from './detalhes-reservas';
 
@@ -17,7 +28,6 @@ export function ReservaView() {
   const [vooSelecionado, setVooSelecionado] = useState<Voo | null>(null);
   const [buscaRealizada, setBuscaRealizada] = useState(false);
 
-  // Estados do Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
@@ -48,7 +58,7 @@ export function ReservaView() {
     setBuscaRealizada(true);
 
     if (resultado.length === 0) {
-      setSnackbarMessage("Nenhum voo encontrado.");
+      setSnackbarMessage('Nenhum voo encontrado.');
     } else {
       setSnackbarMessage(`${resultado.length} voo(s) encontrado(s).`);
     }
@@ -56,61 +66,72 @@ export function ReservaView() {
   };
 
   return (
-    <Box maxWidth="lg" mx="auto" px={2}>
-      <Typography variant="h4" mb={3}>
-        Reserva de Voos
-      </Typography>
+    <>
+      <Helmet>
+        <title>Efetuar Reserva</title>
+      </Helmet>
 
-      <Box display="flex" gap={2} mb={3} flexWrap="wrap">
-        <Autocomplete
-          sx={{ flex: 1, minWidth: 420 }}
-          options={todosAeroportos}
-          value={origem}
-          onChange={(_, value) => setOrigem(value || '')}
-          renderInput={(params) => <TextField {...params} label="Aeroporto Origem" fullWidth />}
-        />
+      <DashboardContent>
+        <Box display="flex" alignItems="center" mb={5}>
+          <Typography variant="h4" flexGrow={1}>
+            Reserva de Voos
+          </Typography>
+        </Box>
 
-        <Autocomplete
-          sx={{ flex: 1, minWidth: 420 }}
-          options={todosAeroportos}
-          value={destino}
-          onChange={(_, value) => setDestino(value || '')}
-          renderInput={(params) => <TextField {...params} label="Aeroporto Destino" fullWidth />}
-        />
+        <Box display="flex" gap={2} mb={3} flexWrap="wrap" alignItems="center">
+          <Autocomplete
+            sx={{ flex: 1, minWidth: 420 }}
+            options={todosAeroportos}
+            value={origem}
+            onChange={(_, value) => setOrigem(value || '')}
+            renderInput={(params) => <TextField {...params} label="Aeroporto Origem" fullWidth />}
+          />
 
-        <Button
-          variant="contained"
-          onClick={buscarVoos}
-          size="medium"
-          sx={{ whiteSpace: 'nowrap', height: 56 }}
-        >
-          Buscar
-        </Button>
-      </Box>
+          <Autocomplete
+            sx={{ flex: 1, minWidth: 420 }}
+            options={todosAeroportos}
+            value={destino}
+            onChange={(_, value) => setDestino(value || '')}
+            renderInput={(params) => <TextField {...params} label="Aeroporto Destino" fullWidth />}
+          />
 
-      {/* Renderiza a tabela de voos se a busca foi realizada */}
-      {!vooSelecionado && buscaRealizada && (
-        <TabelaVoos voos={voosFiltrados} onSelecionar={setVooSelecionado} />
-      )}
+          <Button
+            variant="contained"
+            onClick={buscarVoos}
+            size="medium"
+            sx={{ height: 36, minWidth: 110 }} 
+          >
+            Buscar
+          </Button>
+        </Box>
 
-      {vooSelecionado && <DetalhesReserva voo={vooSelecionado} />}
+        {!vooSelecionado && buscaRealizada && (
+          <TabelaVoos voos={voosFiltrados} onSelecionar={setVooSelecionado} />
+        )}
 
-      <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-      >
-        <Alert
+        {vooSelecionado && <DetalhesReserva voo={vooSelecionado} />}
+
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={snackbarOpen}
+          autoHideDuration={3000}
           onClose={handleSnackbarClose}
-          severity="info"
-          sx={{ backgroundColor: '#ADD8E6', color: 'black', width: '100%' }}
-          elevation={6}
-          variant="filled"
         >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={voosFiltrados.length === 0 ? 'error' : 'success'}
+            sx={{
+              backgroundColor: voosFiltrados.length === 0 ? '#fddede' : '#d0f2d0',
+              color: voosFiltrados.length === 0 ? '#611a15' : '#1e4620',
+              width: '100%',
+            }}
+            elevation={6}
+            variant="filled"
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </DashboardContent>
+    </>
   );
 }

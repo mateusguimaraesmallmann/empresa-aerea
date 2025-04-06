@@ -1,5 +1,7 @@
 import { Label } from 'src/components/label';
 import { SvgColor } from 'src/components/svg-color';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 
 // ----------------------------------------------------------------------
 
@@ -21,11 +23,11 @@ export const navData = [
   {
     title: 'Efetuar Reservas',
     path: '/efetuar-reserva',
-    icon: icon('ic-blog'),
+    icon: <EventAvailableIcon />,
   },
   {
     title: 'Fazer Check-in',
     path: '/check-in',
-    icon: icon('ic-disabled'),
+    icon: <CheckCircleIcon />,
   },
 ];

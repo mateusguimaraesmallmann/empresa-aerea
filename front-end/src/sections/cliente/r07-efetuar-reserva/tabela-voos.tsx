@@ -27,7 +27,7 @@ export function TabelaVoos({ voos, onSelecionar }: Props) {
             <TableCell>Origem</TableCell>
             <TableCell>Destino</TableCell>
             <TableCell>Data/Hora</TableCell>
-            <TableCell>Preço (R$)</TableCell>
+            <TableCell>Preço</TableCell>
             <TableCell>Ação</TableCell>
           </TableRow>
         </TableHead>
@@ -37,7 +37,12 @@ export function TabelaVoos({ voos, onSelecionar }: Props) {
               <TableCell>{voo.origem}</TableCell>
               <TableCell>{voo.destino}</TableCell>
               <TableCell>{new Date(voo.dataHora).toLocaleString('pt-BR')}</TableCell>
-              <TableCell>{voo.preco.toFixed(2)}</TableCell>
+              <TableCell>
+                {new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(voo.preco)}
+              </TableCell>
               <TableCell>
                 <Button variant="contained" onClick={() => onSelecionar(voo)}>
                   Selecionar

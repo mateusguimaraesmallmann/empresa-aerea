@@ -11,6 +11,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Divider,
+  Grid,
 } from '@mui/material';
 import { Voo } from './tabela-voos';
 
@@ -85,11 +87,27 @@ export function DetalhesReserva({ voo }: Props) {
         Detalhes da Reserva
       </Typography>
 
-      <Typography><strong>Origem:</strong> {voo.origem}</Typography>
-      <Typography><strong>Destino:</strong> {voo.destino}</Typography>
-      <Typography><strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}</Typography>
-      <Typography><strong>Preço unitário:</strong> R$ {voo.preco.toFixed(2)}</Typography>
-      <Typography><strong>Milhas disponíveis:</strong> {milhasDisponiveis}</Typography>
+      <Divider sx={{ mb: 3 }} />
+
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}><strong>Origem:</strong> {voo.origem}</Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}><strong>Destino:</strong> {voo.destino}</Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}><strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}</Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}><strong>Preço unitário:</strong> R$ {voo.preco.toFixed(2)}</Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}><strong>Milhas disponíveis:</strong> {milhasDisponiveis}</Typography>
+        </Grid>
+      </Grid>
+
+      <Divider sx={{ mb: 4 }} />
 
       <Box display="flex" gap={2} my={2}>
         <TextField
@@ -110,12 +128,22 @@ export function DetalhesReserva({ voo }: Props) {
         />
       </Box>
 
-      <Typography>Milhas necessárias: {milhasNecessarias}</Typography>
-      <Typography>Valor a pagar em dinheiro: R$ {restanteEmDinheiro.toFixed(2)}</Typography>
+      <Grid container spacing={2} mb={3}>
+        <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}><strong>Milhas necessárias:</strong> {milhasNecessarias}</Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}>
+            <strong>Valor a pagar em dinheiro:</strong> R$ {restanteEmDinheiro.toFixed(2)}
+          </Typography>
+        </Grid>
+      </Grid>
 
-      <Button variant="contained" color="primary" sx={{ mt: 3 }} onClick={confirmarReserva}>
-        Confirmar Reserva
-      </Button>
+      <Box display="flex" justifyContent="flex-end" mt={-1}>
+        <Button variant="contained" color="primary" onClick={confirmarReserva}>
+          Confirmar Reserva
+        </Button>
+      </Box>
 
       <Dialog open={openDialog} onClose={handleDialogClose}>
         <DialogTitle>Confirmar Reserva</DialogTitle>
@@ -143,7 +171,11 @@ export function DetalhesReserva({ voo }: Props) {
         <Alert
           onClose={handleSnackbarClose}
           severity="success"
-          sx={{ backgroundColor: '#ADD8E6', color: 'black', width: '100%' }}
+          sx={{
+            backgroundColor: '#d0f2d0',
+            color: '#1e4620',
+            width: '100%',
+          }}
           elevation={6}
           variant="filled"
         >
@@ -153,3 +185,4 @@ export function DetalhesReserva({ voo }: Props) {
     </Box>
   );
 }
+
