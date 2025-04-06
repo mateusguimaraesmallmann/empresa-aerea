@@ -95,6 +95,7 @@ export function FazerCheckIn() {
                                                         variant="contained"
                                                         color="primary"
                                                         onClick={() => fazerCheckIn(reserva.codigo)}
+                                                        sx={{ whiteSpace: 'nowrap', minWidth: 100 }} // evita quebra e define largura mínima
                                                     >
                                                         Fazer Check-in
                                                     </Button>

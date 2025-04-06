@@ -14,12 +14,13 @@ function parseDate(dateStr: string, hora: string = '12:00'): string {
   return date.toISOString();
 }
 
-// Voos dinâmicos para testes de check-in (48h)
+// Voos dinâmicos para testes de check-in 
 const agora = new Date();
 const vooDentroDe2h = new Date(agora.getTime() + 2 * 60 * 60 * 1000);
+const vooDentroDe12h = new Date(agora.getTime() + 12 * 60 * 60 * 1000);
+const vooDentroDe24h = new Date(agora.getTime() + 24 * 60 * 60 * 1000);
 const vooDentroDe30h = new Date(agora.getTime() + 30 * 60 * 60 * 1000);
 const vooDentroDe40h = new Date(agora.getTime() + 40 * 60 * 60 * 1000);
-const vooDentroDe12h = new Date(agora.getTime() + 12 * 60 * 60 * 1000);
 
 export const voosMockados: Voo[] = [
   {
@@ -49,6 +50,20 @@ export const voosMockados: Voo[] = [
     destino: "Aeroporto Internacional de Curitiba - Afonso Pena (CWB)",
     dataHora: vooDentroDe12h.toISOString(),
     preco: 210,
+  },
+  {
+    id: "15",
+    origem: "Aeroporto Internacional de Recife - Recife (REC)",
+    destino: "Aeroporto Internacional de Belém - Belém (BEL)",
+    dataHora: vooDentroDe24h.toISOString(),
+    preco: 270,
+  },
+  {
+    id: "16",
+    origem: "Aeroporto Internacional de João Pessoa - João Pessoa (JPA)",
+    destino: "Aeroporto Internacional de Maceió - Maceió (MCZ)",
+    dataHora: vooDentroDe30h.toISOString(),
+    preco: 195,
   },
 
   // Voos fixos do mock original
