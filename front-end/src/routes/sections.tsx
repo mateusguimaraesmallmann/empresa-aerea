@@ -8,6 +8,7 @@ import { varAlpha } from 'src/theme/styles';
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 import { ProtectedRoute } from 'src/routes/ProtectedRoute';
+import FazerCheckInPage from 'src/pages/cliente/fazer-check-in';
 
 
 // ----------------------------------------------------------------------
@@ -56,7 +57,8 @@ export function Router() {
         { path: 'comprar-milhas', element: <ComprarMilhasView /> },
         { path: 'tela-inicial-cliente', element: <UserPage /> },
         { path: 'efetuar-reserva', element: <ReservaPage /> },
-        { path: 'extrato-milhas', element: <ExtratoMilhasPage /> }
+        { path: 'extrato-milhas', element: <ExtratoMilhasPage /> },
+        { path: 'check-in', element: <FazerCheckInPage /> }
       ],
     },
     {
@@ -71,10 +73,6 @@ export function Router() {
       path: 'autocadastro',
       element: <AutoCadastroPage />,
     },    
-    {
-      path: 'check-in',
-      element: <Page404 />,
-    },
     {
       path: '*',
       element: <Navigate to="/404" replace />,

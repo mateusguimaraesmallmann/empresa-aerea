@@ -77,7 +77,7 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
             ),
             rightArea: (
               <Box gap={1} display="flex" alignItems="center">
-                <Searchbar />
+                {/* <Searchbar /> */}
                 <AccountPopover
                   data={[
                     {
