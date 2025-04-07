@@ -1,6 +1,9 @@
 package br.com.empresa_area.ms_auth.controllers;
 
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import br.com.empresa_area.ms_auth.dtos.LoginDTO;
 import br.com.empresa_area.ms_auth.dtos.TokenDTO;
+import br.com.empresa_area.ms_auth.models.Usuario;
+import br.com.empresa_area.ms_auth.repositories.UsuarioRepository;
 import br.com.empresa_area.ms_auth.services.AuthorizationService;
 
 @RestController
@@ -36,6 +41,11 @@ public class AuthenticationController {
     @GetMapping("/register")
     public ResponseEntity<Object> test() {
         return ResponseEntity.status(HttpStatus.OK).body("Teste OK!");
+    }
+
+    @GetMapping("/usuarios")
+    public List<Usuario> listarUsuarios() {
+        return authorizationService.findAll();
     }
     
 }

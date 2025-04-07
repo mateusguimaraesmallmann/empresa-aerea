@@ -1,6 +1,7 @@
 package br.com.empresa_area.ms_auth.models;
 
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +23,7 @@ import br.com.empresa_area.ms_auth.enums.TipoUsuario;
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Usuario implements UserDetails {
 
     @Id

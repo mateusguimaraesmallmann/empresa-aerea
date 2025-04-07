@@ -1,5 +1,7 @@
 package br.com.empresa_area.ms_auth.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +29,8 @@ public class AuthorizationService implements UserDetailsService{
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usuarioRepository.findByLogin(username);
+        //return usuarioRepository.findByLogin(username);
+        return null;
     }
 
     public TokenDTO login(LoginDTO loginDTO) {
@@ -36,6 +39,10 @@ public class AuthorizationService implements UserDetailsService{
         var authentication = this.manager.authenticate(authenticationToken);
         var tokenJWT = tokenService.generateToken((Usuario) authentication.getPrincipal());
         return new TokenDTO(tokenJWT.toString());
+    }
+
+    public List<Usuario> findAll() {
+        return usuarioRepository.findAll();
     }
     
 }
