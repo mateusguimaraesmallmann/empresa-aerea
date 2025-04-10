@@ -11,17 +11,29 @@ function ComprarMilhasView() {
   const handleCompra = () => {
     const valorTotal = milhas * valorPorMilha;
     const dataHora = new Date().toLocaleString();
-
-    const transacao = {
+  
+    const novaTransacao = {
       dataHora,
       milhas,
       valor: valorTotal.toFixed(2),
       descricao: 'COMPRA DE MILHAS',
     };
-
-    console.log('Transação registrada:', transacao);
-    setMensagem('Compra realizada com sucesso!');
+  
+    const historico = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
+  
+    
+    historico.push(novaTransacao);
+  
+    
+    localStorage.setItem('comprasMilhas', JSON.stringify(historico));
+  
+    
+    console.log('Compra registrada:', novaTransacao);
+    console.log('Histórico de compras:', historico);
+  
+    setMensagem('Compra registrada com sucesso!');
   };
+  
 
   return (
     <DashboardContent>
