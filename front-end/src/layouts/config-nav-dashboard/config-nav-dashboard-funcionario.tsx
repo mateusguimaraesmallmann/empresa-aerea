@@ -1,4 +1,3 @@
-import { Label } from 'src/components/label';
 import { SvgColor } from 'src/components/svg-color';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
@@ -9,25 +8,20 @@ const icon = (name: string) => (
   <SvgColor width="100%" height="100%" src={`/assets/icons/navbar/${name}.svg`} />
 );
 
-export const navData = [
+export const navDataFuncionario = [
   {
     title: 'Tela Inicial',
-    path: '/tela-inicial-cliente',
+    path: '/tela-inicial-funcionario',
     icon: icon('ic-user'),
   },
   {
-    title: 'Comprar Milhas',
-    path: '/comprar-milhas',
-    icon: icon('ic-cart'),
-  },
-  {
-    title: 'Efetuar Reservas',
-    path: '/efetuar-reserva',
+    title: 'Cadastro de Voo',
+    path: '',
     icon: <EventAvailableIcon />,
   },
   {
-    title: 'Fazer Check-in',
-    path: '/check-in',
-    icon: <CheckCircleIcon />,
-  },
+    title: 'Funcionarios',
+    path: '',
+    icon: icon('ic-user'),
+  }
 ];
