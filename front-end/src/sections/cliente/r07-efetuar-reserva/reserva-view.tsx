@@ -99,7 +99,7 @@ export function ReservaView() {
             variant="contained"
             onClick={buscarVoos}
             size="medium"
-            sx={{ height: 36, minWidth: 110 }} 
+            sx={{ height: 36, minWidth: 110 }}
           >
             Buscar
           </Button>
@@ -109,7 +109,18 @@ export function ReservaView() {
           <TabelaVoos voos={voosFiltrados} onSelecionar={setVooSelecionado} />
         )}
 
-        {vooSelecionado && <DetalhesReserva voo={vooSelecionado} />}
+        {vooSelecionado && (
+          <DetalhesReserva
+            voo={vooSelecionado}
+            onReservaFinalizada={() => {
+              setVooSelecionado(null);    // volta à tela de busca
+              setOrigem('');              // limpa origem
+              setDestino('');             // limpa destino
+              setBuscaRealizada(false);  // limpa a tabela
+              setVoosFiltrados([]);       // zera os voos
+            }}
+          />
+        )}
 
         <Snackbar
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

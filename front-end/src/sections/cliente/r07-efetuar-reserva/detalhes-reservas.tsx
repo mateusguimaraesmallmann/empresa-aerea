@@ -28,9 +28,10 @@ function gerarCodigoReservaExistente(codigosExistentes: string[]): string {
 
 type Props = {
   voo: Voo;
+  onReservaFinalizada: () => void;
 };
 
-export function DetalhesReserva({ voo }: Props) {
+export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   const [quantidade, setQuantidade] = useState(1);
   const [milhasDisponiveis] = useState(1000); // mock de saldo atual de milhas
   const milhasNecessarias = voo.preco * quantidade;
@@ -40,9 +41,12 @@ export function DetalhesReserva({ voo }: Props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [reservaCriada, setReservaCriada] = useState(false); // controla o botão
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
+    setReservaCriada(false); // libera o botão novamente
+    onReservaFinalizada();   // reinicia a tela de busca
   };
 
   const handleDialogClose = () => {
@@ -55,7 +59,6 @@ export function DetalhesReserva({ voo }: Props) {
 
   const handleConfirmDialog = () => {
     const reservasSalvas = JSON.parse(localStorage.getItem('reservas') || '[]');
-
     const codigosExistentes = reservasSalvas.map((r: any) => r.codigo);
     const codigo = gerarCodigoReservaExistente(codigosExistentes);
 
@@ -71,7 +74,6 @@ export function DetalhesReserva({ voo }: Props) {
     reservasSalvas.push(novaReserva);
     localStorage.setItem('reservas', JSON.stringify(reservasSalvas));
 
-    // Atualizar saldo de milhas
     const milhasAtual = Number(localStorage.getItem('milhas')) || 1000;
     const novoSaldo = milhasAtual - milhasUsadas;
     localStorage.setItem('milhas', JSON.stringify(novoSaldo));
@@ -79,6 +81,7 @@ export function DetalhesReserva({ voo }: Props) {
     setSnackbarMessage(`Reserva criada com sucesso! Código: ${codigo}`);
     setSnackbarOpen(true);
     setOpenDialog(false);
+    setReservaCriada(true); // desabilita o botão
   };
 
   return (
@@ -140,7 +143,12 @@ export function DetalhesReserva({ voo }: Props) {
       </Grid>
 
       <Box display="flex" justifyContent="flex-end" mt={-1}>
-        <Button variant="contained" color="primary" onClick={confirmarReserva}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={confirmarReserva}
+          disabled={reservaCriada} // desabilita após sucesso
+        >
           Confirmar Reserva
         </Button>
       </Box>
@@ -165,7 +173,7 @@ export function DetalhesReserva({ voo }: Props) {
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={snackbarOpen}
-        autoHideDuration={3000}
+        autoHideDuration={5000}
         onClose={handleSnackbarClose}
       >
         <Alert
@@ -185,4 +193,3 @@ export function DetalhesReserva({ voo }: Props) {
     </Box>
   );
 }
-
