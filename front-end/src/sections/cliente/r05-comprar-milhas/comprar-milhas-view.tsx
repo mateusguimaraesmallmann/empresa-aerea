@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, Grid, TextField, Typography } from '@mui/material';
+import { DashboardContent } from 'src/layouts/dashboard/main'; 
 
 function ComprarMilhasView() {
   const [milhas, setMilhas] = useState(0);
@@ -23,27 +24,47 @@ function ComprarMilhasView() {
   };
 
   return (
-    <Box display="flex" flexDirection="column" gap={2} width="100%" maxWidth={400}>
-      <Typography variant="h5">Comprar Milhas</Typography>
-
-      <TextField
-        label="Quantidade de Milhas"
-        type="number"
-        value={milhas}
-        onChange={(e) => setMilhas(Number(e.target.value))}
-        fullWidth
-      />
-
-      <Typography>
-        Valor total: R$ {(milhas * valorPorMilha).toFixed(2)}
-      </Typography>
-
-      <Button variant="contained" color="primary" onClick={handleCompra}>
-        Confirmar Compra
-      </Button>
-
-      {mensagem && <Typography color="green">{mensagem}</Typography>}
+    <DashboardContent>
+    <Typography variant="h4" gutterBottom>
+      Comprar Milhas
+    </Typography>
+  
+    <Box p={2}>
+      <Grid container spacing={3} maxWidth={500}>
+        {/* Campo de milhas */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Quantidade de Milhas"
+            type="number"
+            fullWidth
+            value={milhas}
+            onChange={(e) => setMilhas(Number(e.target.value))}
+          />
+        </Grid>
+  
+        {/* Valor total */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1">
+            Valor total: R$ {(milhas * valorPorMilha).toFixed(2)}
+          </Typography>
+        </Grid>
+  
+        {/* Botão */}
+        <Grid item xs={12}>
+          <Button variant="contained" color="primary" onClick={handleCompra}>
+            Confirmar Compra
+          </Button>
+        </Grid>
+  
+        {/* Mensagem */}
+        {mensagem && (
+          <Grid item xs={12}>
+            <Typography color="success.main">{mensagem}</Typography>
+          </Grid>
+        )}
+      </Grid>
     </Box>
+  </DashboardContent>
   );
 }
 
