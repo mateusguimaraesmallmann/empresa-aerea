@@ -22,7 +22,7 @@ export const Page404 = lazy(() => import('src/pages/page-not-found'));
 export const AutoCadastroPage = lazy(() => import('src/pages/cliente/autocadastro'));
 export const ExtratoMilhasPage = lazy(() => import('src/pages/cliente/extrato-milhas'));
 export const ComprarMilhasView = lazy(() => import('src/sections/cliente/r05-comprar-milhas/comprar-milhas-view'));
-
+export const FuncionarioTelaInicialPage = lazy(() => import('src/pages/funcionario/tela-inicial'));
 
 
 // ----------------------------------------------------------------------
@@ -58,7 +58,8 @@ export function Router() {
         { path: 'tela-inicial-cliente', element: <UserPage /> },
         { path: 'efetuar-reserva', element: <ReservaPage /> },
         { path: 'extrato-milhas', element: <ExtratoMilhasPage /> },
-        { path: 'check-in', element: <FazerCheckInPage /> }
+        { path: 'check-in', element: <FazerCheckInPage /> },
+        { path: 'tela-inicial-funcionario', element: <FuncionarioTelaInicialPage />}
       ],
     },
     {

@@ -1,5 +1,7 @@
 import type { Theme, SxProps, Breakpoint } from '@mui/material/styles';
 
+import { useAuth } from 'src/context/AuthContext'
+
 import { useState } from 'react';
 
 import Box from '@mui/material/Box';
@@ -13,7 +15,8 @@ import { Iconify } from 'src/components/iconify';
 import { Main } from './main';
 import { layoutClasses } from '../classes';
 import { NavMobile, NavDesktop } from './nav';
-import { navData } from '../config-nav-dashboard';
+import { navDataCliente } from '../config-nav-dashboard/config-nav-dashboard-cliente';
+import { navDataFuncionario } from '../config-nav-dashboard/config-nav-dashboard-funcionario';
 import { Searchbar } from '../components/searchbar';
 
 import { MenuButton } from '../components/menu-button';
@@ -37,6 +40,11 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
   const [navOpen, setNavOpen] = useState(false);
 
   const layoutQuery: Breakpoint = 'lg';
+
+  const { usuario } = useAuth();
+  const tipo = usuario?.tipo;
+
+  const navData = tipo === 'FUNCIONARIO' ? navDataFuncionario : navDataCliente;
 
   return (
     <LayoutSection

@@ -10,6 +10,8 @@ import { ThemeProvider } from 'src/theme/theme-provider';
 
 import { Iconify } from 'src/components/iconify';
 
+import { AuthProvider } from 'src/context/AuthContext'
+
 // ----------------------------------------------------------------------
 
 export default function App() {
@@ -37,7 +39,9 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <Router />
+      <AuthProvider>
+        <Router />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
