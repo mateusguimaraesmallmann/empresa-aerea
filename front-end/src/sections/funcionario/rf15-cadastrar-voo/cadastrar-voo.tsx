@@ -14,6 +14,7 @@ import * as yup from 'yup'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { voosMockados } from 'src/_mock/voos-mock'
+import { DashboardContent } from 'src/layouts/dashboard'
 
 const schema = yup.object({
   codigo: yup.string().required('Código é obrigatório'),
@@ -91,10 +92,21 @@ export default function CadastrarVoo() {
   }
 
   return (
-    <Box maxWidth={900} mx="auto" mt={4}>
+    <DashboardContent>
+    <Box display="flex" alignItems="center" mb={4}>
       <Typography variant="h4" gutterBottom>
         Cadastrar Voo
       </Typography>
+    </Box>
+
+    <Box
+      sx={{
+        backgroundColor: 'white',
+        p: 3,
+        borderRadius: 2,
+        width: '100%',
+    }}
+    >
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={3}>
@@ -237,5 +249,6 @@ export default function CadastrarVoo() {
         </Alert>
       </Snackbar>
     </Box>
+    </DashboardContent>
   )
 }
