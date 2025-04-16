@@ -9,6 +9,7 @@ import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 import { ProtectedRoute } from 'src/routes/ProtectedRoute';
 import FazerCheckInPage from 'src/pages/cliente/fazer-check-in';
+import ListarFuncionariosPage from 'src/pages/funcionario/listar-funcionarios';
 
 
 // ----------------------------------------------------------------------
@@ -61,7 +62,9 @@ export function Router() {
         { path: 'extrato-milhas', element: <ExtratoMilhasPage /> },
         { path: 'check-in', element: <FazerCheckInPage /> },
         { path: 'tela-inicial-funcionario', element: <FuncionarioTelaInicialPage />},
-        { path: 'cadastrar-voo', element: <CadastrarVooPage /> }
+        { path: 'cadastrar-voo', element: <CadastrarVooPage /> },
+        { path: 'listar-funcionarios-view', element: <ListarFuncionariosPage /> }
+        
       ],
     },
     {
