@@ -24,6 +24,7 @@ import { Label } from 'src/components/label';
 import { useRouter } from 'src/routes/hooks';
 import { Voo, voosMockados } from 'src/_mock/voos-mock';
 import Button from '@mui/material/Button/Button';
+import { ConfirmarEmbarqueDialog } from 'src/sections/funcionario/rf12-confirmacao-embarque/confirmar-embarque-dialog';
 
 type Props = {
     voos: Voo[];
@@ -34,6 +35,7 @@ export function TabelaVoosFuncionario({ voos }: Props) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [vooSelecionado, setVooSelecionado] = useState<Voo | null>(null);
     const rowsPerPage = 5;
+    const [modalAberto, setModalAberto] = useState(false);
   
     const handleOpenPopover = (event: React.MouseEvent<HTMLElement>, voo: Voo) => {
         setAnchorEl(event.currentTarget);
@@ -46,9 +48,9 @@ export function TabelaVoosFuncionario({ voos }: Props) {
     
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
-    };
-  
+    };  
     return (
+      
       <Card>
         <Toolbar
           sx={{
@@ -90,6 +92,14 @@ export function TabelaVoosFuncionario({ voos }: Props) {
                         </TableRow>
                         ))}
 
+                        {vooSelecionado && (
+                        <ConfirmarEmbarqueDialog
+                        open={modalAberto}
+                        onClose={() => setModalAberto(false)}
+                        vooId={vooSelecionado.id}
+                        />
+                        )}
+
                     {voos.length === 0 && (
                         <TableRow>
                         <TableCell colSpan={4} align="center" sx={{ py: 10 }}>
@@ -120,9 +130,13 @@ export function TabelaVoosFuncionario({ voos }: Props) {
             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
             <MenuList sx={{ p: 1, width: 200 }}>
-                <MenuItem>
+            <MenuItem
+                    onClick={() => {
+                    setModalAberto(true);
+                    handleClosePopover(); 
+                    }}>
                     <Iconify icon="mdi:check-bold" width={18} />
-                    Confirmar Embarque
+                     Confirmar Embarque
                 </MenuItem>
                 <MenuItem>
                     <Iconify icon="solar:trash-bin-trash-bold" width={18} />
@@ -135,5 +149,6 @@ export function TabelaVoosFuncionario({ voos }: Props) {
             </MenuList>
         </Popover>
       </Card>
+      
     );
   }

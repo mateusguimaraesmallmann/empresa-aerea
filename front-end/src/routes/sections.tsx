@@ -25,6 +25,8 @@ export const ComprarMilhasView = lazy(() => import('src/sections/cliente/r05-com
 export const FuncionarioTelaInicialPage = lazy(() => import('src/pages/funcionario/tela-inicial'));
 
 
+
+
 // ----------------------------------------------------------------------
 
 const renderFallback = (
@@ -59,7 +61,7 @@ export function Router() {
         { path: 'efetuar-reserva', element: <ReservaPage /> },
         { path: 'extrato-milhas', element: <ExtratoMilhasPage /> },
         { path: 'check-in', element: <FazerCheckInPage /> },
-        { path: 'tela-inicial-funcionario', element: <FuncionarioTelaInicialPage />}
+        { path: 'tela-inicial-funcionario', element: <FuncionarioTelaInicialPage />},
       ],
     },
     {
