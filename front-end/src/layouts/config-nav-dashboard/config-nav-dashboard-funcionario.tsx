@@ -1,12 +1,10 @@
 import { SvgColor } from 'src/components/svg-color';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
-
-// ----------------------------------------------------------------------
+import FlightTakeoff from '@mui/icons-material/FlightTakeoff';
 
 const icon = (name: string) => (
   <SvgColor width="100%" height="100%" src={`/assets/icons/navbar/${name}.svg`} />
 );
+
 
 export const navDataFuncionario = [
   {
@@ -16,8 +14,8 @@ export const navDataFuncionario = [
   },
   {
     title: 'Cadastro de Voo',
-    path: '',
-    icon: <EventAvailableIcon />,
+    path: '/cadastrar-voo',
+    icon: <FlightTakeoff />,
   },
   {
     title: 'Funcionarios',
