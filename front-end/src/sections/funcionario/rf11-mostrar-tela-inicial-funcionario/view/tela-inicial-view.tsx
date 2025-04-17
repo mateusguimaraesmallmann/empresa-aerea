@@ -25,7 +25,7 @@ export function TelaInicialView() {
   return (
     <>
       <Helmet>
-        <title>Tela inicial Funcionario</title>
+        <title>Tela inicial Funcionário</title>
       </Helmet>
 
       <DashboardContent>

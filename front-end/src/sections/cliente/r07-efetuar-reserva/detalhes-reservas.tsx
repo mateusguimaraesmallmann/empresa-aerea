@@ -85,7 +85,12 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   };
 
   return (
-    <Box>
+    <Box sx={{
+      backgroundColor: 'white',
+      p: 3,
+      borderRadius: 2,
+      width: '100%',
+    }}>
       <Typography variant="h5" mb={2}>
         Detalhes da Reserva
       </Typography>

@@ -15,6 +15,7 @@ import { varAlpha } from 'src/theme/styles';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { Iconify } from 'src/components/iconify';
+import { Typography } from '@mui/material';
 
 
 // ----------------------------------------------------------------------
@@ -112,7 +113,12 @@ export function NavContent({ data, slots, sx }: NavContentProps) {
 
   return (
     <>
-      <Iconify icon="mdi:airplane" width={40} height={40} sx={{ color: 'primary.main' }}/>
+      <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Iconify icon="mdi:airplane" width={32} height={32} sx={{ color: 'primary.main' }} />
+        <Typography variant="h6" fontWeight="bold" color="primary">
+          Empresa Aérea
+        </Typography>
+      </Box>
 
       {slots?.topArea}
 
