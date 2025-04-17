@@ -23,6 +23,7 @@ export const AutoCadastroPage = lazy(() => import('src/pages/cliente/autocadastr
 export const ExtratoMilhasPage = lazy(() => import('src/pages/cliente/extrato-milhas'));
 export const ComprarMilhasView = lazy(() => import('src/sections/cliente/r05-comprar-milhas/comprar-milhas-view'));
 export const FuncionarioTelaInicialPage = lazy(() => import('src/pages/funcionario/tela-inicial'));
+export const CadastrarVooPage = lazy(() => import('src/sections/funcionario/rf15-cadastrar-voo/cadastrar-voo'));
 
 
 
@@ -62,6 +63,7 @@ export function Router() {
         { path: 'extrato-milhas', element: <ExtratoMilhasPage /> },
         { path: 'check-in', element: <FazerCheckInPage /> },
         { path: 'tela-inicial-funcionario', element: <FuncionarioTelaInicialPage />},
+        { path: 'cadastrar-voo', element: <CadastrarVooPage /> }
       ],
     },
     {
