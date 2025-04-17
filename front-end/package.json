@@ -31,7 +31,7 @@
     "@fontsource/barlow": "^5.0.14",
     "@hookform/resolvers": "^4.1.3",
     "@iconify/react": "^5.0.2",
-    "@mui/icons-material": "^5.14.16",
+    "@mui/icons-material": "^5.17.1",
     "@mui/lab": "^5.0.0-alpha.173",
     "@mui/material": "^5.16.7",
     "apexcharts": "^3.52.0",
