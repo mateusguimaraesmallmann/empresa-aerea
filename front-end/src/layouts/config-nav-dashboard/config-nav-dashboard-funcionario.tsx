@@ -1,5 +1,6 @@
 import { SvgColor } from 'src/components/svg-color';
 import FlightTakeoff from '@mui/icons-material/FlightTakeoff';
+import GroupIcon from '@mui/icons-material/Group';
 
 const icon = (name: string) => (
   <SvgColor width="100%" height="100%" src={`/assets/icons/navbar/${name}.svg`} />
@@ -18,8 +19,8 @@ export const navDataFuncionario = [
     icon: <FlightTakeoff />,
   },
   {
-    title: 'Funcionarios',
-    path: '',
-    icon: icon('ic-user'),
+    title: 'Funcionários',
+    path: '/listar-funcionarios-view',
+    icon: <GroupIcon />,
   }
 ];
