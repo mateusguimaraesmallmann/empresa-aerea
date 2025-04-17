@@ -31,6 +31,7 @@
     "@fontsource/barlow": "^5.0.14",
     "@hookform/resolvers": "^4.1.3",
     "@iconify/react": "^5.0.2",
+    "@minimal/material-kit-react": "file:",
     "@mui/icons-material": "^5.14.16",
     "@mui/lab": "^5.0.0-alpha.173",
     "@mui/material": "^5.16.7",
