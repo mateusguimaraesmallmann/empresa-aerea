@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { useAuth } from 'src/context/AuthContext';
 import { IconButton, Tooltip } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { ConfirmarRealizacaoDialog } from './dialogs/ConfirmarRealizaçãoDialog';
-import { useAuth } from 'src/context/AuthContext';
 
 type Props = {
   voo: any;
@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function RealizarVooActions({ voo, onRealizacaoSucesso }: Props) {
-  const { auth } = useAuth();
+  const { usuario } = useAuth();
   const [openDialog, setOpenDialog] = useState(false);
 
   const handleRealizarVoo = async () => {
@@ -19,7 +19,7 @@ export function RealizarVooActions({ voo, onRealizacaoSucesso }: Props) {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${auth?.token}`
+          Authorization: `Bearer ${usuario?.email}`
         }
       });
       
