@@ -10,16 +10,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import InputMask from 'react-input-mask';
-
-// Tipo do funcionário
-type Funcionario = {
-  id: number;
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  senha: string;
-};
+import { Funcionario } from '../types/funcionario';
 
 type Props = {
   aberto: boolean;
@@ -33,6 +24,7 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
     cpf: '',
     email: '',
     telefone: '',
+    ativo: true,
   });
 
   const [senhaGerada, setSenhaGerada] = useState('');
@@ -86,6 +78,7 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
       email: emailFormatado,
       telefone: dados.telefone,
       senha,
+      ativo: true,
     };
 
     console.log(`Senha enviada para ${dados.email}: ${senha}`);
@@ -96,7 +89,7 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
     onInserir(novoFuncionario);
     setSenhaGerada(senha);
     setSucesso(true);
-    setDados({ nome: '', cpf: '', email: '', telefone: '' });
+    setDados({ nome: '', cpf: '', email: '', telefone: '', ativo: true});
     setErros({});
   };
 
@@ -115,7 +108,7 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
 
   return (
     <Dialog open={aberto} onClose={handleFechar} fullWidth maxWidth="sm">
-      <DialogTitle>Inserir novo Funcionário</DialogTitle>
+      <DialogTitle>Inserir novo(a) Funcionário(a)</DialogTitle>
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <TextField
@@ -178,7 +171,7 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
 
           {sucesso && (
             <Alert severity="success">
-              Funcionário inserido com sucesso! Sua senha é: <strong>{senhaGerada}</strong>
+              Funcionário(a) inserido(a) com sucesso! A senha é: <strong>{senhaGerada}</strong>
             </Alert>
           )}
         </Stack>
