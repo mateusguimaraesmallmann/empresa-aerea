@@ -6,12 +6,12 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Box
+  Box,
+  Button
 } from '@mui/material';
-import { Funcionario } from '../types/funcionario';
-import { Button } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { useNavigate } from 'react-router-dom';
+import { Funcionario } from '../types/funcionario';
 
 
 type Props = {
@@ -55,7 +55,7 @@ export function TabelaFuncionarios({ funcionarios, onRemover }: Props) {
                     startIcon={<Iconify icon="mdi:pencil" width={18} />}
                     onClick={() => navigate(`/alterar-funcionario?id=${funcionario.id}`)}
                   >
-                    Editar
+                    Alterar
                   </Button>
                   <Button
                     size="small"
