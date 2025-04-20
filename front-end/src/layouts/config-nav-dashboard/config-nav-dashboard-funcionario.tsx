@@ -20,7 +20,7 @@ export const navDataFuncionario = [
   },
   {
     title: 'Funcionários',
-    path: '/listar-funcionarios-view',
+    path: '/listar-funcionarios',
     icon: <GroupIcon />,
   }
 ];

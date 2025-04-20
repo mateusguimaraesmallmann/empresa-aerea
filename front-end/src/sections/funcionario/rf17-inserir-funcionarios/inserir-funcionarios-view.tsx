@@ -86,11 +86,14 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
     const atualizados = [...funcionariosExistentes, novoFuncionario];
     localStorage.setItem('funcionarios', JSON.stringify(atualizados));
 
-    onInserir(novoFuncionario);
     setSenhaGerada(senha);
     setSucesso(true);
-    setDados({ nome: '', cpf: '', email: '', telefone: '', ativo: true});
+    setDados({ nome: '', cpf: '', email: '', telefone: '', ativo: true });
     setErros({});
+
+    setTimeout(() => {
+      onInserir(novoFuncionario);
+    }, 2500);
   };
 
   const handleFechar = () => {
@@ -111,6 +114,17 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
       <DialogTitle>Inserir novo(a) Funcionário(a)</DialogTitle>
       <DialogContent>
         <Stack spacing={2} mt={1}>
+
+          {erroCadastro && (
+            <Alert severity="error">{erroCadastro}</Alert>
+          )}
+
+          {sucesso && (
+            <Alert severity="success">
+              Funcionário(a) inserido(a) com sucesso! A senha é: <strong>{senhaGerada}</strong>
+            </Alert>
+          )}
+
           <TextField
             label="Nome"
             fullWidth
@@ -164,16 +178,6 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
               />
             )}
           </InputMask>
-
-          {erroCadastro && (
-            <Alert severity="error">{erroCadastro}</Alert>
-          )}
-
-          {sucesso && (
-            <Alert severity="success">
-              Funcionário(a) inserido(a) com sucesso! A senha é: <strong>{senhaGerada}</strong>
-            </Alert>
-          )}
         </Stack>
       </DialogContent>
       <DialogActions>

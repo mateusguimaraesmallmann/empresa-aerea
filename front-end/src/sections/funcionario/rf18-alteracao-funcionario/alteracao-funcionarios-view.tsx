@@ -15,8 +15,8 @@ import { Funcionario } from '../types/funcionario';
 type Props = {
     aberto: boolean;
     funcionario: Funcionario | null;
-    onFechar: () => void; 
-    onAtualizar: (funcionario: Funcionario) => void;
+    onFechar: () => void;
+    onAtualizar: () => void;
 };
 
 export function AlteracaoFuncionariosView({ aberto, funcionario, onFechar, onAtualizar }: Props) {
@@ -36,7 +36,7 @@ export function AlteracaoFuncionariosView({ aberto, funcionario, onFechar, onAtu
                 email: funcionario.email,
                 telefone: funcionario.telefone,
             });
-            setMostrarSucesso(false); 
+            setMostrarSucesso(false);
         }
     }, [funcionario]);
 
@@ -70,13 +70,16 @@ export function AlteracaoFuncionariosView({ aberto, funcionario, onFechar, onAtu
             funcionarios[index] = atualizado;
             localStorage.setItem('funcionarios', JSON.stringify(funcionarios));
             setMostrarSucesso(true);
-            onAtualizar(atualizado); // redireciona para listagem
+
+            setTimeout(() => {
+                onAtualizar();
+            }, 2500);
         }
     };
 
     return (
         <Dialog open={aberto} onClose={onFechar} fullWidth maxWidth="sm">
-            <DialogTitle>Editar Funcionário(a)</DialogTitle>
+            <DialogTitle>Alterar Funcionário(a)</DialogTitle>
             <DialogContent>
                 <Stack spacing={2} mt={1}>
 
