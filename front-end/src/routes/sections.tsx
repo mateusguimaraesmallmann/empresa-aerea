@@ -10,6 +10,9 @@ import { DashboardLayout } from 'src/layouts/dashboard';
 import { ProtectedRoute } from 'src/routes/ProtectedRoute';
 import FazerCheckInPage from 'src/pages/cliente/fazer-check-in';
 import ListarFuncionariosPage from 'src/pages/funcionario/listar-funcionarios';
+import AlteracaoFuncionariosPage from 'src/pages/funcionario/alteracao-funcionarios';
+import InserirFuncionarioPage from 'src/pages/funcionario/inserir-funcionarios';
+import RemocaoFuncionarioPage from 'src/pages/funcionario/remocao-funcionarios';
 
 
 // ----------------------------------------------------------------------
@@ -65,7 +68,10 @@ export function Router() {
         { path: 'check-in', element: <FazerCheckInPage /> },
         { path: 'tela-inicial-funcionario', element: <FuncionarioTelaInicialPage />},
         { path: 'cadastrar-voo', element: <CadastrarVooPage /> },
-        { path: 'listar-funcionarios-view', element: <ListarFuncionariosPage /> }
+        { path: 'listar-funcionarios', element: <ListarFuncionariosPage /> },
+        { path: 'alterar-funcionario', element: <AlteracaoFuncionariosPage /> },
+        { path: 'inserir-funcionario', element: <InserirFuncionarioPage />},
+        { path: 'remover-funcionario', element: <RemocaoFuncionarioPage />}
         
       ],
     },
