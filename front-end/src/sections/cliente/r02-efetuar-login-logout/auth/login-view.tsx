@@ -42,7 +42,10 @@ export function SignInView() {
   return (
     <>
       <Box gap={1.5} display="flex" flexDirection="column" alignItems="center" sx={{ mb: 5 }}>
-        <Typography variant="h5">Login</Typography>
+        <Typography variant="h4" textAlign="center">
+          Empresa Aérea
+        </Typography>
+        
         <Typography variant="body2" color="text.secondary">
           Não tem uma conta?
           <Link
