@@ -15,16 +15,19 @@ export function TelaInicialView() {
     setReservas(getReservasDoLocalStorageAdaptadas());
   };
 
+  const calcularMilhas = () => {
+    const compras = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
+    const totalComprado = compras.reduce((acc: number, item: any) => acc + Number(item.milhas), 0);
+
+    const reservasSalvas = JSON.parse(localStorage.getItem('reservas') || '[]');
+    const totalUsado = reservasSalvas.reduce((acc: number, r: any) => acc + (r.milhasUsadas || 0), 0);
+
+    setMilhas(totalComprado - totalUsado);
+  };
+
   useEffect(() => {
     carregarReservas();
-
-    const milhasSalvas = localStorage.getItem('milhas');
-    if (milhasSalvas === null) {
-      localStorage.setItem('milhas', JSON.stringify(1000));
-      setMilhas(1000);
-    } else {
-      setMilhas(Number(milhasSalvas));
-    }
+    calcularMilhas();
   }, []);
 
   return (
@@ -43,7 +46,10 @@ export function TelaInicialView() {
         <TabelaReservasCliente
           reservas={reservas}
           milhas={milhas}
-          onAtualizarReservas={carregarReservas}
+          onAtualizarReservas={() => {
+            carregarReservas();
+            calcularMilhas();
+          }}
         />
       </DashboardContent>
     </>

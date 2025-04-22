@@ -1,10 +1,21 @@
 import { useState } from 'react';
-import { Box, Button, Grid, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Grid,
+  TextField,
+  Typography,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 import { DashboardContent } from 'src/layouts/dashboard/main';
+import { useRouter } from 'src/routes/hooks';
 
 function ComprarMilhasView() {
   const [milhas, setMilhas] = useState(0);
-  const [mensagem, setMensagem] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const router = useRouter();
 
   const valorPorMilha = 5;
 
@@ -20,20 +31,21 @@ function ComprarMilhasView() {
     };
 
     const historico = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
-
-
     historico.push(novaTransacao);
-
-
     localStorage.setItem('comprasMilhas', JSON.stringify(historico));
 
-
-    console.log('Compra registrada:', novaTransacao);
-    console.log('Histórico de compras:', historico);
-
-    setMensagem('Compra registrada com sucesso!');
+    setSnackbarMessage('Compra registrada com sucesso!');
+    setOpenSnackbar(true);
+    setMilhas(0);
   };
 
+  const handleIrParaExtrato = () => {
+    router.push('/extrato-milhas'); // redirecionamento correto
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
   return (
     <DashboardContent>
@@ -41,15 +53,15 @@ function ComprarMilhasView() {
         Comprar Milhas
       </Typography>
 
-      <Box sx={{
-        backgroundColor: 'white',
-        p: 3,
-        borderRadius: 2,
-        width: '100%',
-        ml: 0,
-      }}>
+      <Box
+        sx={{
+          backgroundColor: 'white',
+          p: 3,
+          borderRadius: 2,
+          width: '100%',
+        }}
+      >
         <Grid container spacing={3} maxWidth={500}>
-          {/* Campo de milhas */}
           <Grid item xs={12} sm={6}>
             <TextField
               label="Quantidade de Milhas"
@@ -60,29 +72,47 @@ function ComprarMilhasView() {
             />
           </Grid>
 
-          {/* Valor total */}
           <Grid item xs={12}>
             <Typography variant="subtitle1">
               Valor total: R$ {(milhas * valorPorMilha).toFixed(2)}
             </Typography>
           </Grid>
 
-          {/* Botão */}
           <Grid item xs={12}>
-            <Button variant="contained" color="primary" onClick={handleCompra}>
-              Confirmar Compra
-            </Button>
+            <Box display="flex" gap={2}>
+              <Button variant="contained" color="primary" onClick={handleCompra}>
+                Confirmar Compra
+              </Button>
+              <Button variant="contained" color="primary" onClick={handleIrParaExtrato}>
+                Visualizar Extrato de Milhas
+              </Button>
+            </Box>
           </Grid>
-
-          {/* Mensagem */}
-          {mensagem && (
-            <Grid item xs={12}>
-              <Typography color="success.main">{mensagem}</Typography>
-            </Grid>
-          )}
         </Grid>
       </Box>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity="success"
+          elevation={6}
+          variant="filled"
+          sx={{
+            backgroundColor: '#d0f2d0',
+            color: '#1e4620',
+            width: '100%',
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </DashboardContent>
   );
 }
+
 export default ComprarMilhasView;

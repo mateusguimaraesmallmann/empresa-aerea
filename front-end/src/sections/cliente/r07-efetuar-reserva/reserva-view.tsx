@@ -11,17 +11,17 @@ import {
 import { Helmet } from 'react-helmet-async';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { voosMockados } from 'src/_mock/voos-mock';
 import { TabelaVoos, Voo } from './tabela-voos';
 import { DetalhesReserva } from './detalhes-reservas';
 
-// Gera as opções para o Autocomplete a partir das origens e destinos dos voos
-const todosAeroportos = voosMockados
-  .map((v) => [v.origem, v.destino])
-  .flat()
-  .filter((valor, indice, self) => self.indexOf(valor) === indice);
-
 export function ReservaView() {
+  const voosSalvos: Voo[] = JSON.parse(localStorage.getItem('voos') || '[]');
+
+  const todosAeroportos = voosSalvos
+    .map((v) => [v.origem, v.destino])
+    .flat()
+    .filter((valor, indice, self) => self.indexOf(valor) === indice);
+
   const [origem, setOrigem] = useState('');
   const [destino, setDestino] = useState('');
   const [voosFiltrados, setVoosFiltrados] = useState<Voo[]>([]);
@@ -39,7 +39,7 @@ export function ReservaView() {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const resultado = voosMockados.filter((voo) => {
+    const resultado = voosSalvos.filter((voo) => {
       const dataVoo = new Date(voo.dataHora);
       dataVoo.setHours(0, 0, 0, 0);
 
@@ -113,11 +113,11 @@ export function ReservaView() {
           <DetalhesReserva
             voo={vooSelecionado}
             onReservaFinalizada={() => {
-              setVooSelecionado(null);    // volta à tela de busca
-              setOrigem('');              // limpa origem
-              setDestino('');             // limpa destino
-              setBuscaRealizada(false);  // limpa a tabela
-              setVoosFiltrados([]);       // zera os voos
+              setVooSelecionado(null);
+              setOrigem('');
+              setDestino('');
+              setBuscaRealizada(false);
+              setVoosFiltrados([]);
             }}
           />
         )}
