@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -33,20 +33,30 @@ type Props = {
 
 export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   const [quantidade, setQuantidade] = useState(1);
-  const [milhasDisponiveis] = useState(1000); // mock de saldo atual de milhas
-  const milhasNecessarias = voo.preco * quantidade;
+  const [milhasDisponiveis, setMilhasDisponiveis] = useState(0);
   const [milhasUsadas, setMilhasUsadas] = useState(0);
-  const restanteEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
-
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
-  const [reservaCriada, setReservaCriada] = useState(false); // controla o botão
+  const [reservaCriada, setReservaCriada] = useState(false);
+
+  const milhasNecessarias = voo.preco * quantidade;
+  const restanteEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
+
+  useEffect(() => {
+    const compras = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
+    const totalComprado = compras.reduce((acc: number, item: any) => acc + Number(item.milhas), 0);
+
+    const milhasUsadasEmReservas = JSON.parse(localStorage.getItem('reservas') || '[]')
+      .reduce((acc: number, r: any) => acc + (r.milhasUsadas || 0), 0);
+
+    setMilhasDisponiveis(totalComprado - milhasUsadasEmReservas);
+  }, []);
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
-    setReservaCriada(false); // libera o botão novamente
-    onReservaFinalizada();   // reinicia a tela de busca
+    setReservaCriada(false);
+    onReservaFinalizada();
   };
 
   const handleDialogClose = () => {
@@ -74,23 +84,14 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
     reservasSalvas.push(novaReserva);
     localStorage.setItem('reservas', JSON.stringify(reservasSalvas));
 
-    const milhasAtual = Number(localStorage.getItem('milhas')) || 1000;
-    const novoSaldo = milhasAtual - milhasUsadas;
-    localStorage.setItem('milhas', JSON.stringify(novoSaldo));
-
     setSnackbarMessage(`Reserva criada com sucesso! Código: ${codigo}`);
     setSnackbarOpen(true);
     setOpenDialog(false);
-    setReservaCriada(true); // desabilita o botão
+    setReservaCriada(true);
   };
 
   return (
-    <Box sx={{
-      backgroundColor: 'white',
-      p: 3,
-      borderRadius: 2,
-      width: '100%',
-    }}>
+    <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, width: '100%' }}>
       <Typography variant="h5" mb={2}>
         Detalhes da Reserva
       </Typography>
@@ -99,16 +100,23 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={6}>
+          <Typography mb={1.5}><strong>Código Voo:</strong> {voo.codigo}</Typography>
+        </Grid>
+        <Grid item xs={12} sm={6}>
           <Typography mb={1.5}><strong>Origem:</strong> {voo.origem}</Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
           <Typography mb={1.5}><strong>Destino:</strong> {voo.destino}</Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Typography mb={1.5}><strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}</Typography>
+          <Typography mb={1.5}>
+            <strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}
+          </Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Typography mb={1.5}><strong>Preço unitário:</strong> R$ {voo.preco.toFixed(2)}</Typography>
+          <Typography mb={1.5}>
+            <strong>Preço unitário:</strong> R$ {voo.preco.toFixed(2)}
+          </Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
           <Typography mb={1.5}><strong>Milhas disponíveis:</strong> {milhasDisponiveis}</Typography>
@@ -152,7 +160,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
           variant="contained"
           color="primary"
           onClick={confirmarReserva}
-          disabled={reservaCriada} // desabilita após sucesso
+          disabled={reservaCriada}
         >
           Confirmar Reserva
         </Button>
