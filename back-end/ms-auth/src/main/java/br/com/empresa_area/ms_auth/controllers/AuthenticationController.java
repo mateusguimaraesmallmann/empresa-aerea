@@ -1,6 +1,9 @@
 package br.com.empresa_area.ms_auth.controllers;
 
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,9 +36,9 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/register")
-    public ResponseEntity<Object> test() {
-        return ResponseEntity.status(HttpStatus.OK).body("Teste OK!");
+    @PostMapping("/logout")
+    public ResponseEntity<Object> logout() {
+        return ResponseEntity.ok(Map.of("auth", false, "token", null));
     }
     
 }

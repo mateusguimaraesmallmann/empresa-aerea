@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping("/ms-cliente")
 public class ClienteController {
 
     private final ClienteService clienteService;

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/funcionarios")
+@RequestMapping("/ms-funcionario")
 public class FuncionarioController {
 
     private final FuncionarioService funcionarioService;

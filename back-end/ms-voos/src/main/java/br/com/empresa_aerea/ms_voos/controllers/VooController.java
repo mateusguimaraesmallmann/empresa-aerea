@@ -10,7 +10,7 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/ms-voo")
 public class VooController {
 
     private final VooService vooService;
