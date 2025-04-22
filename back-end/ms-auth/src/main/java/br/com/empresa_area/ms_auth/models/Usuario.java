@@ -1,6 +1,5 @@
 package br.com.empresa_area.ms_auth.models;
 
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,22 +7,21 @@ import lombok.Setter;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 import br.com.empresa_area.ms_auth.enums.TipoUsuario;
 
-@Table(name = "usuario")
-@Entity(name = "usuario")
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(collection = "usuario")
 public class Usuario implements UserDetails {
 
     @Id
