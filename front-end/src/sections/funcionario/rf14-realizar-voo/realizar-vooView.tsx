@@ -1,25 +1,39 @@
-import { TableCell, TableRow, Box } from '@mui/material';
-import { RealizarVooActions } from 'src/sections/funcionario/rf14-realizar-voo/realizar-voo';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
+
+type VooType = {
+  codigo: string;
+  origem: string;
+  destino: string;
+  estado: string;
+};
 
 type Props = {
-  voo: any,
-  atualizarListaVoos: () => void;
-}
+  codigoVoo: string;
+  onRealizacao: () => void;
+  onVoltar: () => void;
+  voo?: VooType; 
+  atualizarListaVoos?: () => void; 
+};
 
-export function RealizarVooView({ voo, atualizarListaVoos }: Props) {
-
+export function RealizarVooView({ codigoVoo, onRealizacao, onVoltar }: Props) {
   return (
-    <TableRow key={voo.codigo}>
-      ...
-      <TableCell>
-        <Box display="flex" gap={1}>
-          <RealizarVooActions
-            voo={voo}
-            onRealizacaoSucesso={() => atualizarListaVoos()}
-          />
-
-        </Box>
-      </TableCell>
-    </TableRow>
-  )
+    <Dialog open={true} onClose={onVoltar} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ color: 'success.main' }}>✈️ Confirmar Realização</DialogTitle>
+      <DialogContent>
+        <Typography>
+          Confirmar realização do voo <strong>{codigoVoo}</strong>?
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onVoltar}>Cancelar</Button>
+        <Button 
+          onClick={onRealizacao}
+          variant="contained"
+          color="success"
+        >
+          Confirmar
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }

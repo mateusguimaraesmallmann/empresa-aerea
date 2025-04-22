@@ -13,7 +13,8 @@ import ListarFuncionariosPage from 'src/pages/funcionario/listar-funcionarios';
 import AlteracaoFuncionariosPage from 'src/pages/funcionario/alteracao-funcionarios';
 import InserirFuncionarioPage from 'src/pages/funcionario/inserir-funcionarios';
 import RemocaoFuncionarioPage from 'src/pages/funcionario/remocao-funcionarios';
-
+import RealizarVooPage from 'src/pages/funcionario/realizar-voo'
+import CancelarVooPage from 'src/pages/funcionario/cancelar-voo'
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +29,7 @@ export const ExtratoMilhasPage = lazy(() => import('src/pages/cliente/extrato-mi
 export const ComprarMilhasView = lazy(() => import('src/sections/cliente/r05-comprar-milhas/comprar-milhas-view'));
 export const FuncionarioTelaInicialPage = lazy(() => import('src/pages/funcionario/tela-inicial'));
 export const CadastrarVooPage = lazy(() => import('src/sections/funcionario/rf15-cadastrar-voo/cadastrar-voo'));
+
 
 
 
@@ -71,8 +73,9 @@ export function Router() {
         { path: 'listar-funcionarios', element: <ListarFuncionariosPage /> },
         { path: 'alterar-funcionario', element: <AlteracaoFuncionariosPage /> },
         { path: 'inserir-funcionario', element: <InserirFuncionarioPage />},
-        { path: 'remover-funcionario', element: <RemocaoFuncionarioPage />}
-        
+        { path: 'remover-funcionario', element: <RemocaoFuncionarioPage />},
+        { path: 'realizar-voo', element: <RealizarVooPage /> },
+        { path: 'cancelar-voo', element: <CancelarVooPage />}
       ],
     },
     {
