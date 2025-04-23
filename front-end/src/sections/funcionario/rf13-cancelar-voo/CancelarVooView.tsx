@@ -51,7 +51,7 @@ export function CancelarVooView({ onCancelamento, onVoltar }: Props) {
   if (carregando) return <CircularProgress />;
 
   return (
-    <Dialog open={true} onClose={onVoltar} maxWidth="sm" fullWidth>
+    <Dialog open onClose={onVoltar} maxWidth="sm" fullWidth>
       <DialogTitle color="error">Cancelar Voo {codigo}</DialogTitle>
       
       <DialogContent>
