@@ -25,13 +25,13 @@ export function TelaInicialView() {
   return (
     <>
       <Helmet>
-        <title>Tela inicial Funcionário</title>
+        <title>Tela inicial Funcionário(a)</title>
       </Helmet>
 
       <DashboardContent>
         <Box display="flex" alignItems="center" mb={5}>
           <Typography variant="h4" flexGrow={1}>
-            Olá, Funcionario!
+            Olá, Funcionário(a)!
           </Typography>
         </Box>
 
