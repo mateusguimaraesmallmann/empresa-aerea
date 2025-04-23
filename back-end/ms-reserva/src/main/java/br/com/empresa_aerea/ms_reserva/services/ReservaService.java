@@ -35,7 +35,7 @@ public class ReservaService {
     @Transactional
     public Reserva atualizarEstado(String codigo) {
         Reserva reserva = buscar(codigo);
-        EstadoReservaEnum origem = reserva.getEstado();
+        //stadoReservaEnum origem = reserva.getEstado();
         EstadoReservaEnum destino = EstadoReservaEnum.CHECK_IN;
         reserva.setEstado(destino);
         reservaRepository.save(reserva);
@@ -46,7 +46,7 @@ public class ReservaService {
     public void cancelar(String codigo) {
         Reserva reserva = buscar(codigo);
         if (reserva.getEstado() == EstadoReservaEnum.CRIADA || reserva.getEstado() == EstadoReservaEnum.CHECK_IN) {
-            EstadoReservaEnum origem = reserva.getEstado();
+            //EstadoReservaEnum origem = reserva.getEstado();
             reserva.setEstado(EstadoReservaEnum.CANCELADA);
             reservaRepository.save(reserva);
         } else {

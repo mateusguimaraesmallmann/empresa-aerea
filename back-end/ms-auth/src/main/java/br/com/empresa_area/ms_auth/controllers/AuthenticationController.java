@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import br.com.empresa_area.ms_auth.dtos.LoginDTO;
 import br.com.empresa_area.ms_auth.dtos.RegisterDTO;
-import br.com.empresa_area.ms_auth.dtos.TokenDTO;
+import br.com.empresa_area.ms_auth.dtos.TokenResponseDTO;
 import br.com.empresa_area.ms_auth.dtos.UserDTO;
 import br.com.empresa_area.ms_auth.services.AuthorizationService;
 
@@ -30,7 +30,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody @Validated LoginDTO loginDTO) {
         try {
-            TokenDTO token = authorizationService.login(loginDTO);
+            TokenResponseDTO token = authorizationService.login(loginDTO);
             return ResponseEntity.status(HttpStatus.OK).body(token);
         } catch (BadCredentialsException e) {
             logger.error(e.getMessage());

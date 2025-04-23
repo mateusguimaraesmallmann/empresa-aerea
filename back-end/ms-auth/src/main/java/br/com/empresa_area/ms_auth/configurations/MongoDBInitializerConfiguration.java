@@ -16,7 +16,7 @@ import br.com.empresa_area.ms_auth.enums.TipoUsuario;
 import br.com.empresa_area.ms_auth.models.Usuario;
 
 @Configuration
-public class MongoDBInitializerConfigurations {
+public class MongoDBInitializerConfiguration {
 
     @Bean
     CommandLineRunner initMongoDBDatabase(MongoTemplate mongoTemplate, BCryptPasswordEncoder passwordEncoder) {

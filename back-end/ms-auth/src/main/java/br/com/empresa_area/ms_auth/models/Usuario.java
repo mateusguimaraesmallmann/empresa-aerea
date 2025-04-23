@@ -7,10 +7,14 @@ import lombok.Setter;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.mongodb.lang.NonNull;
+
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,8 +31,15 @@ public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @NonNull
+    @Indexed(unique = true)
     private String login;
+
+    @NonNull
     private String password;
+
+    @NonNull
     private TipoUsuario role;
     
     @Override

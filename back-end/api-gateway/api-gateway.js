@@ -25,8 +25,25 @@ const funcionarioServiceUrl = process.env.MS_FUNCIONARIO_URL;
 const reservaServiceUrl = process.env.MS_RESERVA_URL;
 const voosServiceUrl = process.env.MS_VOOS_URL;
 
-// JWT middleware
-const requireJwt = jwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'], requestProperty: 'user' });
+// ======================= LOGIN =================================
+app.post(
+    "/api/login",
+    createProxyMiddleware({
+      target: authServiceUrl,
+      changeOrigin: true,
+      pathRewrite: (path) => path.replace("/api/login", "/auth/login")
+    })
+);
+
+//======================= Required JWT Token =================================
+const requireJwt = jwt({ 
+  secret: process.env.JWT_SECRET, 
+  algorithms: ['HS256'], 
+  requestProperty: 'user' 
+});
+app.use("/api", requireJwt);
+
+//======================= Controle de Papeis =================================
 function requireRole(role) {
   return (req, res, next) => {
     if (!req.user){
@@ -39,16 +56,6 @@ function requireRole(role) {
     next();
   };
 }
-
-// ======================= LOGIN =================================
-app.post(
-    "/api/login",
-    createProxyMiddleware({
-      target: authServiceUrl,
-      changeOrigin: true,
-      pathRewrite: (path) => path.replace("/api/login", "/auth/login")
-    })
-);
 
 // ======================= REGISTRO =================================
 app.post(
