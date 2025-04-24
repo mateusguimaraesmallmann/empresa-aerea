@@ -28,12 +28,8 @@ export const AutoCadastroPage = lazy(() => import('src/pages/cliente/autocadastr
 export const ExtratoMilhasPage = lazy(() => import('src/pages/cliente/extrato-milhas'));
 export const ComprarMilhasView = lazy(() => import('src/sections/cliente/r05-comprar-milhas/comprar-milhas-view'));
 export const FuncionarioTelaInicialPage = lazy(() => import('src/pages/funcionario/tela-inicial'));
-export const CadastrarVooPage = lazy(() => import('src/sections/funcionario/rf15-cadastrar-voo/cadastrar-voo'));
+export const CadastrarVooPage = lazy(() => import('src/pages/funcionario/cadastrar-voo'));
 export const ConsultarReservaTelaInicial = lazy(() => import('src/sections/cliente/r09-consultar-reserva/tela-inicial'))
-
-
-
-
 
 // ----------------------------------------------------------------------
 

@@ -11,6 +11,8 @@ type Props = {
   codigoVoo: string;
   onRealizacao: () => void;
   onVoltar: () => void;
+  // voo?: VooType; 
+  // atualizarListaVoos?: () => void; 
 };
 
 export function RealizarVooView({ codigoVoo, onRealizacao, onVoltar }: Props) {
