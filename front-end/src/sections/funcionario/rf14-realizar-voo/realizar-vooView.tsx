@@ -11,13 +11,11 @@ type Props = {
   codigoVoo: string;
   onRealizacao: () => void;
   onVoltar: () => void;
-  voo?: VooType; 
-  atualizarListaVoos?: () => void; 
 };
 
 export function RealizarVooView({ codigoVoo, onRealizacao, onVoltar }: Props) {
   return (
-    <Dialog open={true} onClose={onVoltar} maxWidth="sm" fullWidth>
+    <Dialog open onClose={onVoltar} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ color: 'success.main' }}>✈️ Confirmar Realização</DialogTitle>
       <DialogContent>
         <Typography>
