@@ -13,7 +13,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { voosMockados } from 'src/_mock/voos-mock';
+import { voosMockados, Voo } from 'src/_mock/voos-mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 const schema = yup.object({
@@ -42,6 +42,7 @@ export default function CadastrarVoo() {
   const [milhasGeradas, setMilhasGeradas] = useState(0);
   const [botaoDesabilitado, setBotaoDesabilitado] = useState(false);
   const [codigoGerado, setCodigoGerado] = useState('');
+  const [idGerado, setIdGerado] = useState('');
 
   const {
     register,
@@ -57,30 +58,41 @@ export default function CadastrarVoo() {
 
   const valorReais = watch('valorReais');
 
-  // Gera o código automaticamente com base na quantidade de voos salvos
   useEffect(() => {
+    gerarIdECodigo();
+  }, []);
+
+  useEffect(() => {
+    if (snackbarOpen) gerarIdECodigo();
+  }, [snackbarOpen]);
+
+  const gerarIdECodigo = () => {
     const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
     const proximoNumero = voosSalvos.length + 1;
-    const novoCodigo = proximoNumero.toString().padStart(4, '0');
+    const novoId = proximoNumero.toString();
+    const novoCodigo = `TADS${proximoNumero.toString().padStart(4, '0')}`;
+    setIdGerado(novoId);
     setCodigoGerado(novoCodigo);
-  }, [snackbarOpen]); // Atualiza após cada envio
+  };
 
   useEffect(() => {
     const valor = parseFloat(valorReais?.replace(',', '.') || '0');
-    setMilhasGeradas(Math.round(valor * 7));
+    setMilhasGeradas(Math.floor(valor / 5));
   }, [valorReais]);
 
   const onSubmit = async (data: any) => {
     const valor = parseFloat(data.valorReais.replace(',', '.'));
 
     const voo = {
+      id: idGerado,
       codigo: codigoGerado,
       dataHora: dayjs(data.dataHora).format('YYYY-MM-DDTHH:mm:ss'),
       origem: data.origem,
       destino: data.destino,
       preco: valor,
       poltronas: data.poltronas,
-      milhas: Math.round(valor * 10),
+      poltronasOcupadas: 0,
+      milhas: Math.floor(valor / 5),
       estado: 'CONFIRMADO',
     };
 
@@ -193,13 +205,18 @@ export default function CadastrarVoo() {
 
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Valor da Passagem (R$)"
+                label="Valor da Passagem"
                 fullWidth
                 {...register('valorReais')}
-                value={valorReais}
-                onChange={(e) =>
-                  setValue('valorReais', aplicarMascaraValor(e.target.value))
+                value={
+                  valorReais
+                    ? new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    }).format(parseFloat(valorReais.replace(',', '.')))
+                    : ''
                 }
+                onChange={(e) => setValue('valorReais', aplicarMascaraValor(e.target.value))}
                 error={!!errors.valorReais}
                 helperText={errors.valorReais?.message}
               />
