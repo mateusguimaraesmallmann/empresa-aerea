@@ -7,8 +7,10 @@ import {
   Button,
   Box,
   Grid,
+  Alert,
 } from '@mui/material';
 
+import { useState } from 'react';
 import { Reserva } from 'src/sections/cliente/types/reserva';
 
 type CancelarReservaDialogProps = {
@@ -24,20 +26,20 @@ export function CancelarReservaDialog({
   reserva,
   onReservaCancelada,
 }: CancelarReservaDialogProps) {
+  const [sucesso, setSucesso] = useState(false);
+
   if (!reserva) return null;
 
   const podeCancelar = ['CRIADA', 'CHECK-IN'].includes(reserva.estado);
 
   const cancelarReserva = () => {
-    // Carregar reservas existentes
     const reservasLocal = JSON.parse(localStorage.getItem('reservas') || '[]');
 
-    // Atualizar status da reserva cancelada
     const reservasAtualizadas = reservasLocal.map((r: any) =>
       r.codigo === reserva.codigo
         ? {
             ...r,
-            status: 'CANCELADA',
+            estado: 'CANCELADA',
             dataHoraCancelamento: new Date().toISOString(),
           }
         : r
@@ -45,14 +47,12 @@ export function CancelarReservaDialog({
 
     localStorage.setItem('reservas', JSON.stringify(reservasAtualizadas));
 
-    // Reembolso de milhas
     const milhasAtuais = Number(localStorage.getItem('milhas')) || 0;
     const milhasParaReembolso = Number(reserva.milhasGastas) || 0;
     const novoSaldoMilhas = milhasAtuais + milhasParaReembolso;
 
     localStorage.setItem('milhas', JSON.stringify(novoSaldoMilhas));
 
-    // Registrar transação de reembolso
     const transacoes = JSON.parse(localStorage.getItem('transacoes') || '[]');
 
     const novaTransacao = {
@@ -68,46 +68,52 @@ export function CancelarReservaDialog({
     transacoes.push(novaTransacao);
     localStorage.setItem('transacoes', JSON.stringify(transacoes));
 
+    setSucesso(true);
     onReservaCancelada();
-    onClose();
+
+    setTimeout(() => {
+      setSucesso(false);
+      onClose();
+    }, 3000);
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Cancelar Reserva</DialogTitle>
 
-      <DialogContent dividers>
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2">Código da Reserva:</Typography>
-              <Typography color="text.secondary">{reserva.codigo}</Typography>
-            </Grid>
+      <DialogContent>
+        <Box sx={{ mt: 1 }}>
+          {sucesso && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              Reserva cancelada com sucesso! As milhas utilizadas serão devolvidas.
+            </Alert>
+          )}
 
-            <Grid item xs={12}>
-              <Typography variant="subtitle2">Data/Hora:</Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Typography><strong>Data/Hora:</strong></Typography>
               <Typography color="text.secondary">
-                {new Date(reserva.dataHora).toLocaleString()}
+                {new Date(reserva.dataHora).toLocaleString('pt-BR')}
               </Typography>
             </Grid>
 
             <Grid item xs={6}>
-              <Typography variant="subtitle2">Origem:</Typography>
+              <Typography><strong>Código:</strong></Typography>
+              <Typography color="text.secondary">{reserva.codigo}</Typography>
+            </Grid>
+
+            <Grid item xs={6}>
+              <Typography><strong>Origem:</strong></Typography>
               <Typography color="text.secondary">{reserva.origem}</Typography>
             </Grid>
 
             <Grid item xs={6}>
-              <Typography variant="subtitle2">Destino:</Typography>
+              <Typography><strong>Destino:</strong></Typography>
               <Typography color="text.secondary">{reserva.destino}</Typography>
             </Grid>
 
             <Grid item xs={6}>
-              <Typography variant="subtitle2">Milhas Gastas:</Typography>
-              <Typography color="text.secondary">{reserva.milhasGastas}</Typography>
-            </Grid>
-
-            <Grid item xs={6}>
-              <Typography variant="subtitle2">Valor Pago:</Typography>
+              <Typography><strong>Valor Gasto:</strong></Typography>
               <Typography color="text.secondary">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
@@ -116,18 +122,23 @@ export function CancelarReservaDialog({
               </Typography>
             </Grid>
 
+            <Grid item xs={6}>
+              <Typography><strong>Milhas Gastas:</strong></Typography>
+              <Typography color="text.secondary">{reserva.milhasGastas}</Typography>
+            </Grid>
+
             <Grid item xs={12}>
-              <Typography variant="subtitle2">Status:</Typography>
+              <Typography><strong>Estado da Reserva:</strong></Typography>
               <Typography color="text.secondary">{reserva.estado}</Typography>
             </Grid>
           </Grid>
-        </Box>
 
-        {!podeCancelar && (
-          <Typography mt={3} color="error">
-            Esta reserva não pode ser cancelada pois já foi concluída ou está em outro estado.
-          </Typography>
-        )}
+          {!podeCancelar && (
+            <Typography mt={3} color="error">
+              Esta reserva não pode ser cancelada pois já foi concluída ou está em outro estado.
+            </Typography>
+          )}
+        </Box>
       </DialogContent>
 
       <DialogActions>
@@ -136,7 +147,7 @@ export function CancelarReservaDialog({
           onClick={cancelarReserva}
           color="error"
           variant="contained"
-          disabled={!podeCancelar}
+          disabled={!podeCancelar || sucesso}
         >
           Cancelar Reserva
         </Button>
@@ -144,3 +155,5 @@ export function CancelarReservaDialog({
     </Dialog>
   );
 }
+
+
