@@ -15,6 +15,7 @@ import InserirFuncionarioPage from 'src/pages/funcionario/inserir-funcionarios';
 import RemocaoFuncionarioPage from 'src/pages/funcionario/remocao-funcionarios';
 import RealizarVooPage from 'src/pages/funcionario/realizar-voo'
 import CancelarVooPage from 'src/pages/funcionario/cancelar-voo'
+import { TelaInicialView } from 'src/sections/cliente/r03-mostrar-tela-inicial-cliente/cliente/view';
 
 // ----------------------------------------------------------------------
 
@@ -29,7 +30,6 @@ export const ExtratoMilhasPage = lazy(() => import('src/pages/cliente/extrato-mi
 export const ComprarMilhasView = lazy(() => import('src/sections/cliente/r05-comprar-milhas/comprar-milhas-view'));
 export const FuncionarioTelaInicialPage = lazy(() => import('src/pages/funcionario/tela-inicial'));
 export const CadastrarVooPage = lazy(() => import('src/pages/funcionario/cadastrar-voo'));
-export const ConsultarReservaTelaInicial = lazy(() => import('src/sections/cliente/r09-consultar-reserva/tela-inicial'))
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ export function Router() {
       children: [
         { element: <HomePage />, index: true },
         { path: 'comprar-milhas', element: <ComprarMilhasView /> },
-        { path: 'tela-inicial-cliente', element: <ConsultarReservaTelaInicial /> },
+        { path: 'tela-inicial-cliente', element: <TelaInicialView /> },
         { path: 'efetuar-reserva', element: <ReservaPage /> },
         { path: 'extrato-milhas', element: <ExtratoMilhasPage /> },
         { path: 'check-in', element: <FazerCheckInPage /> },

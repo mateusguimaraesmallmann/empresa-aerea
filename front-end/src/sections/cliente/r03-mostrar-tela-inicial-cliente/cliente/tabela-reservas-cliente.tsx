@@ -21,10 +21,12 @@ import Box from '@mui/material/Box';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Label } from 'src/components/label';
+import { TextField, Button, Grid } from '@mui/material';
 import { useRouter } from 'src/routes/hooks';
 import { Reserva } from 'src/sections/cliente/types/reserva';
 import { VerReservaDialog } from '../../r04-ver-reserva/ver-reserva';
 import { CancelarReservaDialog } from '../../r08-cancelar-reserva/cancelar-reserva';
+
 
 type Props = {
   reservas: Reserva[];
@@ -36,6 +38,8 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   const [page, setPage] = useState(0);
   const [orderBy] = useState<'asc' | 'desc'>('asc');
   const [filter, setFilter] = useState('');
+  const [codigoBusca, setCodigoBusca] = useState('');
+  const [buscaAtiva, setBuscaAtiva] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -44,8 +48,23 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   const rowsPerPage = 5;
   const router = useRouter();
 
+  const handleBuscarReserva = () => {
+    setFilter(codigoBusca.trim());
+    setBuscaAtiva(true);
+    setPage(0);
+  };
+
+  const handleLimparBusca = () => {
+    setFilter('');
+    setCodigoBusca('');
+    setBuscaAtiva(false);
+    setPage(0);
+  };
+
   const filteredData = reservas
-    .filter((r) => r.codigo.toLowerCase().includes(filter.toLowerCase()))
+    .filter((r) =>
+      !buscaAtiva || r.codigo.toLowerCase().includes(filter.toLowerCase())
+    )
     .sort((a, b) =>
       orderBy === 'asc'
         ? new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
@@ -80,7 +99,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   };
 
   const handleReservaCancelada = () => {
-    onAtualizarReservas(); 
+    onAtualizarReservas();
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -91,48 +110,35 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
     <Card>
       <Toolbar
         sx={{
-          height: 96,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          p: (theme) => theme.spacing(0, 1, 0, 3),
+          height: 'auto',
+          p: (theme) => theme.spacing(2, 3),
         }}
       >
-        <Box display="flex" alignItems="center" gap={2}>
-          <OutlinedInput
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Consultar reserva..."
-            startAdornment={
-              <InputAdornment position="start">
-                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-              </InputAdornment>
-            }
-            sx={{ maxWidth: 320 }}
-          />
-
-          <OutlinedInput
-            value={`Saldo atual em Milhas: ${milhas}`}
-            readOnly
-            sx={{
-              minWidth: 300,
-              maxWidth: 500,
-              flexShrink: 0,
-              fontWeight: 'bold',
-              '& .MuiInputBase-input': {
-                color: 'text.primary',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              },
-              '& .Mui-disabled': {
-                WebkitTextFillColor: 'unset',
-              },
-            }}
-            inputProps={{
-              style: { fontSize: '1rem' },
-            }}
-          />
+        <Box width="100%">
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Box display="flex" gap={2} alignItems="center">
+                <TextField
+                  label="Código da Reserva"
+                  value={codigoBusca}
+                  onChange={(e) => setCodigoBusca(e.target.value)}
+                  size="small"
+                  fullWidth
+                />
+                <Button variant="contained" onClick={handleBuscarReserva} sx={{ height: 36, minWidth: 110 }}>
+                  Buscar
+                </Button>
+                <Button variant="text" onClick={handleLimparBusca} sx={{ height: 36, minWidth: 110 }}>
+                  Limpar
+                </Button>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6} display="flex" justifyContent="flex-end" alignItems="center">
+              <Typography fontSize="1rem">
+                Saldo atual em Milhas: {milhas}
+              </Typography>
+            </Grid>
+          </Grid>
         </Box>
       </Toolbar>
 
@@ -170,8 +176,8 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
                           reserva.estado === 'REALIZADA'
                             ? 'info'
                             : reserva.estado === 'CANCELADA'
-                            ? 'error'
-                            : 'warning'
+                              ? 'error'
+                              : 'warning'
                         }
                       >
                         {reserva.estado === 'REALIZADA' ? 'Realizado' : reserva.estado === 'CANCELADA' ? 'Cancelado' : 'Reservado'}
