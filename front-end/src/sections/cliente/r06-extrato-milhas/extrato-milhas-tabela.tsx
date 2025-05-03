@@ -8,16 +8,12 @@ import {
   TableRow,
   Paper,
   Typography,
-  IconButton,
   TableContainer,
   TablePagination,
 } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Label } from 'src/components/label';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale/pt-BR';
-
 
 export type TransacaoMilhas = {
   id: string;
@@ -37,11 +33,6 @@ export function ExtratoMilhasTabela({ transacoes }: Props) {
   const [page, setPage] = useState(0);
   const rowsPerPage = 5;
 
-  const formatarData = useCallback(
-    (dataISO: string) => format(new Date(dataISO), 'dd/MM/yyyy HH:mm', { locale: ptBR }),
-    []
-  );
-
   const formatarMoeda = useCallback((valor: number | null) => {
     if (!valor) return '-';
     return new Intl.NumberFormat('pt-BR', {
@@ -57,28 +48,27 @@ export function ExtratoMilhasTabela({ transacoes }: Props) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Data/Hora</TableCell>
-                <TableCell align="center">Código Reserva</TableCell>
-                <TableCell>Valor (R$)</TableCell>
-                <TableCell>Milhas</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>Data e Hora da Transação</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>Código da Reserva</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>Valor</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>Quantidade de Milhas</TableCell>
                 <TableCell>Descrição</TableCell>
                 <TableCell>Tipo</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {transacoes
+                .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime())
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((transacao) => (
                   <TableRow key={transacao.id}>
-                    <TableCell>{formatarData(transacao.dataHora)}</TableCell>
-                    <TableCell align="center">
+                    <TableCell>{new Date(transacao.dataHora).toLocaleString('pt-BR')}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
                       {transacao.codigoReserva || (
-                        <Typography variant="body2" color="text.secondary">
-                          -
-                        </Typography>
+                        <Typography variant="body2" color="text.secondary">-</Typography>
                       )}
                     </TableCell>
-                    <TableCell>{formatarMoeda(transacao.valorReais)}</TableCell>
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatarMoeda(transacao.valorReais)}</TableCell>
                     <TableCell>
                       <Label color={transacao.tipo === 'ENTRADA' ? 'success' : 'error'}>
                         {transacao.quantidadeMilhas}
@@ -101,7 +91,6 @@ export function ExtratoMilhasTabela({ transacoes }: Props) {
                     </TableCell>
                   </TableRow>
                 ))}
-
               {transacoes.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 10 }}>

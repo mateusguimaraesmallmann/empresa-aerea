@@ -21,7 +21,7 @@ function ComprarMilhasView() {
 
   const handleCompra = () => {
     const valorTotal = milhas * valorPorMilha;
-    const dataHora = new Date().toLocaleString();
+    const dataHora = new Date().toISOString();
 
     const novaTransacao = {
       dataHora,
