@@ -183,7 +183,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Data e Hora</TableCell>
+                <TableCell>Data e Hora do Voo</TableCell>
                 <TableCell>Aeroporto Origem</TableCell>
                 <TableCell>Aeroporto Destino</TableCell>
                 <TableCell align="center">Código da Reserva</TableCell>

@@ -17,12 +17,16 @@ import {
 import { Voo } from './tabela-voos';
 
 function gerarCodigoReservaExistente(codigosExistentes: string[]): string {
+  const gerarLetras = () =>
+    Array.from({ length: 3 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
+
+  const gerarNumeros = () => String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+
   let novoCodigo = '';
   do {
-    const letras = Math.random().toString(36).substring(2, 5).toUpperCase();
-    const numeros = Math.floor(100 + Math.random() * 900);
-    novoCodigo = letras + numeros;
+    novoCodigo = gerarLetras() + gerarNumeros();
   } while (codigosExistentes.includes(novoCodigo));
+
   return novoCodigo;
 }
 
@@ -79,6 +83,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
       milhasUsadas,
       restanteEmDinheiro,
       estado: 'CRIADA',
+      dataHoraCriacao: new Date().toISOString()
     };
 
     reservasSalvas.push(novaReserva);
@@ -119,7 +124,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
           </Typography>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Typography mb={1.5}><strong>Milhas disponíveis:</strong> {milhasDisponiveis}</Typography>
+          <Typography mb={1.5}><strong>Saldo de Milhas:</strong> {milhasDisponiveis}</Typography>
         </Grid>
       </Grid>
 

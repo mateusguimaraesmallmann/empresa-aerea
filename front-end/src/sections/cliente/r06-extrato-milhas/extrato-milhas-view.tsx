@@ -3,49 +3,49 @@ import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress,
-  Alert,
-  Stack,
-  TextField,
-  InputAdornment,
-  IconButton,
 } from '@mui/material';
-import { Iconify } from 'src/components/iconify';
+import { v4 as uuidv4 } from 'uuid';
 import { DashboardContent } from 'src/layouts/dashboard';
-import axios from 'axios';
 import { ExtratoMilhasTabela } from './extrato-milhas-tabela';
 import { TransacaoMilhas } from './types';
 
 export function ExtratoMilhasView() {
   const [transacoes, setTransacoes] = useState<TransacaoMilhas[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    const carregarExtrato = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/clientes/extrato-milhas', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setTransacoes(response.data);
-      } catch (err) {
-        setError('Erro ao carregar extrato de milhas');
-      } finally {
-        setLoading(false);
-      }
+    const carregarTransacoes = () => {
+      const compras = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
+      const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
+
+      const transacoesCompra: TransacaoMilhas[] = compras.map((compra: any) => ({
+        id: uuidv4(),
+        dataHora: new Date(compra.dataHora).toISOString(),
+        codigoReserva: null,
+        valorReais: parseFloat(compra.valor),
+        quantidadeMilhas: compra.milhas,
+        descricao: 'COMPRA DE MILHAS',
+        tipo: 'ENTRADA',
+      }));
+
+      const transacoesReserva: TransacaoMilhas[] = reservas.map((reserva: any) => ({
+        id: uuidv4(),
+        dataHora: new Date(reserva.dataHoraCriacao || new Date()).toISOString(),
+        codigoReserva: reserva.codigo || null,
+        valorReais: reserva.restanteEmDinheiro || 0,
+        quantidadeMilhas: reserva.milhasUsadas || 0,
+        descricao: `${(reserva.voo?.origem || '').slice(-4, -1)}->${(reserva.voo?.destino || '').slice(-4, -1)}`,
+        tipo: 'SAÍDA',
+      }));
+
+      const todasTransacoes = [...transacoesCompra, ...transacoesReserva].sort(
+        (a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
+      );
+
+      setTransacoes(todasTransacoes);
     };
 
-    carregarExtrato();
+    carregarTransacoes();
   }, []);
-
-  const filteredData = transacoes.filter((t) =>
-    t.codigoReserva?.toLowerCase().includes(filter.toLowerCase()) ||
-    t.descricao.toLowerCase().includes(filter.toLowerCase())
-  );
 
   return (
     <>
@@ -61,38 +61,7 @@ export function ExtratoMilhasView() {
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={2} alignItems="center" mb={4}>
-          <TextField
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Pesquisar transações..."
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" />
-                </InputAdornment>
-              ),
-              endAdornment: filter && (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setFilter('')}>
-                    <Iconify icon="eva:close-fill" />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{ width: 400 }}
-          />
-        </Stack>
-
-        {loading ? (
-          <Box display="flex" justifyContent="center">
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : (
-          <ExtratoMilhasTabela transacoes={filteredData} />
-        )}
+        <ExtratoMilhasTabela transacoes={transacoes} />
       </DashboardContent>
     </>
   );
