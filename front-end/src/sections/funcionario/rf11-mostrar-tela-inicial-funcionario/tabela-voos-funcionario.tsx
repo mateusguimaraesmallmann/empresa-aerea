@@ -1,5 +1,4 @@
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Popover from '@mui/material/Popover';
@@ -14,23 +13,33 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
+import { Chip } from '@mui/material';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Voo } from 'src/_mock/voos-mock';
 import { ConfirmarEmbarqueDialog } from 'src/sections/funcionario/rf12-confirmacao-embarque/confirmar-embarque-dialog';
+import { CancelarVooDialog } from '../rf13-cancelar-voo/dialogo-cancelamento';
+import { ConfirmarRealizacaoDialog } from '../rf14-realizar-voo/dialogs/ConfirmarRealizaçãoDialog';
 
 type Props = {
   voos: Voo[];
-  // onAtualizarVoos?: () => void;
 };
 
 export function TabelaVoosFuncionario({ voos }: Props) {
   const [page, setPage] = useState(0);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [vooSelecionado, setVooSelecionado] = useState<Voo | null>(null);
+  const [modalEmbarqueAberto, setModalEmbarqueAberto] = useState(false);
+  const [modalCancelamentoAberto, setModalCancelamentoAberto] = useState(false);
+  const [modalRealizacaoAberto, setModalRealizacaoAberto] = useState(false);
+  const [listaVoos, setListaVoos] = useState<Voo[]>([]);
+
   const rowsPerPage = 5;
-  const [modalAberto, setModalAberto] = useState(false);
+
+  useEffect(() => {
+    setListaVoos(voos);
+  }, [voos]);
 
   const handleOpenPopover = (event: React.MouseEvent<HTMLElement>, voo: Voo) => {
     setAnchorEl(event.currentTarget);
@@ -44,8 +53,13 @@ export function TabelaVoosFuncionario({ voos }: Props) {
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
-  return (
 
+  const atualizarListaVoos = () => {
+    const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
+    setListaVoos(voosSalvos);
+  };
+
+  return (
     <Card>
       <Toolbar
         sx={{
@@ -56,7 +70,6 @@ export function TabelaVoosFuncionario({ voos }: Props) {
           px: 3,
         }}
       >
-
         <Typography variant="h6">Voos nas próximas 48 horas</Typography>
       </Toolbar>
 
@@ -65,6 +78,7 @@ export function TabelaVoosFuncionario({ voos }: Props) {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>Código do Voo</TableCell>
                 <TableCell>Data e Hora</TableCell>
                 <TableCell>Origem</TableCell>
                 <TableCell>Destino</TableCell>
@@ -73,15 +87,71 @@ export function TabelaVoosFuncionario({ voos }: Props) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {[...voos]
+              {[...listaVoos]
                 .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime())
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((voo) => (
                   <TableRow key={voo.id}>
+                    <TableCell>{voo.codigo}</TableCell>
                     <TableCell>{new Date(voo.dataHora).toLocaleString('pt-BR')}</TableCell>
                     <TableCell>{voo.origem}</TableCell>
                     <TableCell>{voo.destino}</TableCell>
-                    <TableCell>{voo.estado}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={
+                          voo.estado === 'CRIADA'
+                            ? 'CRIADA'
+                            : voo.estado === 'RESERVADA'
+                            ? 'Reservada'
+                            : voo.estado === 'EMBARCADA'
+                            ? 'Embarcada'
+                            : voo.estado === 'REALIZADA'
+                            ? 'Realizada'
+                            : voo.estado === 'CANCELADO VOO'
+                            ? 'Cancelado Voo'
+                            : voo.estado === 'CONFIRMADO'
+                            ? 'Confirmado'
+                            : voo.estado === 'CANCELADO'
+                            ? 'Cancelado'
+                            : voo.estado
+                        }
+                        size="small"
+                        sx={{
+                          fontWeight: 'bold',
+                          borderRadius: 1,
+                          backgroundColor:
+                            voo.estado === 'CRIADA'
+                              ? '#d0f2d0'
+                              : voo.estado === 'RESERVADA'
+                              ? '#fff3cd'
+                              : voo.estado === 'EMBARCADA'
+                              ? '#cfe2ff'
+                              : voo.estado === 'REALIZADA'
+                              ? '#d4edda'
+                              : voo.estado === 'CANCELADO VOO' || voo.estado === 'CANCELADO'
+                              ? '#f8d7da'
+                              : voo.estado === 'CONFIRMADO'
+                              ? '#cff4fc'
+                              : '#eee',
+                          color:
+                            voo.estado === 'CRIADA'
+                              ? '#1e4620'
+                              : voo.estado === 'RESERVADA'
+                              ? '#7a4f01'
+                              : voo.estado === 'EMBARCADA'
+                              ? '#084298'
+                              : voo.estado === 'REALIZADA'
+                              ? '#155724'
+                              : voo.estado === 'CANCELADO VOO'
+                              ? '#664d03'
+                              : voo.estado === 'CANCELADO'
+                              ? '#842029'
+                              : voo.estado === 'CONFIRMADO'
+                              ? '#055160'
+                              : '#000',
+                        }}
+                      />
+                    </TableCell>
                     <TableCell align="right">
                       <IconButton onClick={(e) => handleOpenPopover(e, voo)}>
                         <Iconify icon="eva:more-vertical-fill" />
@@ -90,17 +160,9 @@ export function TabelaVoosFuncionario({ voos }: Props) {
                   </TableRow>
                 ))}
 
-              {vooSelecionado && (
-                <ConfirmarEmbarqueDialog
-                  open={modalAberto}
-                  onClose={() => setModalAberto(false)}
-                  vooId={vooSelecionado.id}
-                />
-              )}
-
-              {voos.length === 0 && (
+              {listaVoos.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ py: 10 }}>
+                  <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
                     <Typography>Nenhum voo disponível</Typography>
                   </TableCell>
                 </TableRow>
@@ -113,7 +175,7 @@ export function TabelaVoosFuncionario({ voos }: Props) {
       <TablePagination
         page={page}
         component="div"
-        count={voos.length}
+        count={listaVoos.length}
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}
         rowsPerPageOptions={[]}
@@ -130,23 +192,70 @@ export function TabelaVoosFuncionario({ voos }: Props) {
         <MenuList sx={{ p: 1, width: 200 }}>
           <MenuItem
             onClick={() => {
-              setModalAberto(true);
+              setModalEmbarqueAberto(true);
               handleClosePopover();
-            }}>
-            <Iconify icon="mdi:check-bold" width={18} />
-            Confirmar Embarque
+            }}
+          >
+            <Iconify icon="mdi:check-bold" width={18} /> Confirmar Embarque
           </MenuItem>
-          <MenuItem>
-            <Iconify icon="solar:trash-bin-trash-bold" width={18} />
-            Cancelar Voo
+          <MenuItem
+            onClick={() => {
+              setModalCancelamentoAberto(true);
+              handleClosePopover();
+            }}
+          >
+            <Iconify icon="solar:trash-bin-trash-bold" width={18} /> Cancelar Voo
           </MenuItem>
-          <MenuItem>
-            <Iconify icon="mdi:airplane" width={18} />
-            Marcar como Realizado
+          <MenuItem
+            onClick={() => {
+              setModalRealizacaoAberto(true);
+              handleClosePopover();
+            }}
+          >
+            <Iconify icon="mdi:airplane" width={18} /> Marcar como Realizado
           </MenuItem>
         </MenuList>
       </Popover>
-    </Card>
 
+      {vooSelecionado && (
+        <>
+          <ConfirmarEmbarqueDialog
+            open={modalEmbarqueAberto}
+            onClose={() => setModalEmbarqueAberto(false)}
+            vooId={vooSelecionado.id}
+          />
+
+          <CancelarVooDialog
+            open={modalCancelamentoAberto}
+            onClose={() => setModalCancelamentoAberto(false)}
+            onConfirm={() => {
+              const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
+              const atualizados = voosSalvos.map((v: Voo) =>
+                v.id === vooSelecionado.id ? { ...v, estado: 'CANCELADO' } : v
+              );
+              localStorage.setItem('voos', JSON.stringify(atualizados));
+              setModalCancelamentoAberto(false);
+              atualizarListaVoos();
+            }}
+            voo={vooSelecionado}
+          />
+
+          <ConfirmarRealizacaoDialog
+            open={modalRealizacaoAberto}
+            onClose={() => setModalRealizacaoAberto(false)}
+            onConfirm={() => {
+              const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
+              const atualizados = voosSalvos.map((v: Voo) =>
+                v.id === vooSelecionado.id ? { ...v, estado: 'REALIZADA' } : v
+              );
+              localStorage.setItem('voos', JSON.stringify(atualizados));
+              setModalRealizacaoAberto(false);
+              atualizarListaVoos();
+            }}
+            voo={vooSelecionado}
+          />
+        </>
+      )}
+    </Card>
   );
 }

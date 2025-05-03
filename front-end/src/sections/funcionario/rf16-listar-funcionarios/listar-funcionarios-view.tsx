@@ -15,20 +15,29 @@ export function ListarFuncionariosView() {
   const [funcionarioRemovendo, setFuncionarioRemovendo] = useState<Funcionario | null>(null);
   const navigate = useNavigate();
 
-  // Carrega do localStorage
   useEffect(() => {
     const lista: Funcionario[] = JSON.parse(localStorage.getItem('funcionarios') || '[]');
-    const ativos = lista.filter((f) => f.ativo); // ✅ Apenas ativos
-    const ordenados = ativos.sort((a, b) => a.nome.localeCompare(b.nome));
+    const ordenados = lista.sort((a, b) => a.nome.localeCompare(b.nome));
     setFuncionarios(ordenados);
   }, []);
 
-  // Insere novo e atualiza a lista local
   const handleInserirFuncionario = (novo: Funcionario) => {
     const atualizados = [...funcionarios, novo].sort((a, b) =>
       a.nome.localeCompare(b.nome)
     );
     setFuncionarios(atualizados);
+  };
+
+  const handleReativarFuncionario = (funcionario: Funcionario) => {
+    const listaAtual: Funcionario[] = JSON.parse(localStorage.getItem('funcionarios') || '[]');
+    const index = listaAtual.findIndex((f) => f.id === funcionario.id);
+
+    if (index !== -1) {
+      listaAtual[index].ativo = true;
+      localStorage.setItem('funcionarios', JSON.stringify(listaAtual));
+      const atualizados = listaAtual.sort((a, b) => a.nome.localeCompare(b.nome));
+      setFuncionarios(atualizados);
+    }
   };
 
   return (
@@ -48,6 +57,7 @@ export function ListarFuncionariosView() {
         <TabelaFuncionarios
           funcionarios={funcionarios}
           onRemover={(funcionario) => navigate(`/remover-funcionario?id=${funcionario.id}`)}
+          onReativar={handleReativarFuncionario}
         />
       </DashboardContent>
     </>
