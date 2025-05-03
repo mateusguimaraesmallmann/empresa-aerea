@@ -13,17 +13,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { voosMockados, Voo } from 'src/_mock/voos-mock';
+import { voosMockados } from 'src/_mock/voos-mock';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { NumericFormat } from 'react-number-format';
 
 const schema = yup.object({
   dataHora: yup.string().required('Data e hora são obrigatórias'),
   origem: yup.string().required('Origem é obrigatória'),
   destino: yup.string().required('Destino é obrigatória'),
   valorReais: yup
-    .string()
+    .number()
+    .typeError('Digite um valor válido')
     .required('Valor da passagem é obrigatório')
-    .matches(/^\d+(,\d{2})?$/, 'Formato inválido'),
+    .positive('O valor deve ser maior que zero'),
   poltronas: yup
     .number()
     .typeError('Digite um número válido.')
@@ -54,6 +56,9 @@ export default function CadastrarVoo() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      valorReais: 0,
+    },
   });
 
   const valorReais = watch('valorReais');
@@ -66,6 +71,14 @@ export default function CadastrarVoo() {
     if (snackbarOpen) gerarIdECodigo();
   }, [snackbarOpen]);
 
+  useEffect(() => {
+    if (!Number.isNaN(valorReais)) {
+      setMilhasGeradas(Math.floor(valorReais / 5));
+    } else {
+      setMilhasGeradas(0);
+    }
+  }, [valorReais]);
+
   const gerarIdECodigo = () => {
     const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
     const proximoNumero = voosSalvos.length + 1;
@@ -75,13 +88,8 @@ export default function CadastrarVoo() {
     setCodigoGerado(novoCodigo);
   };
 
-  useEffect(() => {
-    const valor = parseFloat(valorReais?.replace(',', '.') || '0');
-    setMilhasGeradas(Math.floor(valor / 5));
-  }, [valorReais]);
-
   const onSubmit = async (data: any) => {
-    const valor = parseFloat(data.valorReais.replace(',', '.'));
+    const valor = data.valorReais;
 
     const voo = {
       id: idGerado,
@@ -112,12 +120,6 @@ export default function CadastrarVoo() {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
-  };
-
-  const aplicarMascaraValor = (value: string) => {
-    const apenasNumeros = value.replace(/\D/g, '');
-    const comVirgula = (parseInt(apenasNumeros || '0', 10) / 100).toFixed(2);
-    return comVirgula.replace('.', ',');
   };
 
   return (
@@ -204,21 +206,29 @@ export default function CadastrarVoo() {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="Valor da Passagem"
-                fullWidth
-                {...register('valorReais')}
-                value={
-                  valorReais
-                    ? new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    }).format(parseFloat(valorReais.replace(',', '.')))
-                    : ''
-                }
-                onChange={(e) => setValue('valorReais', aplicarMascaraValor(e.target.value))}
-                error={!!errors.valorReais}
-                helperText={errors.valorReais?.message}
+              <Controller
+                name="valorReais"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <NumericFormat
+                    value={value}
+                    thousandSeparator="."
+                    decimalSeparator=","
+                    prefix="R$ "
+                    decimalScale={2}
+                    fixedDecimalScale
+                    allowNegative={false}
+                    customInput={TextField}
+                    label="Valor da Passagem"
+                    fullWidth
+                    onValueChange={(values) => {
+                      const valorNumerico = values.floatValue || 0;
+                      onChange(valorNumerico);
+                    }}
+                    error={!!errors.valorReais}
+                    helperText={errors.valorReais?.message}
+                  />
+                )}
               />
             </Grid>
 

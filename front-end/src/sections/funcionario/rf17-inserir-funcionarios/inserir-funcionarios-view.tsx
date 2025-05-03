@@ -93,7 +93,7 @@ export function InserirFuncionariosView({ aberto, onFechar, onInserir }: Props) 
 
     setTimeout(() => {
       onInserir(novoFuncionario);
-    }, 2500);
+    }, 4000);
   };
 
   const handleFechar = () => {
