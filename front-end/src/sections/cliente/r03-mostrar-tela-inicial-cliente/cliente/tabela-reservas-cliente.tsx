@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -12,26 +12,28 @@ import TablePagination from '@mui/material/TablePagination';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Box from '@mui/material/Box';
+import { TextField, Button, Grid } from '@mui/material';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Label } from 'src/components/label';
-import { TextField, Button, Grid } from '@mui/material';
 import { useRouter } from 'src/routes/hooks';
-import { Reserva } from 'src/sections/cliente/types/reserva';
+import { Reserva, getReservasDoLocalStorageAdaptadas } from 'src/sections/cliente/types/reserva';
 import { VerReservaDialog } from '../../r04-ver-reserva/ver-reserva';
 import { CancelarReservaDialog } from '../../r08-cancelar-reserva/cancelar-reserva';
-
 
 type Props = {
   reservas: Reserva[];
   milhas: number;
   onAtualizarReservas: () => void;
+};
+
+type VooLocalStorage = {
+  id: string;
+  estado: string;
 };
 
 export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }: Props) {
@@ -44,9 +46,30 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogCancelarOpen, setDialogCancelarOpen] = useState(false);
+  const [reservasAtualizadas, setReservasAtualizadas] = useState<Reserva[]>([]);
 
   const rowsPerPage = 5;
   const router = useRouter();
+
+  const getEstadoVoo = (vooId: string): string => {
+    const voos = JSON.parse(localStorage.getItem('voos') || '[]') as VooLocalStorage[];
+    const voo = voos.find((v) => v.id === vooId);
+    return voo?.estado || 'DESCONHECIDO';
+  };
+
+  useEffect(() => {
+    const atualizarReservas = () => {
+      const adaptadas = getReservasDoLocalStorageAdaptadas().map((reserva) => ({
+        ...reserva,
+        estadoVoo: getEstadoVoo(reserva.id),
+      }));
+      setReservasAtualizadas(adaptadas);
+    };
+
+    atualizarReservas();
+    window.addEventListener('storage', atualizarReservas);
+    return () => window.removeEventListener('storage', atualizarReservas);
+  }, [reservas]);
 
   const handleBuscarReserva = () => {
     setFilter(codigoBusca.trim());
@@ -61,10 +84,8 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
     setPage(0);
   };
 
-  const filteredData = reservas
-    .filter((r) =>
-      !buscaAtiva || r.codigo.toLowerCase().includes(filter.toLowerCase())
-    )
+  const filteredData = reservasAtualizadas
+    .filter((r) => !buscaAtiva || r.codigo.toLowerCase().includes(filter.toLowerCase()))
     .sort((a, b) =>
       orderBy === 'asc'
         ? new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
@@ -99,6 +120,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   };
 
   const handleReservaCancelada = () => {
+    setReservasAtualizadas(getReservasDoLocalStorageAdaptadas());
     onAtualizarReservas();
   };
 
@@ -106,14 +128,30 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
     setPage(newPage);
   };
 
+  function getLabelInfo(estado: string): { color: 'success' | 'error' | 'info' | 'warning'; texto: string } {
+    switch (estado) {
+      case 'CRIADA':
+        return { color: 'warning', texto: 'CRIADA' };
+      case 'CHECK-IN':
+        return { color: 'info', texto: 'CHECK-IN' };
+      case 'CANCELADA':
+        return { color: 'error', texto: 'CANCELADA' };
+      case 'CANCELADA VOO':
+        return { color: 'error', texto: 'CANCELADA PELO VOO' };
+      case 'EMBARCADA':
+        return { color: 'info', texto: 'EMBARCADA' };
+      case 'REALIZADA':
+        return { color: 'success', texto: 'REALIZADA' };
+      case 'NÃO REALIZADA':
+        return { color: 'error', texto: 'NÃO REALIZADA' };
+      default:
+        return { color: 'warning', texto: estado };
+    }
+  }
+
   return (
     <Card>
-      <Toolbar
-        sx={{
-          height: 'auto',
-          p: (theme) => theme.spacing(2, 3),
-        }}
-      >
+      <Toolbar sx={{ height: 'auto', p: (theme) => theme.spacing(2, 3) }}>
         <Box width="100%">
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
@@ -134,9 +172,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
               </Box>
             </Grid>
             <Grid item xs={12} md={6} display="flex" justifyContent="flex-end" alignItems="center">
-              <Typography fontSize="1rem">
-                Saldo atual em Milhas: {milhas}
-              </Typography>
+              <Typography fontSize="1rem">Saldo atual em Milhas: {milhas}</Typography>
             </Grid>
           </Grid>
         </Box>
@@ -159,37 +195,29 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
             <TableBody>
               {filteredData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((reserva) => (
-                  <TableRow key={reserva.id}>
-                    <TableCell>{new Date(reserva.dataHora).toLocaleString('pt-BR')}</TableCell>
-                    <TableCell>{reserva.origem}</TableCell>
-                    <TableCell>{reserva.destino}</TableCell>
-                    <TableCell align="center">{reserva.codigo}</TableCell>
-                    <TableCell>
-                      <Label color={reserva.estado === 'CANCELADA' ? 'error' : 'success'}>
-                        {reserva.estado}
-                      </Label>
-                    </TableCell>
-                    <TableCell>
-                      <Label
-                        color={
-                          reserva.estado === 'REALIZADA'
-                            ? 'info'
-                            : reserva.estado === 'CANCELADA'
-                              ? 'error'
-                              : 'warning'
-                        }
-                      >
-                        {reserva.estado === 'REALIZADA' ? 'Realizado' : reserva.estado === 'CANCELADA' ? 'Cancelado' : 'Reservado'}
-                      </Label>
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton onClick={(e) => handleOpenPopover(e, reserva)}>
-                        <Iconify icon="eva:more-vertical-fill" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                .map((reserva) => {
+                  const labelReserva = getLabelInfo(reserva.estado);
+                  const labelVoo = getLabelInfo(getEstadoVoo(reserva.id));
+                  return (
+                    <TableRow key={`${reserva.codigo}-${reserva.dataHora}`}>
+                      <TableCell>{new Date(reserva.dataHora).toLocaleString('pt-BR')}</TableCell>
+                      <TableCell>{reserva.origem}</TableCell>
+                      <TableCell>{reserva.destino}</TableCell>
+                      <TableCell align="center">{reserva.codigo}</TableCell>
+                      <TableCell>
+                        <Label color={labelReserva.color}>{labelReserva.texto}</Label>
+                      </TableCell>
+                      <TableCell>
+                        <Label color={labelVoo.color}>{labelVoo.texto}</Label>
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton onClick={(e) => handleOpenPopover(e, reserva)}>
+                          <Iconify icon="eva:more-vertical-fill" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
               {filteredData.length === 0 && (
                 <TableRow>
@@ -232,11 +260,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
         </MenuList>
       </Popover>
 
-      <VerReservaDialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        reserva={selectedReserva}
-      />
+      <VerReservaDialog open={dialogOpen} onClose={handleCloseDialog} reserva={selectedReserva} />
 
       <CancelarReservaDialog
         open={dialogCancelarOpen}
@@ -247,3 +271,6 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
     </Card>
   );
 }
+
+
+

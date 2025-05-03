@@ -23,7 +23,7 @@ export type ReservaStorage = {
     quantidade: number;
     milhasUsadas: number;
     restanteEmDinheiro: number;
-    status: string;
+    estado: string;
     dataHoraCancelamento?: string;
 };
 
@@ -37,7 +37,7 @@ export function adaptarReservaStorageParaReserva(r: ReservaStorage): Reserva {
         codigo: r.codigo,
         valorReais: r.restanteEmDinheiro,
         milhasGastas: r.milhasUsadas,
-        estado: r.status,
+        estado: r.estado,
     };
 }
 
