@@ -29,7 +29,7 @@ export function ExtratoMilhasView() {
 
       const transacoesReserva: TransacaoMilhas[] = reservas.map((reserva: any) => ({
         id: uuidv4(),
-        dataHora: new Date(reserva.voo?.dataHora || new Date()).toISOString(),
+        dataHora: new Date(reserva.dataHoraCriacao || new Date()).toISOString(),
         codigoReserva: reserva.codigo || null,
         valorReais: reserva.restanteEmDinheiro || 0,
         quantidadeMilhas: reserva.milhasUsadas || 0,

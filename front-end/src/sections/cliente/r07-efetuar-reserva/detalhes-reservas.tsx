@@ -79,6 +79,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
       milhasUsadas,
       restanteEmDinheiro,
       estado: 'CRIADA',
+      dataHoraCriacao: new Date().toISOString()
     };
 
     reservasSalvas.push(novaReserva);
