@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, CircularProgress } from '@mui/material';
-
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  CircularProgress,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 
 type VooType = {
   codigo: string;
@@ -19,6 +28,9 @@ export function CancelarVooView({ onCancelamento, onVoltar }: Props) {
   const { codigo } = useParams();
   const [voo, setVoo] = useState<VooType | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMensagem, setSnackbarMensagem] = useState('');
+  const [snackbarTipo, setSnackbarTipo] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     const buscarVoo = async () => {
@@ -27,59 +39,86 @@ export function CancelarVooView({ onCancelamento, onVoltar }: Props) {
         const data = await response.json();
         setVoo(data);
       } catch (error) {
-        console.error('Erro ao buscar voo:', error);
+        setSnackbarMensagem('Erro ao buscar voo.');
+        setSnackbarTipo('error');
+        setSnackbarOpen(true);
       } finally {
         setCarregando(false);
       }
     };
-    
+
     buscarVoo();
   }, [codigo]);
 
   const handleConfirmarCancelamento = async () => {
     try {
-      await fetch(`/api/funcionario/voos/${codigo}/cancelar`, {
+      const response = await fetch(`/api/funcionario/voos/${codigo}/cancelar`, {
         method: 'PUT',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      onCancelamento();
+
+      if (response.ok) {
+        setSnackbarMensagem('Voo cancelado com sucesso.');
+        setSnackbarTipo('success');
+        setSnackbarOpen(true);
+        onCancelamento();
+      } else {
+        throw new Error();
+      }
     } catch (error) {
-      console.error('Erro ao cancelar voo:', error);
+      setSnackbarMensagem('Erro ao cancelar voo.');
+      setSnackbarTipo('error');
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   if (carregando) return <CircularProgress />;
 
   return (
-    <Dialog open onClose={onVoltar} maxWidth="sm" fullWidth>
-      <DialogTitle color="error">Cancelar Voo {codigo}</DialogTitle>
-      
-      <DialogContent>
-        {voo ? (
-          <>
-            <Typography gutterBottom>
-              Origem: {voo.origem} → Destino: {voo.destino}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Estado atual: {voo.estado}
-            </Typography>
-          </>
-        ) : (
-          <Typography color="error">Voo não encontrado</Typography>
-        )}
-      </DialogContent>
+    <>
+      <Dialog open onClose={onVoltar} maxWidth="sm" fullWidth>
+        <DialogTitle color="error">Cancelar Voo {codigo}</DialogTitle>
+        <DialogContent>
+          {voo ? (
+            <>
+              <Typography gutterBottom>
+                Origem: {voo.origem} → Destino: {voo.destino}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Estado atual: {voo.estado}
+              </Typography>
+            </>
+          ) : (
+            <Typography color="error">Voo não encontrado</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onVoltar} variant="outlined">Voltar</Button>
+          <Button
+            onClick={handleConfirmarCancelamento}
+            color="error"
+            variant="contained"
+            disabled={!voo || voo.estado !== 'CONFIRMADO'}
+          >
+            Confirmar Cancelamento
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      <DialogActions>
-        <Button onClick={onVoltar} variant="outlined">Voltar</Button>
-        <Button 
-          onClick={handleConfirmarCancelamento} 
-          color="error" 
-          variant="contained"
-          disabled={!voo || voo.estado !== 'CONFIRMADO'}
-        >
-          Confirmar Cancelamento
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarTipo} sx={{ width: '100%' }}>
+          {snackbarMensagem}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }

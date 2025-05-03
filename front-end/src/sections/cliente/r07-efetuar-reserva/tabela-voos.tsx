@@ -72,6 +72,7 @@ export type Voo = {
   destino: string;
   dataHora: string;
   preco: number;
+  estado: string;
 };
 
 type Props = {

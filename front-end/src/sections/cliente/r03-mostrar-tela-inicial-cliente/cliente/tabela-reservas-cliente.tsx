@@ -131,21 +131,27 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   function getLabelInfo(estado: string): { color: 'success' | 'error' | 'info' | 'warning'; texto: string } {
     switch (estado) {
       case 'CRIADA':
-        return { color: 'warning', texto: 'CRIADA' };
+        return { color: 'success', texto: 'CRIADA' };
       case 'CHECK-IN':
         return { color: 'info', texto: 'CHECK-IN' };
       case 'CANCELADA':
         return { color: 'error', texto: 'CANCELADA' };
+      case 'CANCELADO':
+        return { color: 'error', texto: 'CANCELADO' };
       case 'CANCELADA VOO':
         return { color: 'error', texto: 'CANCELADA PELO VOO' };
       case 'EMBARCADA':
         return { color: 'info', texto: 'EMBARCADA' };
+      case 'EMBARCADO':
+        return { color: 'info', texto: 'EMBARCADO' };
       case 'REALIZADA':
         return { color: 'success', texto: 'REALIZADA' };
       case 'NÃO REALIZADA':
         return { color: 'error', texto: 'NÃO REALIZADA' };
+      case 'CONFIRMADO':
+        return { color: 'info', texto: 'CONFIRMADO' };
       default:
-        return { color: 'warning', texto: estado };
+        return { color: 'info', texto: estado };
     }
   }
 

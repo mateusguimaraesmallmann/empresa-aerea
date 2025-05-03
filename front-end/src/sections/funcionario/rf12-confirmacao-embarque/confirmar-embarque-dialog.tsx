@@ -6,22 +6,20 @@ import {
   DialogActions,
   Button,
   TextField,
-  Typography,
-  Box,
+  Snackbar,
+  Alert,
 } from '@mui/material';
-
+import { createPortal } from 'react-dom';
 
 type Reserva = {
   codigo: string;
-  status: string;
+  estado: string;
   voo: {
     id: string;
     origem: string;
     destino: string;
-    // outros campos, se quiser adicionar
   };
 };
-
 
 type Props = {
   open: boolean;
@@ -31,66 +29,92 @@ type Props = {
 
 export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
   const [codigo, setCodigo] = useState('');
-  const [mensagem, setMensagem] = useState('');
-  const [erro, setErro] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMensagem, setSnackbarMensagem] = useState('');
+  const [snackbarTipo, setSnackbarTipo] = useState<'success' | 'error'>('success');
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
 
   const handleConfirmar = () => {
     const reservas: Reserva[] = JSON.parse(localStorage.getItem('reservas') || '[]');
     const reserva = reservas.find((r) => r.codigo === codigo);
 
     if (!reserva) {
-      setMensagem('Reserva não encontrada.');
-      setErro(true);
+      setSnackbarMensagem('Reserva não encontrada.');
+      setSnackbarTipo('error');
+      setSnackbarOpen(true);
       return;
     }
+
     if (reserva.voo?.id !== vooId) {
-      setMensagem('Esta reserva não pertence a este voo.');
-      setErro(true);
+      setSnackbarMensagem('Esta reserva não pertence a este voo.');
+      setSnackbarTipo('error');
+      setSnackbarOpen(true);
       return;
     }
-    
-    if (reserva.status !== 'CHECK-IN') {
-      setMensagem('A reserva precisa estar no estado CHECK-IN.');
-      setErro(true);
+
+    if (reserva.estado !== 'CHECK-IN') {
+      setSnackbarMensagem('A reserva precisa estar no estado CHECK-IN.');
+      setSnackbarTipo('error');
+      setSnackbarOpen(true);
       return;
     }
-    
-    reserva.status = 'EMBARCADO';
+
+    reserva.estado = 'EMBARCADO';
     localStorage.setItem('reservas', JSON.stringify(reservas));
-    setMensagem('Embarque confirmado com sucesso!');
-    setErro(false);
+
+    setSnackbarMensagem('Embarque confirmado com sucesso!');
+    setSnackbarTipo('success');
+    setSnackbarOpen(true);
+
     setTimeout(() => {
       onClose();
       setCodigo('');
-      setMensagem('');
     }, 2000);
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Confirmar Embarque</DialogTitle>
-      <DialogContent>
-        <TextField
-          fullWidth
-          label="Código da Reserva"
-          value={codigo}
-          onChange={(e) => setCodigo(e.target.value)}
-          margin="normal"
-        />
+    <>
+      <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+        <DialogTitle>Confirmar Embarque</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Código da Reserva"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+            margin="normal"
+          />
+        </DialogContent>
 
-        {mensagem && (
-          <Box mt={1}>
-            <Typography color={erro ? 'error' : 'success.main'}>{mensagem}</Typography>
-          </Box>
-        )}
-      </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancelar</Button>
+          <Button variant="contained" onClick={handleConfirmar}>
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleConfirmar}>
-          Confirmar
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {/* Snackbar fora do Dialog */}
+      {createPortal(
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbarTipo}
+            sx={{ width: '100%' }}
+          >
+            {snackbarMensagem}
+          </Alert>
+        </Snackbar>,
+        document.body
+      )}
+    </>
   );
 }
