@@ -163,7 +163,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
             <Grid item xs={12} md={6}>
               <Box display="flex" gap={2} alignItems="center">
                 <TextField
-                  label="Código da Reserva"
+                  label="Consultar reserva"
                   value={codigoBusca}
                   onChange={(e) => setCodigoBusca(e.target.value)}
                   size="small"
