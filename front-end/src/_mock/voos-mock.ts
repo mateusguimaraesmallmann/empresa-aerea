@@ -139,7 +139,7 @@ export const voosMockados: Voo[] = [
   {
     id: "4",
     codigo: "TADS0004",
-    origem: "Aeroporto Afonso Pena - Curitiba (CWB)",
+    origem: "Aeroporto Internacional de Curitiba - Afonso Pena (CWB)",
     destino: "Aeroporto Internacional de Guarulhos - São Paulo (GRU)",
     dataHora: parseDate("20/04/2025", "16:45"),
     preco: 220,
@@ -151,7 +151,7 @@ export const voosMockados: Voo[] = [
   {
     id: "5",
     codigo: "TADS0005",
-    origem: "Aeroporto Afonso Pena - Curitiba (CWB)",
+    origem: "Aeroporto Internacional de Curitiba - Afonso Pena (CWB)",
     destino: "Aeroporto Internacional de Guarulhos - São Paulo (GRU)",
     dataHora: parseDate("22/04/2025", "18:00"),
     preco: 210,

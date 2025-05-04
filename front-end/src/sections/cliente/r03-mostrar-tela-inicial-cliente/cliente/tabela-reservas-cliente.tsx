@@ -36,6 +36,18 @@ type VooLocalStorage = {
   estado: string;
 };
 
+function podeFazerCheckIn(reserva: Reserva): boolean {
+  const agora = new Date();
+  const em48h = new Date(agora.getTime() + 48 * 60 * 60 * 1000);
+  const dataVoo = new Date(reserva.dataHora);
+
+  return (
+    (reserva.estado === 'CRIADA' || reserva.estado === 'CHECK-IN') &&
+    dataVoo >= agora &&
+    dataVoo <= em48h
+  );
+}
+
 export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }: Props) {
   const [page, setPage] = useState(0);
   const [orderBy] = useState<'asc' | 'desc'>('asc');
@@ -163,7 +175,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
             <Grid item xs={12} md={6}>
               <Box display="flex" gap={2} alignItems="center">
                 <TextField
-                  label="Código da Reserva"
+                  label="Consultar reserva"
                   value={codigoBusca}
                   onChange={(e) => setCodigoBusca(e.target.value)}
                   size="small"
@@ -259,7 +271,19 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
             <Iconify icon="ic:round-remove-red-eye" width={18} />
             Ver Reserva
           </MenuItem>
-          <MenuItem onClick={handleOpenDialogCancelar} sx={{ color: 'error.main' }}>
+          <MenuItem
+            onClick={() => {
+              if (selectedReserva) {
+                router.push('/check-in');
+                handleClosePopover();
+              }
+            }}
+            disabled={!selectedReserva || !podeFazerCheckIn(selectedReserva)}
+          >
+            <Iconify icon="material-symbols:flight-takeoff-rounded" width={18} />
+            Fazer Check-in
+          </MenuItem>
+          <MenuItem onClick={handleOpenDialogCancelar}>
             <Iconify icon="solar:trash-bin-trash-bold" width={18} />
             Cancelar
           </MenuItem>

@@ -44,7 +44,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [reservaCriada, setReservaCriada] = useState(false);
 
-  const milhasNecessarias = voo.preco * quantidade;
+  const milhasNecessarias = Math.ceil((voo.preco * quantidade) / 5);
   const restanteEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
 
   useEffect(() => {
@@ -180,8 +180,11 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
           onClose={handleSnackbarClose}
           severity={snackbarTipo}
           sx={{
+            backgroundColor: snackbarTipo === 'error' ? '#fddede' : '#d0f2d0',
+            color: snackbarTipo === 'error' ? '#611a15' : '#1e4620',
             width: '100%',
           }}
+          elevation={6}
           variant="filled"
         >
           {snackbarMessage}
