@@ -44,7 +44,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [reservaCriada, setReservaCriada] = useState(false);
 
-  const milhasNecessarias = voo.preco * quantidade;
+  const milhasNecessarias = Math.ceil((voo.preco * quantidade) / 5);
   const restanteEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
 
   useEffect(() => {
