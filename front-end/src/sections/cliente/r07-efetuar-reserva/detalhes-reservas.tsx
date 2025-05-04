@@ -180,8 +180,11 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
           onClose={handleSnackbarClose}
           severity={snackbarTipo}
           sx={{
+            backgroundColor: snackbarTipo === 'error' ? '#fddede' : '#d0f2d0',
+            color: snackbarTipo === 'error' ? '#611a15' : '#1e4620',
             width: '100%',
           }}
+          elevation={6}
           variant="filled"
         >
           {snackbarMessage}
