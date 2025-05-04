@@ -1,24 +1,32 @@
 package br.com.empresa_aerea.ms_voos.controllers;
 
+import br.com.empresa_aerea.ms_voos.enums.EstadoVooEnum;
+import br.com.empresa_aerea.ms_voos.models.Aeroporto;
 import br.com.empresa_aerea.ms_voos.models.Voo;
-//import br.com.empresa_aerea.ms_voos.model.Cliente;
+import br.com.empresa_aerea.ms_voos.services.AeroportoService;
 import br.com.empresa_aerea.ms_voos.services.VooService;
-//import br.com.empresa_aerea.ms_voos.services.ClienteService;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/ms-voos")
 public class VooController {
 
     private final VooService vooService;
-    //private final ClienteService clienteService;
+    private final AeroportoService aeroportoService;
 
-    public VooController(VooService vooService/*, ClienteService clienteService*/) {
+   public VooController(VooService vooService, AeroportoService aeroportoService) {
         this.vooService = vooService;
-        //this.clienteService = clienteService;
+        this.aeroportoService = aeroportoService;
+    }
+
+    @PostMapping("/voos")
+    public ResponseEntity<Voo> criarVoo(@RequestBody Voo voo) {
+        Voo criado = vooService.criar(voo);
+        return ResponseEntity.status(201).body(criado);
     }
 
     @GetMapping("/voos")
@@ -26,19 +34,29 @@ public class VooController {
         return vooService.listarTodos();
     }
 
-    @GetMapping("/reserva")
-    public Optional<Voo> verReserva(@RequestParam String dataHora) {
-        return vooService.buscarReserva(dataHora);
+    @GetMapping("/voos/busca")
+    public List<Voo> buscarVoos(
+            @RequestParam(required = false) String origem,
+            @RequestParam(required = false) String destino) {
+        return vooService.buscar(origem, destino);
     }
 
-    @PostMapping("/cancelar")
-    public String cancelarReserva(@RequestParam String dataHora) {
-        boolean cancelado = vooService.cancelarReserva(dataHora);
-        return cancelado ? "Reserva cancelada." : "Reserva não foi encontrada.";
+    @GetMapping("/voos/{codigoVoo}")
+    public ResponseEntity<Voo> buscarPorCodigo(@PathVariable String codigoVoo) {
+        return ResponseEntity.ok(vooService.buscarPorCodigo(codigoVoo));
     }
 
-    //@GetMapping("/cliente/{cpf}")
-    //public Cliente buscarCliente(@PathVariable String cpf) {
-    //    return clienteService.buscarPorCpf(cpf);
-    //}
+    @PatchMapping("/voos/{codigoVoo}/estado")
+    public ResponseEntity<Voo> atualizarEstado(
+            @PathVariable String codigoVoo,
+            @RequestBody EstadoVooEnum estado) {
+        Voo atualizado = vooService.atualizarEstado(codigoVoo, estado);
+        return ResponseEntity.ok(atualizado);
+    }
+
+    @GetMapping("/aeroportos")
+    public List<Aeroporto> listarAeroportos() {
+        return aeroportoService.listarTodos();
+    }
+    
 }

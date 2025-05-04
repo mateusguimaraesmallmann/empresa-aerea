@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+ 
+  # ================= DATA BASES =================
+  mongo-db:
+    image: mongo
+    container_name: mongo-db
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    networks:
+      - empresa-aerea-net
+  
+  postgres-db:
+      image: postgres
+      container_name: postgres-db
+      restart: always
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: admin
+      networks:
+        - empresa-aerea-net
+
+  # =============== MICROSERVIÇOS ===============
+
+  ms-auth:
+    build:
+      context: ./back-end/ms-auth
+      dockerfile: Dockerfile
+    container_name: ms-auth
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATA_MONGODB_HOST: mongo-db
+      SPRING_DATA_MONGODB_PORT: 27017
+      SPRING_DATA_MONGODB_DATABASE: auth_db
+    depends_on:
+      - mongo-db
+    networks:
+      - empresa-aerea-net
+
+  ms-cliente:
+    build:
+      context: ./back-end/ms-cliente
+      dockerfile: Dockerfile
+    container_name: ms-cliente
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres-db
+    networks:
+      - empresa-aerea-net
+
+  ms-funcionario:
+    build:
+      context: ./back-end/ms-funcionario
+      dockerfile: Dockerfile
+    container_name: ms-funcionario
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres-db
+    networks:
+      - empresa-aerea-net
+
+  ms-reserva:
+    build:
+      context: ./back-end/ms-reservas
+      dockerfile: Dockerfile
+    container_name: ms-reserva
+    ports:
+      - "8083:8083"
+    depends_on:
+      - postgres-db
+    networks:
+      - empresa-aerea-net
+
+  ms-voos:
+    build:
+      context: ./back-end/ms-voos
+      dockerfile: Dockerfile
+    container_name: ms-voos
+    ports:
+      - "8084:8084"
+    depends_on:
+      - postgres-db
+    networks:
+      - empresa-aerea-net
+  
+  #================ SAGA ======================
+
+  saga:
+    build:
+      context: ./back-end/saga
+      dockerfile: Dockerfile
+    container_name: saga
+    ports:
+      - "8085:8085"
+    depends_on:
+      - postgres-db
+    networks:
+      - empresa-aerea-net
+
+  # =============== API GATEWAY ===============
+  api-gateway:
+    build:
+      context: ./back-end/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ms-auth
+      - ms-cliente
+      - ms-funcionario
+      - ms-reserva
+      - ms-voos
+      - saga
+    environment:
+      PORT: 3000
+      MS_AUTH_URL: http://ms-auth:8080
+      MS_CLIENTE_URL: http://ms-cliente:8081
+      MS_FUNCIONARIO_URL: http://ms-funcionario:8082
+      MS_RESERVA_URL: http://ms-reserva:8083
+      MS_VOOS_URL: http://ms-voos:8084
+    networks:
+      - empresa-aerea-net
+  
+  # =============== FRONTEND ===============
+  angular-frontend:
+    container_name: frontend
+    build:
+      context: ./front-end/
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./front-end:/app
+      - /app/node_modules
+    depends_on:
+      - api-gateway
+    networks:
+      - empresa-aerea-net
+
+  # =============== NETWORK ===============
+networks:
+  empresa-aerea-net:
+    driver: bridge
