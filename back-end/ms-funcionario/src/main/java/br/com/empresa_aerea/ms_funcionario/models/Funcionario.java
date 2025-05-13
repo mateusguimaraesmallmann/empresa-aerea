@@ -1,9 +1,12 @@
 package br.com.empresa_aerea.ms_funcionario.models;
 
-import lombok.Data;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -13,10 +16,22 @@ import lombok.NoArgsConstructor;
 @Table(name = "funcionarios")
 public class Funcionario {
 
+    @Id
     private String cpf;
+
+    @NotBlank
+    @Email
     private String email;
+
+    @NotBlank
     private String nome;
+
+    @NotBlank
     private String senha;
+
+    @NotBlank
     private String dataNascimento;
+
+    @NotBlank
     private String telefone;
 }

@@ -2,14 +2,20 @@ package br.com.empresa_aerea.ms_reserva.models;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import br.com.empresa_aerea.ms_reserva.enums.EstadoReservaEnum;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
+
+import br.com.empresa_aerea.ms_reserva.enums.EstadoReservaEnum;
+import br.com.empresa_aerea.ms_reserva.dtos.ReservaResponseDTO;
+
 
 @Data
 @NoArgsConstructor
@@ -18,7 +24,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "reservas")
 public class Reserva {
 
+    @Id
+    @Column(length = 8, nullable = false, unique = true)
     private String codigo;
+
     private String codigoVoo;
     private String clienteCpf;
     @CreationTimestamp
