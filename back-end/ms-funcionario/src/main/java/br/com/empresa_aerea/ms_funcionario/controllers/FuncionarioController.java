@@ -2,11 +2,13 @@ package br.com.empresa_aerea.ms_funcionario.controllers;
 
 import br.com.empresa_aerea.ms_funcionario.models.Funcionario;
 import br.com.empresa_aerea.ms_funcionario.services.FuncionarioService;
+import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioDTO;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/ms-funcionario")
@@ -19,10 +21,11 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Funcionario> criar(@RequestBody Funcionario funcionario) {
-        Funcionario criado = funcionarioService.salvar(funcionario);
+    public ResponseEntity<Funcionario> criar(@Valid @RequestBody FuncionarioDTO dto) {
+        Funcionario criado = funcionarioService.salvar(dto);
         return ResponseEntity.status(201).body(criado);
     }
+
 
     @GetMapping
     public List<Funcionario> listarTodos() {
