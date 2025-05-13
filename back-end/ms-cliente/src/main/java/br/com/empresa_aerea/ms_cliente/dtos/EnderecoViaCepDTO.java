@@ -2,21 +2,23 @@ package br.com.empresa_aerea.ms_cliente.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Data;
-
-@Data
 public class EnderecoViaCepDTO {
 
+    @JsonProperty("uf")
+    private String uf;
+
+    @JsonProperty("localidade")
+    private String localidade;
+
     @JsonProperty("logradouro")
-    private String ruaNumero;
+    private String logradouro;
 
     @JsonProperty("complemento")
     private String complemento;
 
-    @JsonProperty("localidade")
-    private String cidade;
-
-    @JsonProperty("uf")
-    private String uf;
-    
+   
+    public String getUf() { return uf; }
+    public String getLocalidade() { return localidade; }
+    public String getLogradouro() { return logradouro; }
+    public String getComplemento() { return complemento; }
 }
