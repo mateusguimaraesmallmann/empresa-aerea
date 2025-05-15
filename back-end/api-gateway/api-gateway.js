@@ -25,30 +25,37 @@ const funcionarioServiceUrl = process.env.MS_FUNCIONARIO_URL;
 const reservaServiceUrl = process.env.MS_RESERVA_URL;
 const voosServiceUrl = process.env.MS_VOOS_URL;
 
+// Verificação das variáveis 
+if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaServiceUrl || !voosServiceUrl) {
+  console.error(" ❌ Alguma variável de ambiente obrigatória está faltando.");
+  process.exit(1);
+}
+
 // ======================= LOGIN =================================
-app.post(
-    "/api/login",
-    createProxyMiddleware({
-      target: authServiceUrl,
-      changeOrigin: true,
-      pathRewrite: (path) => path.replace("/api/login", "/auth/login")
-    })
+app.post("/api/login",
+  createProxyMiddleware({
+    target: authServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace("/api/login", "/auth/login")
+  })
 );
 
-//======================= Required JWT Token =================================
-const requireJwt = jwt({ 
-  secret: process.env.JWT_SECRET, 
-  algorithms: ['HS256'], 
-  requestProperty: 'user' 
+// ======================= JWT Token Middleware ==================
+const requireJwt = jwt({
+  secret: process.env.JWT_SECRET,
+  algorithms: ['HS256'],
+  requestProperty: 'user'
 });
+
 app.use("/api", requireJwt);
 
-//======================= Controle de Papeis =================================
+// ======================= Controle de Papeis ====================
 function requireRole(role) {
   return (req, res, next) => {
-    if (!req.user){
+    if (!req.user) {
+      console.warn("Acesso negado: usuário não autenticado");
       return res.status(401).json({ error: 'Unauthorized' });
-    } 
+    }
 
     if (role !== 'TODOS' && req.user.tipo !== role) {
       return res.status(403).json({ error: 'Forbidden' });

@@ -4,7 +4,6 @@ import br.com.empresa_aerea.ms_voos.enums.EstadoVooEnum;
 import br.com.empresa_aerea.ms_voos.models.Voo;
 import br.com.empresa_aerea.ms_voos.repositories.VooRepository;
 import jakarta.transaction.Transactional;
-
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -19,6 +18,10 @@ public class VooService {
         this.vooRepository = vooRepository;
     }
 
+    private OffsetDateTime agora() {
+        return OffsetDateTime.now();
+    }
+
     @Transactional
     public Voo criar(Voo voo) {
         voo.setCodigo(voo.getCodigo());
@@ -27,21 +30,22 @@ public class VooService {
     }
 
     public List<Voo> listarTodos() {
-        OffsetDateTime agora = OffsetDateTime.now();
-        return vooRepository.findByDataHoraAfterOrderByDataHoraAsc(agora);
+        return vooRepository.findByDataHoraAfterOrderByDataHoraAsc(agora());
     }
 
     public List<Voo> buscar(String origem, String destino) {
-        OffsetDateTime agora = OffsetDateTime.now();
-        if (origem != null && destino != null) {
-            return vooRepository.findByOrigemAndDestinoAndDataHoraAfterOrderByDataHoraAsc(origem, destino, agora);
-        }
-        return listarTodos();
+        return origem != null && destino != null
+            ? buscarPorOrigemEDestino(origem, destino)
+            : listarTodos();
+    }
+
+    private List<Voo> buscarPorOrigemEDestino(String origem, String destino) {
+        return vooRepository.findByOrigemAndDestinoAndDataHoraAfterOrderByDataHoraAsc(origem, destino, agora());
     }
 
     public Voo buscarPorCodigo(String codigo) {
         return vooRepository.findById(codigo)
-                .orElseThrow(() -> new IllegalArgumentException("Voo não encontrado"));
+            .orElseThrow(() -> new IllegalArgumentException("Voo com código " + codigo + " não encontrado"));
     }
 
     @Transactional
@@ -50,5 +54,4 @@ public class VooService {
         voo.setEstado(novoEstado);
         return vooRepository.save(voo);
     }
-
 }
