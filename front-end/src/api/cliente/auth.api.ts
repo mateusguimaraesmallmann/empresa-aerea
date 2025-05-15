@@ -1,12 +1,10 @@
-import axios from 'axios';
+import api from './api';
 
-// Tipo usado no formulário de login
 export type LoginPayload = {
   email: string;
   password: string;
 };
 
-// Tipo retornado pelo backend após login bem-sucedido
 export type TokenResponse = {
   token: string;
   auth: boolean;
@@ -14,10 +12,8 @@ export type TokenResponse = {
   role: string;
 };
 
-// URL base do serviço de autenticação
-const API_BASE = 'http://localhost:8080/auth';
-
+//Realiza login no sistema via API Gateway
 export async function loginUsuario(credentials: LoginPayload): Promise<TokenResponse> {
-  const response = await axios.post(`${API_BASE}/login`, credentials);
+  const response = await api.post('/login', credentials);
   return response.data;
 }
