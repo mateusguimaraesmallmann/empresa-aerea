@@ -1,14 +1,14 @@
 package br.com.empresa_aerea.ms_funcionario.controllers;
 
+import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioDTO;
 import br.com.empresa_aerea.ms_funcionario.models.Funcionario;
 import br.com.empresa_aerea.ms_funcionario.services.FuncionarioService;
-import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioDTO;
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/ms-funcionario")
