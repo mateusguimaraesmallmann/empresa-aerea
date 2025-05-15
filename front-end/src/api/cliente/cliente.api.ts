@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './api'; // importa a instância configurada do axios
 
 export type Cliente = {
   id?: number;
@@ -14,27 +14,27 @@ export type Cliente = {
   senha: string;
 };
 
-// URL base para o microserviço
-const API_BASE = 'http://localhost:8080/ms-cliente';
-
-// Envia os dados de um novo cliente para o back
+// Envia os dados de um novo cliente para o backend via Gateway
 export async function registrarCliente(cliente: Cliente): Promise<Cliente> {
-  const response = await axios.post(`${API_BASE}`, cliente);
+  const response = await api.post('/clientes', cliente);
   return response.data;
 }
 
+// Verifica se o CPF já está cadastrado
 export async function verificarCpfExiste(cpf: string): Promise<boolean> {
   try {
-    await axios.get(`${API_BASE}/${cpf}`);
-    return true; // já existe
+    await api.get(`/clientes/${cpf}`);
+    return true;
   } catch {
-    return false; // não encontrado
+    return false;
   }
 }
 
+//Verifica se o e-mail já está cadastrado
+
 export async function verificarEmailExiste(email: string): Promise<boolean> {
   try {
-    await axios.get(`${API_BASE}/por-email/${encodeURIComponent(email)}`);
+    await api.get(`/clientes/por-email/${encodeURIComponent(email)}`);
     return true;
   } catch {
     return false;
