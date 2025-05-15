@@ -22,27 +22,27 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @RestController
-@RequestMapping("/saga/ms-cliente")
+@RequestMapping("/saga/ms-voos")
 @CrossOrigin(origins = "*")
-public class SagaClienteController {
-    private static final Logger logger = LoggerFactory.getLogger(SagaClienteController.class);
+public class SagaVooController {
+    private static final Logger logger = LoggerFactory.getLogger(SagaVooController.class);
     private static final long FUTURE_TIMEOUT = 30;
 
     private final RabbitTemplate rabbitTemplate;
     private final ConnectionFactory connectionFactory;
 
-    public SagaClienteController(RabbitTemplate rabbitTemplate,
-                                 ConnectionFactory connectionFactory) {
+    public SagaVooController(RabbitTemplate rabbitTemplate,
+                              ConnectionFactory connectionFactory) {
         this.rabbitTemplate = rabbitTemplate;
         this.connectionFactory = connectionFactory;
     }
 
-    @PostMapping("/cadastrar-cliente")
-    public ResponseEntity<Object> cadastrarCliente(@Validated @RequestBody Map<String, Object> clienteDto) {
+    @PostMapping("/cadastrar-voo")
+    public ResponseEntity<Object> cadastrarVoo(@Validated @RequestBody Map<String, Object> vooDto) {
         CompletableFuture<Map<String, Object>> future = new CompletableFuture<>();
         var container = DirectMessageListenerContainerBuilder.build(
             connectionFactory,
-            SagaMessaging.RPL_CADASTRO_CLIENTE,
+            SagaMessaging.RPL_CADASTRO_VOO,
             future
         );
         container.start();
@@ -50,8 +50,8 @@ public class SagaClienteController {
         try {
             rabbitTemplate.convertAndSend(
                 SagaMessaging.EXCHANGE,
-                SagaMessaging.CMD_CADASTRAR_CLIENTE,
-                clienteDto
+                SagaMessaging.CMD_CADASTRAR_VOO,
+                vooDto
             );
 
             Map<String, Object> response = future.get(FUTURE_TIMEOUT, TimeUnit.SECONDS);
@@ -63,7 +63,7 @@ public class SagaClienteController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (Exception e) {
-            logger.error("Erro na saga de cadastro de cliente", e);
+            logger.error("Erro na saga de cadastro de voo", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Erro interno: " + e.getMessage()));
         }
