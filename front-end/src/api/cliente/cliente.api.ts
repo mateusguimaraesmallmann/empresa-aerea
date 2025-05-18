@@ -23,7 +23,7 @@ export async function registrarCliente(cliente: Cliente): Promise<Cliente> {
 // Verifica se o CPF já está cadastrado
 export async function verificarCpfExiste(cpf: string): Promise<boolean> {
   try {
-    await api.get(`/clientes/${cpf}`);
+    await api.get(`/clientes/cpf/${cpf}`);
     return true;
   } catch {
     return false;
@@ -33,7 +33,7 @@ export async function verificarCpfExiste(cpf: string): Promise<boolean> {
 // Verifica se o e-mail já está cadastrado
 export async function verificarEmailExiste(email: string): Promise<boolean> {
   try {
-    await api.get(`/clientes/por-email/${encodeURIComponent(email)}`);
+    await api.get(`/clientes/email/${encodeURIComponent(email)}`);
     return true;
   } catch {
     return false;

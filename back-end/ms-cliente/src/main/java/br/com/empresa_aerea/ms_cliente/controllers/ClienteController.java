@@ -32,7 +32,7 @@ public class ClienteController {
         return clienteService.listarTodos();
     }
 
-    @GetMapping("/{cpf}")
+    @GetMapping("/cpf/{cpf}")
     public ResponseEntity<Cliente> buscarPorCpf(@PathVariable String cpf) {
         return clienteService.buscarPorCpf(cpf)
                 .map(ResponseEntity::ok)

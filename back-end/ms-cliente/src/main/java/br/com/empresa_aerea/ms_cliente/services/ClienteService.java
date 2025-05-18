@@ -25,7 +25,7 @@ public class ClienteService {
     }
 
     public Optional<Cliente> buscarPorCpf(String cpf) {
-        return repository.findById(cpf);
+        return repository.findByCpf(cpf);
     }
 
     public Optional<Cliente> buscarPorEmail(String email) {
