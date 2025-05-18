@@ -1,4 +1,4 @@
-import api from './api';
+import api from 'src/api/api';
 
 export type LoginPayload = {
   email: string;
@@ -12,7 +12,7 @@ export type TokenResponse = {
   role: string;
 };
 
-//Realiza login no sistema via API Gateway
+// Realiza login no sistema via API Gateway
 export async function loginUsuario(credentials: LoginPayload): Promise<TokenResponse> {
   const response = await api.post('/login', credentials);
   return response.data;

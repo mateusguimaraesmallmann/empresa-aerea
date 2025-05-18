@@ -75,8 +75,8 @@ app.post(
 );
 
 // ======================= LOGOUT ================================
-  app.post ('/logout', function (req, res) {
-    res.status(200).json({ auth: false, token: null });
+app.post('/logout', function (req, res) {
+  res.status(200).json({ auth: false, token: null });
 })
 
 // ======================= CLIENTE ===============================
@@ -98,6 +98,28 @@ app.get(
     target: clienteServiceUrl,
     changeOrigin: true,
     pathRewrite: path => path.replace('/api/clientes/', '/ms-cliente/clientes/'),
+  })
+);
+
+app.get(
+  '/api/clientes/cpf/:cpf',
+  requireJwt,
+  requireRole('CLIENTE'),
+  createProxyMiddleware({
+    target: clienteServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/clientes/cpf/', '/ms-cliente/cpf/'),
+  })
+);
+
+app.get(
+  '/api/clientes/email/:email',
+  requireJwt,
+  requireRole('CLIENTE'),
+  createProxyMiddleware({
+    target: clienteServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/clientes/email/', '/ms-cliente/por-email/'),
   })
 );
 
@@ -370,5 +392,5 @@ app.get(
 
 // ======================= INIT O SERVIDOR =======================
 app.listen(port, () => {
-    console.log(`API Gateway in port ${port}`);
+  console.log(`API Gateway in port ${port}`);
 });

@@ -1,4 +1,4 @@
-import api from './api';
+import api from 'src/api/api';
 
 // Modelo baseado Funcionario
 export interface Funcionario {

@@ -1,4 +1,4 @@
-import api from './api'; // importa a instância configurada do axios
+import api from 'src/api/api';  // importa a instância configurada do axios
 
 export type Cliente = {
   id?: number;
@@ -23,18 +23,17 @@ export async function registrarCliente(cliente: Cliente): Promise<Cliente> {
 // Verifica se o CPF já está cadastrado
 export async function verificarCpfExiste(cpf: string): Promise<boolean> {
   try {
-    await api.get(`/clientes/${cpf}`);
+    await api.get(`/clientes/cpf/${cpf}`);
     return true;
   } catch {
     return false;
   }
 }
 
-//Verifica se o e-mail já está cadastrado
-
+// Verifica se o e-mail já está cadastrado
 export async function verificarEmailExiste(email: string): Promise<boolean> {
   try {
-    await api.get(`/clientes/por-email/${encodeURIComponent(email)}`);
+    await api.get(`/clientes/email/${encodeURIComponent(email)}`);
     return true;
   } catch {
     return false;
