@@ -2,6 +2,7 @@ package br.com.empresa_aerea.ms_cliente.services;
 
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
+import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,23 +14,31 @@ import java.util.Optional;
 public class ClienteService {
     
     @Autowired
-    private ClienteRepository repository;
-    
-    public Cliente salvar(Cliente cliente) {
+    private ClienteRepository clienteRepository;
+
+    public ClienteService(ClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
+    }
+
+    public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
+    if (clienteRepository.findByCpf(cliente.getCpf()).isPresent() 
+            || clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
+        throw new  ClienteJaExisteException("CPF ou e-mail já cadastrado.");
+    }
         cliente.setMilhas(0);
-        return repository.save(cliente);
+        return clienteRepository.save(cliente);
     }
     
     public List<Cliente> listarTodos() {
-        return repository.findAll();
+        return clienteRepository.findAll();
     }
 
     public Optional<Cliente> buscarPorCpf(String cpf) {
-        return repository.findByCpf(cpf);
+        return clienteRepository.findByCpf(cpf);
     }
 
     public Optional<Cliente> buscarPorEmail(String email) {
-        return repository.findByEmail(email);
+        return clienteRepository.findByEmail(email);
     }
 
 }

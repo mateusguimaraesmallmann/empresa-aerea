@@ -47,6 +47,31 @@ const requireJwt = jwt({
   requestProperty: 'user'
 });
 
+// ======================= Cadastro Cliente ======================
+app.post(
+  "/api/clientes",
+  createProxyMiddleware({
+    target: clienteServiceUrl,
+    changeOrigin: true,
+    pathRewrite: (path) => path.replace("/api/clientes", "/ms-cliente/clientes")
+  })
+);
+
+// ======================= REGISTRO =================================
+app.post(
+  "/api/register",
+  createProxyMiddleware({
+    target: authServiceUrl,
+    changeOrigin: true,
+    pathRewrite: (path) => path.replace("/api/register", "/auth/register")
+  })
+);
+
+// ======================= LOGOUT ================================
+app.post('/logout', function (req, res) {
+  res.status(200).json({ auth: false, token: null });
+})
+
 app.use("/api", requireJwt);
 
 // ======================= Controle de Papeis ====================
@@ -64,31 +89,7 @@ function requireRole(role) {
   };
 }
 
-// ======================= REGISTRO =================================
-app.post(
-  "/api/register",
-  createProxyMiddleware({
-    target: authServiceUrl,
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/register", "/auth/register")
-  })
-);
-
-// ======================= LOGOUT ================================
-app.post('/logout', function (req, res) {
-  res.status(200).json({ auth: false, token: null });
-})
-
 // ======================= CLIENTE ===============================
-
-app.post(
-  "/api/clientes",
-  createProxyMiddleware({
-    target: clienteServiceUrl,
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/clientes", "/ms-cliente/clientes")
-  })
-);
 
 app.get(
   '/api/clientes/:codigoCliente',
