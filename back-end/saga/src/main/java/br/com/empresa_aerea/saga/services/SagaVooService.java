@@ -9,7 +9,7 @@ import br.com.empresa_aerea.saga.messaging.SagaMessaging;
 import br.com.empresa_aerea.saga.util.DirectMessageListenerContainerBuilder;
 
 public class SagaVooService {
-        private static final long TIMEOUT_SECONDS = 30;
+    /*private static final long TIMEOUT_SECONDS = 30;
     private final RabbitTemplate rabbitTemplate;
     private final ConnectionFactory connectionFactory;
 
@@ -37,6 +37,6 @@ public class SagaVooService {
         } finally {
             container.stop();
         }
-    }
+    }*/
     
 }

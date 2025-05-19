@@ -1,7 +1,13 @@
-FROM node:20
+# Etapa 1: build do Angular
+FROM node:20 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
-EXPOSE 4200
-CMD ["npm", "start"]
+RUN npm run build -- --configuration production
+
+# Etapa 2: servir o front-end com nginx
+FROM nginx:alpine
+COPY --from=builder /app/dist/ /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

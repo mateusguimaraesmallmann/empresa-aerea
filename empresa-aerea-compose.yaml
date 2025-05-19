@@ -86,7 +86,7 @@ services:
 
   ms-reserva:
     build:
-      context: ./back-end/ms-reservas
+      context: ./back-end/ms-reserva
       dockerfile: Dockerfile
     container_name: ms-reserva
     ports:

@@ -1,8 +1,10 @@
 package br.com.empresa_aerea.saga.services;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import br.com.empresa_aerea.saga.messaging.SagaMessaging;
