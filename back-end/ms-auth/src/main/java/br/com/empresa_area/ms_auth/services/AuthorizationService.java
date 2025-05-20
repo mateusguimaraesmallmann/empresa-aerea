@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,30 +28,33 @@ import br.com.empresa_area.ms_auth.enums.TipoUsuario;
 import br.com.empresa_area.ms_auth.models.Usuario;
 import br.com.empresa_area.ms_auth.repositories.UsuarioRepository;
 import br.com.empresa_area.ms_auth.security.TokenService;
+import br.com.empresa_area.ms_auth.services.AuthorizationService.ClienteCriadoEvent;
 
 @Service
 public class AuthorizationService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthorizationService.class);
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private TokenService tokenService;
-
-    @Autowired
+    private final UsuarioRepository usuarioRepository;
+    private final TokenService tokenService;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final RabbitTemplate rabbitTemplate;
     private AuthenticationManager manager;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    public AuthorizationService(UsuarioRepository usuarioRepository, TokenService tokenService, PasswordEncoder passwordEncoder, EmailService emailService, RabbitTemplate rabbitTemplate) throws Exception {
+        this.usuarioRepository = usuarioRepository;
+        this.tokenService = tokenService;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-
+    public void setAuthenticationManager(@Lazy AuthenticationManager manager) {
+        this.manager = manager;
+    }
    
     public static class ClienteCriadoEvent {
         private String userId;
@@ -65,7 +70,6 @@ public class AuthorizationService implements UserDetailsService {
             this.email = email;
             this.cep = cep;
         }
-
       
         public String getUserId() { return userId; }
         public String getCpf() { return cpf; }
