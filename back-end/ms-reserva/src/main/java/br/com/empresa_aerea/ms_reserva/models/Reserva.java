@@ -11,10 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
-import java.time.LocalDateTime;
 
 import br.com.empresa_aerea.ms_reserva.enums.EstadoReservaEnum;
-import br.com.empresa_aerea.ms_reserva.dtos.ReservaResponseDTO;
 
 
 @Data

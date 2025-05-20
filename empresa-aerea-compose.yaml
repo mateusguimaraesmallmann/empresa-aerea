@@ -22,10 +22,10 @@ services:
       ports:
         - "5432:5432"
       environment:
-        POSTGRES_USER: admin
-        POSTGRES_PASSWORD: admin
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
       volumes:
-        - ./back-end/init-databases/init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+        - ./back-end/init-databases:/docker-entrypoint-initdb.d
       networks:
         - empresa-aerea-net
   # ================ RABBIT MQ =====================
@@ -35,6 +35,9 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
     networks:
       - empresa-aerea-net
 
@@ -46,7 +49,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-auth
     ports:
-      - "8080:8080"
+      - "9090:9090"
     environment:
       SPRING_DATA_MONGODB_HOST: mongo-db
       SPRING_DATA_MONGODB_PORT: 27017
@@ -62,11 +65,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-cliente
     ports:
-      - "8081:8081"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/cliente_db
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
+      - "9091:9091"
     depends_on:
       - postgres-db
     networks:
@@ -78,7 +77,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-funcionario
     ports:
-      - "8082:8082"
+      - "9092:9092"
     depends_on:
       - postgres-db
     networks:
@@ -90,7 +89,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-reserva
     ports:
-      - "8083:8083"
+      - "9093:9093"
     depends_on:
       - postgres-db
     networks:
@@ -102,7 +101,7 @@ services:
       dockerfile: Dockerfile
     container_name: ms-voos
     ports:
-      - "8084:8084"
+      - "9094:9094"
     depends_on:
       - postgres-db
     networks:
@@ -116,9 +115,10 @@ services:
       dockerfile: Dockerfile
     container_name: saga
     ports:
-      - "8085:8085"
+      - "9095:9095"
     depends_on:
       - postgres-db
+      - rabbitmq
     networks:
       - empresa-aerea-net
 
@@ -139,11 +139,11 @@ services:
       - saga
     environment:
       PORT: 3000
-      MS_AUTH_URL: http://ms-auth:8080
-      MS_CLIENTE_URL: http://ms-cliente:8081
-      MS_FUNCIONARIO_URL: http://ms-funcionario:8082
-      MS_RESERVA_URL: http://ms-reserva:8083
-      MS_VOOS_URL: http://ms-voos:8084
+      MS_AUTH_URL: http://ms-auth:9090
+      MS_CLIENTE_URL: http://ms-cliente:9091
+      MS_FUNCIONARIO_URL: http://ms-funcionario:9092
+      MS_RESERVA_URL: http://ms-reserva:9093
+      MS_VOOS_URL: http://ms-voos:9094
     networks:
       - empresa-aerea-net
   

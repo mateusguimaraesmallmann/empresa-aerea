@@ -1,0 +1,6 @@
+INSERT INTO reserva (codigo_reserva, codigo_voo, valor_reserva, milhas_utilizadas, quantidade_poltronas, id_cliente, id_estado_reserva) 
+VALUES
+('ABC123', 'TADS0001', 100.00, 80, 1, 1, 6),
+('DEF456', 'TADS0002', 200.00, 90, 1, 1, 1),
+('GHI789', 'TADS0003', 300.00, 30, 5, 1, 1),
+('JKL101', 'TADS0004', 400.00, 20, 1, 1, 1);

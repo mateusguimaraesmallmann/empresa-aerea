@@ -24,8 +24,8 @@ public class VooService {
 
     @Transactional
     public Voo criar(Voo voo) {
-        voo.setCodigo(voo.getCodigo());
-        voo.setEstado(EstadoVooEnum.CONFIRMADO);
+        voo.setCodigoVoo(voo.getCodigoVoo());
+        voo.setEstadoVoo(EstadoVooEnum.CONFIRMADO);
         return vooRepository.save(voo);
     }
 
@@ -51,7 +51,7 @@ public class VooService {
     @Transactional
     public Voo atualizarEstado(String codigo, EstadoVooEnum novoEstado) {
         Voo voo = buscarPorCodigo(codigo);
-        voo.setEstado(novoEstado);
+        voo.setEstadoVoo(novoEstado);
         return vooRepository.save(voo);
     }
 }

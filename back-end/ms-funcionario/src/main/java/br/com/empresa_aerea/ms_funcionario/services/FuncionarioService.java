@@ -19,11 +19,10 @@ public class FuncionarioService {
 
     public Funcionario salvar(FuncionarioDTO dto) {
         Funcionario funcionario = new Funcionario(
-            dto.getCpf(),
-            dto.getEmail(),
-            dto.getNome(),
-            dto.getSenha(),
-            dto.getDataNascimento(),
+            dto.getIdFuncionario(), 
+            dto.getCpf(), 
+            dto.getEmail(), 
+            dto.getNome(), 
             dto.getTelefone()
         );
         return funcionarioRepository.save(funcionario);

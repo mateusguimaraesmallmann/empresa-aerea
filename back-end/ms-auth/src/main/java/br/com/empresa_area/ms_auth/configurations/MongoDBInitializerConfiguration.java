@@ -7,8 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -19,7 +18,7 @@ import br.com.empresa_area.ms_auth.models.Usuario;
 public class MongoDBInitializerConfiguration {
 
     @Bean
-    CommandLineRunner initMongoDBDatabase(MongoTemplate mongoTemplate, BCryptPasswordEncoder passwordEncoder) {
+    CommandLineRunner initMongoDBDatabase(MongoTemplate mongoTemplate, PasswordEncoder passwordEncoder) {
         return args -> {
             if (!mongoTemplate.collectionExists(Usuario.class)) {
                 mongoTemplate.createCollection(Usuario.class);

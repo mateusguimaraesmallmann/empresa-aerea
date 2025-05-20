@@ -1,10 +1,13 @@
 package br.com.empresa_aerea.ms_funcionario.models;
 
+import java.io.Serializable;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,25 +16,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "funcionarios")
-public class Funcionario {
+@Table(name = "funcionario")
+public class Funcionario implements Serializable {
 
     @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name="id_funcionario")
+    private Long idFuncionario;
+
+    @Column(name="cpf", nullable = false, unique = true)
     private String cpf;
 
-    @NotBlank
-    @Email
+    @Column(name="email", nullable = false, unique = true)
     private String email;
 
-    @NotBlank
+    @Column(name="nome", nullable = false)
     private String nome;
 
-    @NotBlank
-    private String senha;
-
-    @NotBlank
-    private String dataNascimento;
-
-    @NotBlank
+    @Column(name="telefone", nullable = false)
     private String telefone;
+
 }

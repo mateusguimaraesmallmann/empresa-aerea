@@ -29,16 +29,16 @@ public class Cliente implements Serializable {
     
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(name="cliente_id")
-    private Long idCliente = 0L;
+    @Column(name="id_cliente")
+    private Long idCliente;
 
-    @Column(name="cpf", unique = true)
+    @Column(name="cpf", nullable = false, unique = true)
     private String cpf;
 
     @Column(name="nome", nullable = false)
     private String nome;
     
-    @Column(name="email", unique = true)
+    @Column(name="email", nullable = false, unique = true)
     private String email;
 
     @Column(name="saldo_milhas", insertable = false, nullable = false)
