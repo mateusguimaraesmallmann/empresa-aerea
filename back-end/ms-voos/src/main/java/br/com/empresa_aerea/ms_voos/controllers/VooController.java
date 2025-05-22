@@ -1,5 +1,7 @@
 package br.com.empresa_aerea.ms_voos.controllers;
 
+import br.com.empresa_aerea.ms_voos.dto.BuscarVoosResponseDTO;
+import br.com.empresa_aerea.ms_voos.dto.VooDTO;
 import br.com.empresa_aerea.ms_voos.enums.EstadoVooEnum;
 import br.com.empresa_aerea.ms_voos.models.Aeroporto;
 import br.com.empresa_aerea.ms_voos.models.Voo;
@@ -8,8 +10,10 @@ import br.com.empresa_aerea.ms_voos.services.VooService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ms-voos")
@@ -18,7 +22,7 @@ public class VooController {
     private final VooService vooService;
     private final AeroportoService aeroportoService;
 
-   public VooController(VooService vooService, AeroportoService aeroportoService) {
+    public VooController(VooService vooService, AeroportoService aeroportoService) {
         this.vooService = vooService;
         this.aeroportoService = aeroportoService;
     }
@@ -29,16 +33,37 @@ public class VooController {
         return ResponseEntity.status(201).body(criado);
     }
 
+    // busca voos por data, origem e destino no formato exigido
     @GetMapping("/voos")
-    public List<Voo> listarVoos() {
-        return vooService.listarTodos();
-    }
+    public ResponseEntity<BuscarVoosResponseDTO> buscarVoosPorDataOrigemDestino(
+            @RequestParam String data,
+            @RequestParam String origem,
+            @RequestParam String destino) {
 
-    @GetMapping("/voos/busca")
-    public List<Voo> buscarVoos(
-            @RequestParam(required = false) String origem,
-            @RequestParam(required = false) String destino) {
-        return vooService.buscar(origem, destino);
+        List<Voo> voosFiltrados = vooService.buscar(origem, destino).stream()
+                .filter(voo -> voo.getDataHora().toLocalDate().toString().equals(data))
+                .collect(Collectors.toList());
+
+        List<VooDTO> voosDTO = voosFiltrados.stream().map(voo -> {
+            VooDTO dto = new VooDTO();
+            dto.setCodigo(voo.getCodigo());
+            dto.setData(voo.getDataHora());
+            dto.setValor_passagem(voo.getPreco());
+            dto.setQuantidade_poltronas_total(voo.getPoltronas());
+            dto.setQuantidade_poltronas_ocupadas(voo.getPoltronasOcupadas());
+            dto.setEstado(voo.getEstado());
+            dto.setAeroporto_origem(voo.getOrigem());
+            dto.setAeroporto_destino(voo.getDestino());
+            return dto;
+        }).toList();
+
+        BuscarVoosResponseDTO resposta = new BuscarVoosResponseDTO();
+        resposta.setData(LocalDate.parse(data));
+        resposta.setOrigem(origem);
+        resposta.setDestino(destino);
+        resposta.setVoos(voosDTO);
+
+        return ResponseEntity.ok(resposta);
     }
 
     @GetMapping("/voos/{codigoVoo}")
@@ -58,5 +83,4 @@ public class VooController {
     public List<Aeroporto> listarAeroportos() {
         return aeroportoService.listarTodos();
     }
-    
 }
