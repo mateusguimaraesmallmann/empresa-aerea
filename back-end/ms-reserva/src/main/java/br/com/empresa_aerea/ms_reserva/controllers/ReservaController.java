@@ -2,10 +2,12 @@ package br.com.empresa_aerea.ms_reserva.controllers;
 
 import br.com.empresa_aerea.ms_reserva.dtos.ReservaDTO;
 import br.com.empresa_aerea.ms_reserva.dtos.ReservaResponseDTO;
+import br.com.empresa_aerea.ms_reserva.enums.EstadoReservaEnum;
 import br.com.empresa_aerea.ms_reserva.models.Reserva;
 import br.com.empresa_aerea.ms_reserva.services.ReservaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/ms-reserva")
@@ -32,8 +34,9 @@ public class ReservaController {
     }
 
     @PatchMapping("/{codigo}/estado")
-    public ResponseEntity<ReservaResponseDTO> atualizarEstado(@PathVariable String codigo) {
-        Reserva reserva = reservaService.atualizarEstado(codigo);
+    public ResponseEntity<ReservaResponseDTO> atualizarEstado(@PathVariable String codigo, @RequestBody Map<String, String> body) {
+        EstadoReservaEnum destino = EstadoReservaEnum.valueOf(body.get("estado"));
+        Reserva reserva = reservaService.atualizarEstado(codigo, destino);
         ReservaResponseDTO response = toResponseDTO(reserva);
         return ResponseEntity.ok(response);
     }

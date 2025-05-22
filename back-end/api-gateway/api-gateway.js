@@ -68,10 +68,11 @@ app.post(
 );
 
 // ======================= LOGOUT ================================
-app.post('/logout', function (req, res) {
+app.post('/api/logout', function (req, res) {
   res.status(200).json({ auth: false, token: null });
-})
+});
 
+// Middleware de proteção JWT
 app.use("/api", requireJwt);
 
 // ======================= Controle de Papeis ====================
@@ -243,7 +244,7 @@ app.patch(
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/reservas/', '/ms-reserva/reservas/'),
+    pathRewrite: path => path.replace('/api/reservas/', '/ms-reserva/'),
   })
 );
 
@@ -380,16 +381,6 @@ app.get(
     pathRewrite: path => path.replace('/api/aeroportos', '/ms-voos/aeroportos'),
   })
 );
-
-app.get(
-  "/api/voos/busca",
-  createProxyMiddleware({
-    target: voosServiceUrl,
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/voos/busca", "/ms-voos/voos/busca")
-  })
-);
-
 
 // ======================= INIT O SERVIDOR =======================
 app.listen(port, () => {

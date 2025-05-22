@@ -28,8 +28,11 @@ export async function buscarReservaPorCodigo(codigo: string): Promise<Reserva> {
 }
 
 // PATCH /api/reservas/:codigoReserva/estado – avançar estado (CLIENTE)
-export async function atualizarEstadoReserva(codigo: string): Promise<Reserva> {
-  const response = await api.patch<Reserva>(`/reservas/${codigo}/estado`);
+export async function atualizarEstadoReserva(
+  codigo: string,
+  estado: 'CRIADA' | 'CHECK_IN' | 'EMBARCADA' | 'CANCELADA' | 'REALIZADA' | 'CANCELADA_VOO' | 'NAO_REALIZADA'
+): Promise<Reserva> {
+  const response = await api.patch<Reserva>(`/reservas/${codigo}/estado`, { estado });
   return response.data;
 }
 

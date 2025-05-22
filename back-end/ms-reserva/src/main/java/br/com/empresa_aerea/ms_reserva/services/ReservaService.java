@@ -1,12 +1,15 @@
 package br.com.empresa_aerea.ms_reserva.services;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import br.com.empresa_aerea.ms_reserva.dtos.ReservaDTO;
 import br.com.empresa_aerea.ms_reserva.enums.EstadoReservaEnum;
+import br.com.empresa_aerea.ms_reserva.models.HistoricoEstadoReserva;
 import br.com.empresa_aerea.ms_reserva.models.Reserva;
+import br.com.empresa_aerea.ms_reserva.repositories.HistoricoEstadoReservaRepository;
 import br.com.empresa_aerea.ms_reserva.repositories.ReservaRepository;
 import jakarta.transaction.Transactional;
 
@@ -14,9 +17,11 @@ import jakarta.transaction.Transactional;
 public class ReservaService {
 
     private final ReservaRepository reservaRepository;
+    private final HistoricoEstadoReservaRepository historicoRepository;
 
-    public ReservaService(ReservaRepository reservaRepository) {
+    public ReservaService(ReservaRepository reservaRepository, HistoricoEstadoReservaRepository historicoRepository) {
         this.reservaRepository = reservaRepository;
+        this.historicoRepository = historicoRepository;
     }
 
     @Transactional
@@ -33,12 +38,12 @@ public class ReservaService {
     }
 
     @Transactional
-    public Reserva atualizarEstado(String codigo) {
+    public Reserva atualizarEstado(String codigo, EstadoReservaEnum destino) {
         Reserva reserva = buscar(codigo);
-        //stadoReservaEnum origem = reserva.getEstado();
-        EstadoReservaEnum destino = EstadoReservaEnum.CHECK_IN;
+        EstadoReservaEnum origem = reserva.getEstado();
         reserva.setEstado(destino);
-        reservaRepository.save(reserva);
+        reserva = reservaRepository.save(reserva);
+        historicoRepository.save(new HistoricoEstadoReserva(null, codigo, LocalDateTime.now(), origem, destino));
         return reserva;
     }
 
@@ -46,12 +51,12 @@ public class ReservaService {
     public void cancelar(String codigo) {
         Reserva reserva = buscar(codigo);
         if (reserva.getEstado() == EstadoReservaEnum.CRIADA || reserva.getEstado() == EstadoReservaEnum.CHECK_IN) {
-            //EstadoReservaEnum origem = reserva.getEstado();
+            // EstadoReservaEnum origem = reserva.getEstado();
             reserva.setEstado(EstadoReservaEnum.CANCELADA);
             reservaRepository.save(reserva);
         } else {
             throw new IllegalStateException("Não é possível cancelar esta reserva no estado " + reserva.getEstado());
         }
     }
-    
+
 }
