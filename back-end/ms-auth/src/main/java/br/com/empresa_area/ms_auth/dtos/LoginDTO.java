@@ -1,3 +1,16 @@
 package br.com.empresa_area.ms_auth.dtos;
 
-public record LoginDTO(String login, String password) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record LoginDTO(
+    @NotBlank String login,
+    @NotBlank String senha
+) {
+    public String getLogin() {
+        return login;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+}
