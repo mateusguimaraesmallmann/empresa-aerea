@@ -14,6 +14,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
 import br.com.empresa_area.ms_auth.utils.PasswordEncoderWithSalt;
 
 @Configuration
@@ -51,4 +55,14 @@ public class SecurityConfiguration {
         return new PasswordEncoderWithSalt(salt, strength) ;
     }
     
+    @Bean
+    public CorsFilter corsFilter() {
+     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+     CorsConfiguration config = new CorsConfiguration();
+      config.addAllowedOrigin("http://localhost:3000"); // URL do front
+      config.addAllowedHeader("*");
+     config.addAllowedMethod("*");
+     source.registerCorsConfiguration("/**", config);
+     return new CorsFilter(source);
+    }
 }
