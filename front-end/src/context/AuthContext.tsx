@@ -6,31 +6,29 @@ import {
   useCallback,
   ReactNode,
   useEffect,
-} from 'react'
-import { useNavigate } from 'react-router-dom'
-import { usuariosMock } from '../_mock/usuarios-mock';
+} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loginUsuario } from 'src/api/auth.api';
 
-/* implements para usar mock de usuario */
 type Usuario = {
   email: string;
+  nome: string;
+  cpf: string;
   tipo: 'CLIENTE' | 'FUNCIONARIO';
 };
 
 type AuthContextType = {
-  isAuthenticated: boolean
-  /* implements para usar mock de usuario */
+  isAuthenticated: boolean;
   usuario?: Usuario;
-  login: (email: string, password: string) => void
-  logout: () => void
-}
+  login: (email: string, password: string) => void;
+  logout: () => void;
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  /* const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('auth') === 'true') */
-  /* implements para usar mock de usuario */
   const [usuario, setUsuario] = useState<Usuario | undefined>(() => {
     const stored = sessionStorage.getItem('usuarioLogado');
     return stored ? JSON.parse(stored) : undefined;
@@ -38,59 +36,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!usuario;
 
-  /* useEffect(() => {
-    localStorage.setItem('auth', isAuthenticated ? 'true' : 'false')
-  }, [isAuthenticated]) */
-  /* implements para usar mock de usuario */
   useEffect(() => {
     if (usuario) {
       sessionStorage.setItem('usuarioLogado', JSON.stringify(usuario));
     } else {
       sessionStorage.removeItem('usuarioLogado');
+      localStorage.removeItem('token');
     }
   }, [usuario]);
 
-  /* const login = useCallback((email: string, password: string) => {
-    if (email && password) {
-      setIsAuthenticated(true)
-      navigate('/tela-inicial-cliente')
-    }
-  }, [navigate]) */
-  const login = useCallback((email: string, password: string) => {
-    const user = usuariosMock.find(
-      (u) => u.email === email && u.senha === password
-    );
+  const login = useCallback(async (email: string, password: string) => {
+    try {
+      const tokenData = await loginUsuario({ login: email, password });
 
-    if (user) {
-      setUsuario({ email: user.email, tipo: user.tipo});
+      // Preenche manualmente o email vindo das credenciais
+      setUsuario({
+        email,
+        nome: tokenData.usuario.nome,
+        cpf: tokenData.usuario.cpf,
+        tipo: tokenData.tipo,
+      });
 
-      if (user.tipo === 'FUNCIONARIO') {
+      localStorage.setItem('token', tokenData.access_token);
+
+      if (tokenData.tipo === 'FUNCIONARIO') {
         navigate('/tela-inicial-funcionario');
       } else {
         navigate('/tela-inicial-cliente');
       }
-    } else {
-      alert('Usuário ou senha inválidos');
+    } catch (error) {
+      throw new Error('Credenciais inválidas');
     }
   }, [navigate]);
 
-  /* const logout = useCallback(() => {
-    setIsAuthenticated(false)
-    localStorage.removeItem('auth')
-    navigate('/login')
-  }, [navigate]) */
-  /* implements para usar mock de usuario */
   const logout = useCallback(() => {
     setUsuario(undefined);
     sessionStorage.removeItem('usuarioLogado');
+    localStorage.removeItem('token');
     navigate('/login');
   }, [navigate]);
 
-  /* const contextValue = useMemo(
-    () => ({ isAuthenticated, login, logout }),
-    [isAuthenticated, login, logout]
-  ) */
-  /* implements para usar mock de usuario */
   const contextValue = useMemo(
     () => ({ isAuthenticated, usuario, login, logout }),
     [isAuthenticated, usuario, login, logout]
@@ -100,11 +85,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth deve ser usado dentro do AuthProvider')
-  return context
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth deve ser usado dentro do AuthProvider');
+  return context;
 }
+
+

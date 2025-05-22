@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 
 const schemaLogin = yup.object().shape({
-  email: yup.string().email('E-mail inválido').required('O e-mail é obrigatório!'),
+  login: yup.string().email('E-mail inválido').required('O e-mail é obrigatório!'),
   password: yup
     .string()
     .required('A senha é obrigatória!')

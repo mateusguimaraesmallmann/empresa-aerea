@@ -1,5 +1,6 @@
 package br.com.empresa_area.ms_auth.services;
 
+import java.util.Map;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -41,7 +42,9 @@ public class AuthorizationService implements UserDetailsService {
     private AuthenticationManager manager;
 
     @Autowired
-    public AuthorizationService(UsuarioRepository usuarioRepository, TokenService tokenService, PasswordEncoder passwordEncoder, EmailService emailService, RabbitTemplate rabbitTemplate) throws Exception {
+    public AuthorizationService(UsuarioRepository usuarioRepository, TokenService tokenService,
+            PasswordEncoder passwordEncoder, EmailService emailService, RabbitTemplate rabbitTemplate)
+            throws Exception {
         this.usuarioRepository = usuarioRepository;
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
@@ -53,7 +56,7 @@ public class AuthorizationService implements UserDetailsService {
     public void setAuthenticationManager(@Lazy AuthenticationManager manager) {
         this.manager = manager;
     }
-   
+
     public static class ClienteCriadoEvent {
         private String userId;
         private String cpf;
@@ -68,12 +71,26 @@ public class AuthorizationService implements UserDetailsService {
             this.email = email;
             this.cep = cep;
         }
-      
-        public String getUserId() { return userId; }
-        public String getCpf() { return cpf; }
-        public String getNome() { return nome; }
-        public String getEmail() { return email; }
-        public String getCep() { return cep; }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public String getCpf() {
+            return cpf;
+        }
+
+        public String getNome() {
+            return nome;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getCep() {
+            return cep;
+        }
     }
 
     @Override
@@ -81,11 +98,31 @@ public class AuthorizationService implements UserDetailsService {
         return usuarioRepository.findByLogin(username);
     }
 
-    public TokenResponseDTO login(LoginDTO loginDTO) {              
+    public TokenResponseDTO login(LoginDTO loginDTO) {
+
+        System.out.println("Tentativa de login: " + loginDTO.login());
+
+        // LOGIN TEMPORÁRIO
+        if (loginDTO.login().equals("cliente@teste.com") && loginDTO.password().equals("1234")) {
+            return new TokenResponseDTO(
+                    tokenService.generateToken(new Usuario(null, "cliente@teste.com", "", TipoUsuario.CLIENTE)),
+                    "bearer",
+                    TipoUsuario.CLIENTE,
+                    Map.of("nome", "Cliente de Teste", "cpf", "000.000.000-00"));
+        }
+
+        if (loginDTO.login().equals("funcionario@teste.com") && loginDTO.password().equals("1234")) {
+            return new TokenResponseDTO(
+                    tokenService.generateToken(new Usuario(null, "funcionario@teste.com", "", TipoUsuario.FUNCIONARIO)),
+                    "bearer",
+                    TipoUsuario.FUNCIONARIO,
+                    Map.of("nome", "Funcionário de Teste", "cpf", "111.111.111-11"));
+        }
+
+        // LOGIN REAL
         var authenticationToken = new UsernamePasswordAuthenticationToken(
-            loginDTO.login(), 
-            loginDTO.password()
-        );
+                loginDTO.login(),
+                loginDTO.password());
         Authentication authentication = manager.authenticate(authenticationToken);
         Usuario user = (Usuario) authentication.getPrincipal();
 
@@ -108,23 +145,20 @@ public class AuthorizationService implements UserDetailsService {
 
         // Publicar evento de criação de cliente
         ClienteCriadoEvent event = new ClienteCriadoEvent(
-            user.getId(), dto.cpf(), dto.nome(), dto.email(), dto.cep()
-        );
+                user.getId(), dto.cpf(), dto.nome(), dto.email(), dto.cep());
         rabbitTemplate.convertAndSend(
-            RabbitMQConfiguration.EXCHANGE, 
-            "cliente.criado", 
-            event
-        );
+                RabbitMQConfiguration.EXCHANGE,
+                "cliente.criado",
+                event);
 
         return new UserDTO(user.getId(), dto.email(), user.getRole());
     }
 
     private Object fetchPerfil(String userId, TipoUsuario tipo) {
         UserFetchRequestDTO req = new UserFetchRequestDTO(userId);
-        String fila = (tipo == TipoUsuario.CLIENTE) ? 
-            RabbitMQConfiguration.RPC_QUEUE_CLIENTE : 
-            RabbitMQConfiguration.RPC_QUEUE_FUNCIONARIO;
-        
+        String fila = (tipo == TipoUsuario.CLIENTE) ? RabbitMQConfiguration.RPC_QUEUE_CLIENTE
+                : RabbitMQConfiguration.RPC_QUEUE_FUNCIONARIO;
+
         Object resp = rabbitTemplate.convertSendAndReceive(fila, req);
         if (resp == null) {
             throw new IllegalStateException("Timeout buscando perfil de " + tipo);

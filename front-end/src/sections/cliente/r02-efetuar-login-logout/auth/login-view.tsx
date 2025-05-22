@@ -10,13 +10,15 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 import { useAuth } from 'src/context/AuthContext';
 import { useRouter } from 'src/routes/hooks';
 import { Iconify } from 'src/components/iconify';
 
 interface LoginFormInputs {
-  email: string;
+  login: string;
   password: string;
 }
 
@@ -25,6 +27,9 @@ export function SignInView() {
   const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarTipo, setSnackbarTipo] = useState<'success' | 'error'>('error');
 
   const {
     register,
@@ -34,9 +39,19 @@ export function SignInView() {
     resolver: yupResolver(schemaLogin),
   });
 
-  const onSubmit = (data: LoginFormInputs) => {
-    console.log('Login válido:', data);
-    login(data.email, data.password);
+  const onSubmit = async (data: LoginFormInputs) => {
+    try {
+      await login(data.login, data.password);
+    } catch (error) {
+      // Mensagem de erro caso o AuthContext lance erro 
+      setSnackbarTipo('error');
+      setSnackbarMessage('Usuário ou senha inválidos.');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -45,7 +60,7 @@ export function SignInView() {
         <Typography variant="h4" textAlign="center">
           Empresa Aérea
         </Typography>
-        
+
         <Typography variant="body2" color="text.secondary">
           Não tem uma conta?
           <Link
@@ -68,9 +83,9 @@ export function SignInView() {
         <TextField
           fullWidth
           label="E-mail"
-          {...register('email')}
-          error={!!errors.email}
-          helperText={errors.email?.message}
+          {...register('login')}
+          error={!!errors.login}
+          helperText={errors.login?.message}
           InputLabelProps={{ shrink: true }}
           sx={{ mb: 3 }}
         />
@@ -105,6 +120,29 @@ export function SignInView() {
           Login
         </LoadingButton>
       </Box>
+
+      {/* Snackbar de erro ou sucesso */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarTipo}
+          sx={{
+            backgroundColor: snackbarTipo === 'error' ? '#fddede' : '#d0f2d0',
+            color: snackbarTipo === 'error' ? '#611a15' : '#1e4620',
+            width: '100%',
+          }}
+          elevation={6}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
+
