@@ -1,60 +1,47 @@
 package br.com.empresa_aerea.ms_voos.models;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-
 import br.com.empresa_aerea.ms_voos.enums.EstadoVooEnum;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Data
-@Setter
-@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "voo")
 public class Voo {
-    
+
     @Id
-    @Column(name = "codigo_voo", length = 8)
-    private String codigoVoo;
+    private String id;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "data_voo", nullable = false)
-    private OffsetDateTime dataVoo;
+    @Column(nullable = false, unique = true)
+    private String codigo;
 
-    @Column(name = "valor_passagem", nullable = false, precision = 10, scale = 2)
-    private BigDecimal valorPassagem;
+    @Column(name = "data_hora", nullable = false)
+    private LocalDateTime dataHora;
 
-    @Column(name = "quantidade_poltronas_total", nullable = false)
-    private Integer quantidadePoltronasTotal;
+    @ManyToOne
+    @JoinColumn(name = "origem_id", nullable = false)
+    private Aeroporto origem;
 
-    @Column(name = "quantidade_poltronas_ocupadas", nullable = false)
-    private Integer quantidadePoltronasOcupadas;
+    @ManyToOne
+    @JoinColumn(name = "destino_id", nullable = false)
+    private Aeroporto destino;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "codigo_aeroporto_origem", referencedColumnName = "codigo_aeroporto", nullable = false)
-    private Aeroporto aeroportoOrigem;
+    @Column(name = "preco", nullable = false)
+    private double preco;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "codigo_aeroporto_destino", referencedColumnName = "codigo_aeroporto", nullable = false)
-    private Aeroporto aeroportoDestino;
+    @Column(name = "poltronas", nullable = false)
+    private int poltronas;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_estado_voo", referencedColumnName = "id_estado_voo", nullable = false)
-    private EstadoVooEnum estadoVoo;
+    @Column(name = "poltronas_ocupadas", nullable = false)
+    private int poltronasOcupadas;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false)
+    private EstadoVooEnum estado;
 }
