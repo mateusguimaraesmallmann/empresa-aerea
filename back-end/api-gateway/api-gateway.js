@@ -244,7 +244,7 @@ app.patch(
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/reservas/', '/ms-reserva/reservas/'),
+    pathRewrite: path => path.replace('/api/reservas/', '/ms-reserva/'),
   })
 );
 
