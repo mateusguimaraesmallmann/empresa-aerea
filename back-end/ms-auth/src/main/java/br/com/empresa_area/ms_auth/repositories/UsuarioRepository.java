@@ -1,14 +1,11 @@
 package br.com.empresa_area.ms_auth.repositories;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Repository;
-
 import br.com.empresa_area.ms_auth.models.Usuario;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-@Repository
-public interface  UsuarioRepository extends MongoRepository<Usuario, String>{
+import java.util.Optional;
 
-    UserDetails findByLogin(String login);
-    
+public interface UsuarioRepository extends MongoRepository<Usuario, String> {
+    Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByLogin(String login); 
 }

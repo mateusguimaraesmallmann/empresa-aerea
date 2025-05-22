@@ -1,53 +1,68 @@
 package br.com.empresa_area.ms_auth.security;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
+import br.com.empresa_area.ms_auth.models.Usuario;
+import br.com.empresa_area.ms_auth.repositories.UsuarioRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTCreationException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import br.com.empresa_area.ms_auth.models.Usuario;
+import java.util.Date;
 
 @Service
 public class TokenService {
 
-    @Value("${api.security.token.secret}")
+    @Value("${jwt.secret}")
     private String secret;
 
-    public String generateToken(Usuario usuario){
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            String token = JWT.create()
-                    .withIssuer("auth-api")
-                    .withSubject(usuario.getLogin())
-                    .withExpiresAt(dataExpiracao())
-                    .sign(algorithm);
-            return token;
-        } catch (JWTCreationException ex) {
-            throw new RuntimeException("erro ao gerar token jwt", ex);
-        }
+    private final UsuarioRepository usuarioRepository;
+
+    public TokenService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
-    
-    public String validateToken(String token){
+
+    public String generateToken(Usuario usuario) {
+        return Jwts.builder()
+                .setSubject(usuario.getEmail())
+                .claim("tipo", usuario.getTipo().toString())
+                .claim("id", usuario.getId())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10h
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
+    }
+
+    public boolean validateToken(String token) {
         try {
-            Algorithm algoritmo = Algorithm.HMAC256(secret);
-            return JWT.require(algoritmo)
-                    .withIssuer("auth-api")
-                    .build()
-                    .verify(token)
-                    .getSubject();
-        } catch (JWTVerificationException ex) {
-            throw new RuntimeException("Token JWT inválido ou expirado!");
+            getClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
-    private Instant dataExpiracao() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+    public Claims getClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .getBody();
     }
-    
+
+    public String getEmailFromToken(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    public UserDetails getAuthentication(String token) {
+        String email = getEmailFromToken(token);
+        Usuario user = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        return User.builder()
+                .username(user.getEmail())
+                .password(user.getSenha())
+                .roles(user.getTipo().toString())
+                .build();
+    }
 }

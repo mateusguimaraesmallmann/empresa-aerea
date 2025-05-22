@@ -1,72 +1,78 @@
 package br.com.empresa_area.ms_auth.models;
 
+import br.com.empresa_area.ms_auth.enums.TipoUsuario;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import br.com.empresa_area.ms_auth.enums.TipoUsuario;
-
-@Setter
-@Getter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@Document(collection = "usuario")
+@AllArgsConstructor
+@Document(collection = "usuarios")
 public class Usuario implements UserDetails {
 
     @Id
     private String id;
 
-    @Indexed(unique = true)
-    private String login;
+    @NotBlank(message = "E-mail é obrigatório")
+    @Email(message = "E-mail inválido")
+    private String email;
 
-    private String password;
+    @NotBlank(message = "Senha é obrigatória")
+    private String senha;
 
-    private TipoUsuario role;
+    private TipoUsuario tipo;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
+        return Collections.emptyList();
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return senha;
     }
 
     @Override
     public String getUsername() {
-        return login;
+        return email;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
+    public String getLogin() {
+        return email;
     }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
+    public TipoUsuario getRole() {
+        return tipo;
     }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
+    public void setLogin(String email) {
+    this.email = email;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public void setRole(TipoUsuario tipo) {
+        this.tipo = tipo;
     }
+
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
 }
