@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
@@ -7,36 +8,14 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-
 import InputMask from 'react-input-mask';
 import { useRouter } from 'src/routes/hooks';
 
-// Define o tipo para representar os dados do cliente
-type Cliente = {
-  id: number;
-  cpf: string;
-  nome: string;
+type RegisterResponse = {
+  id: string;
   email: string;
-  cep: string;
-  ruaNumero: string;
-  complemento: string;
-  cidade: string;
-  uf: string;
-  milhas: number;
   senha: string;
 };
-
-// Simula o registro de cliente
-async function registrarCliente(dados: Cliente): Promise<Cliente> {
-  return new Promise((resolve) => setTimeout(() => resolve(dados), 1500));
-}
-
-// Busca endereço com base no CEP
-async function buscarEndereco(cep: string): Promise<any> {
-  const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-  if (!response.ok) throw new Error('Erro ao buscar CEP');
-  return response.json();
-}
 
 export function AutoCadastroView() {
   const router = useRouter();
@@ -45,7 +24,7 @@ export function AutoCadastroView() {
     document.title = 'Autocadastro';
   }, []);
 
-  // Estados dos campos do formulário
+  // Estados do formulário
   const [cpf, setCpf] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -61,94 +40,58 @@ export function AutoCadastroView() {
   const [erroCadastro, setErroCadastro] = useState('');
   const [erros, setErros] = useState<{ [campo: string]: boolean }>({});
 
-  // Gera uma senha aleatória de 4 dígitos
-  const gerarSenha = () => Math.floor(1000 + Math.random() * 9000).toString();
-
-  // Busca o endereço automaticamente
+  // Busca endereço pelo CEP
   const handleBuscarEndereco = async () => {
     const cepLimpo = cep.replace(/\D/g, '');
     if (cepLimpo.length !== 8) return;
+    
     try {
-      const data = await buscarEndereco(cepLimpo);
-      setRuaNumero(`${data.logradouro}, `);
-      setCidade(data.localidade);
-      setUf(data.uf);
-    } catch (err) {
-      console.error('Erro ao buscar endereço:', err);
+      const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      setRuaNumero(response.data.logradouro || '');
+      setCidade(response.data.localidade || '');
+      setUf(response.data.uf || '');
+    } catch (error) {
+      console.error('Erro ao buscar endereço:', error);
+      setErroCadastro('CEP não encontrado');
+      setTimeout(() => setErroCadastro(''), 4000);
     }
   };
 
-  // Valida se todos os campos obrigatórios foram preenchidos 
+  // Validação dos campos
   const validarCampos = () => {
-    const limparCPF = cpf.replace(/\D/g, '');
-    const limparCEP = cep.replace(/\D/g, '');
-
-    const novosErros: { [campo: string]: boolean } = {
-      cpf: limparCPF.length !== 11,
-      nome: !nome,
-      email: !email,
-      cep: limparCEP.length !== 8,
-      ruaNumero: !ruaNumero,
-      complemento: !complemento,
-      cidade: !cidade,
-      uf: !uf,
+    const novosErros = {
+      cpf: cpf.replace(/\D/g, '').length !== 11,
+      nome: nome.trim() === '',
+      email: !/^\S+@\S+\.\S+$/.test(email),
+      cep: cep.replace(/\D/g, '').length !== 8,
     };
 
     setErros(novosErros);
-    return !Object.values(novosErros).includes(true);
+    return !Object.values(novosErros).some(Boolean);
   };
 
-  // Lógica principal de cadastro do cliente
+  // Envio do formulário
   const handleCadastro = async () => {
     if (!validarCampos()) return;
 
-    const limparCPF = cpf.replace(/\D/g, '');
-    const emailFormatado = email.toLowerCase();
-    const senha = gerarSenha();
-
-    // Recupera lista de clientes já cadastrados
-    const clientesExistentes: Cliente[] = JSON.parse(localStorage.getItem('clientes') || '[]');
-
-    // Verifica se CPF ou e-mail já existem
-    const cpfExiste = clientesExistentes.some((c) => c.cpf === limparCPF);
-    const emailExiste = clientesExistentes.some((c) => c.email.toLowerCase() === emailFormatado);
-
-    if (cpfExiste || emailExiste) {
-      setErroCadastro('Já existe um cliente com este CPF ou E-mail!');
-      setTimeout(() => setErroCadastro(''), 4000);
-      return;
-    }
-
-    // Gera ID automático com base no maior ID existente
-    const novoId = clientesExistentes.length > 0
-      ? Math.max(...clientesExistentes.map(c => c.id)) + 1
-      : 1;
-
-    const novoCliente: Cliente = {
-      id: novoId,
-      cpf: limparCPF,
-      nome,
-      email,
-      cep,
-      ruaNumero,
-      complemento,
-      cidade,
-      uf,
-      milhas: 0,
-      senha,
-    };
-
-    // Atualiza localStorage com o novo cliente
-    const listaAtualizada = [...clientesExistentes, novoCliente];
-    localStorage.setItem('clientes', JSON.stringify(listaAtualizada));
-
     setLoading(true);
-    try {
-      await registrarCliente(novoCliente);
-      setSenhaGerada(senha);
-      setAutocadastroSucesso(true);
+    setErroCadastro('');
 
-      // Limpa campos após sucesso
+    try {
+      const response = await axios.post<RegisterResponse>(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        {
+          cpf: cpf.replace(/\D/g, ''),
+          nome,
+          email,
+          cep: cep.replace(/\D/g, ''),
+        }
+      );
+
+      setSenhaGerada(response.data.senha);
+      setAutocadastroSucesso(true);
+      
+      // Limpar campos
       setCpf('');
       setNome('');
       setEmail('');
@@ -157,15 +100,19 @@ export function AutoCadastroView() {
       setComplemento('');
       setCidade('');
       setUf('');
-      setErros({});
-    } catch (error) {
-      console.error('Erro ao registrar cliente:', error);
+
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        setErroCadastro('CPF ou e-mail já cadastrado');
+      } else {
+        setErroCadastro('Erro ao realizar cadastro. Tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Define as propriedades padrão para os campos obrigatórios
+  // Configuração de campos obrigatórios
   const propsObrigatorios = {
     required: true,
     InputLabelProps: { required: false },
@@ -189,9 +136,6 @@ export function AutoCadastroView() {
       </Typography>
 
       <Grid container spacing={2}>
-        {/* Campos do formulário com máscaras, validação e mensagens de erro */}
-
-        {/* CPF com máscara */}
         <Grid item xs={12} sm={6}>
           <InputMask
             mask="999.999.999-99"
@@ -203,9 +147,9 @@ export function AutoCadastroView() {
                 {...inputProps}
                 label="CPF"
                 fullWidth
-                {...propsObrigatorios}
                 error={erros.cpf}
-                helperText={erros.cpf ? 'O CPF é obrigatório e deve conter 11 dígitos!' : ''}
+                helperText={erros.cpf && 'CPF inválido (11 dígitos)'}
+                {...propsObrigatorios}
               />
             )}
           </InputMask>
@@ -215,11 +159,11 @@ export function AutoCadastroView() {
           <TextField
             label="Nome completo"
             fullWidth
-            {...propsObrigatorios}
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             error={erros.nome}
-            helperText={erros.nome ? 'O nome é obrigatório!' : ''}
+            helperText={erros.nome && 'Nome é obrigatório'}
+            {...propsObrigatorios}
           />
         </Grid>
 
@@ -227,15 +171,14 @@ export function AutoCadastroView() {
           <TextField
             label="E-mail"
             fullWidth
-            {...propsObrigatorios}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             error={erros.email}
-            helperText={erros.email ? 'O e-mail é obrigatório!' : ''}
+            helperText={erros.email && 'E-mail inválido'}
+            {...propsObrigatorios}
           />
         </Grid>
 
-        {/* CEP com máscara e preenchimento automático */}
         <Grid item xs={12} sm={6}>
           <InputMask
             mask="99999-999"
@@ -248,9 +191,9 @@ export function AutoCadastroView() {
                 {...inputProps}
                 label="CEP"
                 fullWidth
-                {...propsObrigatorios}
                 error={erros.cep}
-                helperText={erros.cep ? 'O CEP é obrigatório!' : ''}
+                helperText={erros.cep && 'CEP inválido'}
+                {...propsObrigatorios}
               />
             )}
           </InputMask>
@@ -260,11 +203,9 @@ export function AutoCadastroView() {
           <TextField
             label="Rua e Número"
             fullWidth
-            {...propsObrigatorios}
             value={ruaNumero}
             onChange={(e) => setRuaNumero(e.target.value)}
-            error={erros.ruaNumero}
-            helperText={erros.ruaNumero ? 'A rua e número são obrigatórios!' : ''}
+            {...propsObrigatorios}
           />
         </Grid>
 
@@ -272,11 +213,9 @@ export function AutoCadastroView() {
           <TextField
             label="Complemento"
             fullWidth
-            {...propsObrigatorios}
             value={complemento}
             onChange={(e) => setComplemento(e.target.value)}
-            error={erros.complemento}
-            helperText={erros.complemento ? 'O complemento é obrigatório!' : ''}
+            {...propsObrigatorios}
           />
         </Grid>
 
@@ -284,11 +223,9 @@ export function AutoCadastroView() {
           <TextField
             label="Cidade"
             fullWidth
-            {...propsObrigatorios}
             value={cidade}
             onChange={(e) => setCidade(e.target.value)}
-            error={erros.cidade}
-            helperText={erros.cidade ? 'A cidade é obrigatória!' : ''}
+            {...propsObrigatorios}
           />
         </Grid>
 
@@ -296,43 +233,36 @@ export function AutoCadastroView() {
           <TextField
             label="Estado"
             fullWidth
-            {...propsObrigatorios}
             value={uf}
             onChange={(e) => setUf(e.target.value)}
-            error={erros.uf}
-            helperText={erros.uf ? 'O estado é obrigatório!' : ''}
+            {...propsObrigatorios}
           />
         </Grid>
 
-        {/* Mensagem de erro se CPF ou e-mail já existirem */}
         {erroCadastro && (
           <Grid item xs={12}>
-            <Alert severity="error" variant="outlined" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
               {erroCadastro}
             </Alert>
           </Grid>
         )}
 
-        {/* Mensagem de sucesso com senha gerada */}
         {autocadastroSucesso && (
           <Grid item xs={12}>
             <Alert
               severity="success"
-              variant="outlined"
-              sx={{ mb: 2 }}
               onClose={() => setAutocadastroSucesso(false)}
+              sx={{ mb: 2 }}
             >
-              Autocadastro realizado com sucesso! Sua senha é: <strong>{senhaGerada}</strong>
+              Cadastro realizado! Sua senha é: <strong>{senhaGerada}</strong>
             </Alert>
           </Grid>
         )}
 
-        {/* Botões de ação */}
         <Grid item xs={12}>
           <Stack direction="row" spacing={2} justifyContent="center">
             <LoadingButton
               size="large"
-              color="inherit"
               variant="contained"
               loading={loading}
               onClick={handleCadastro}
@@ -341,12 +271,10 @@ export function AutoCadastroView() {
             </LoadingButton>
             <Button
               size="large"
-              color="inherit"
-              variant="contained"
-              disabled={!autocadastroSucesso}
+              variant="outlined"
               onClick={() => router.push('/login')}
             >
-              Ir para Login
+              Voltar para Login
             </Button>
           </Stack>
         </Grid>
