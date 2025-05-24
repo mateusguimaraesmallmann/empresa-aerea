@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/ms-cliente")
 public class ClienteController {
 
-    private ClienteService clienteService;
+    private final ClienteService clienteService;
 
     public ClienteController(ClienteService clienteService) {
         this.clienteService = clienteService;
@@ -50,4 +50,24 @@ public class ClienteController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Atualizar saldo de milhas (PUT)
+    @PutMapping("/clientes/{id}/milhas")
+    public ResponseEntity<Map<String, Object>> atualizarMilhas(
+            @PathVariable Long id,
+            @RequestBody Map<String, Integer> payload) {
+        if (!payload.containsKey("quantidade")) {
+            return ResponseEntity.badRequest().body(Map.of("erro", "Campo 'quantidade' é obrigatório"));
+        }
+
+        int quantidade = payload.get("quantidade");
+        Map<String, Object> response = clienteService.atualizarMilhas(id, quantidade);
+        return ResponseEntity.ok(response);
+    }
+
+    // Obter extrato de milhas (GET)
+    @GetMapping("/clientes/{id}/milhas")
+    public ResponseEntity<Map<String, Object>> extratoMilhas(@PathVariable Long id) {
+        Map<String, Object> response = clienteService.listarExtratoMilhas(id);
+        return ResponseEntity.ok(response);
+    }
 }
