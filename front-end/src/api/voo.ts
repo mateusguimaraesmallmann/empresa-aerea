@@ -61,7 +61,7 @@ export async function buscarVooPorCodigo(codigoVoo: string): Promise<Voo> {
   return response.data;
 }
 
-//voos/:codigoVoo/estado — atualizar estado do voo
+// voos/:codigoVoo/estado — atualizar estado do voo
 export async function atualizarEstadoVoo(codigoVoo: string, novoEstado: EstadoVoo): Promise<Voo> {
   const response = await api.patch<Voo>(`/voos/${codigoVoo}/estado`, novoEstado, {
     headers: { 'Content-Type': 'application/json' },

@@ -54,6 +54,7 @@ services:
       SPRING_DATA_MONGODB_HOST: mongo-db
       SPRING_DATA_MONGODB_PORT: 27017
       SPRING_DATA_MONGODB_DATABASE: auth_db
+      SPRING_DATA_MONGODB_URI: mongodb://admin:admin@mongo-db:27017/auth_db?authSource=admin
     depends_on:
       - mongo-db
     networks:
