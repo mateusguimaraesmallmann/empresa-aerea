@@ -8,50 +8,29 @@ export interface Aeroporto {
   estado: string;
 }
 
-// Modelo de voo conforme o DTO do back
+// Modelo de voo conforme o back-end
 export interface Voo {
   codigo: string;
-  data: string;
-  valor_passagem: number;
-  quantidade_poltronas_total: number;
-  quantidade_poltronas_ocupadas: number;
-  estado: 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO';
-  aeroporto_origem: Aeroporto;
-  aeroporto_destino: Aeroporto;
-}
-
-// Estado do voo 
-export type EstadoVoo = 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO';
-
-// DTO para criar voo (formulário)
-export interface CriarVooDTO {
-  id: string;
-  codigo: string;
   dataHora: string;
-  origem: string; 
-  destino: string; 
-  valorReais: number;
+  preco: number;
   poltronas: number;
-}
-
-// Resposta da busca de voos
-export interface BuscarVoosResponse {
-  data: string;
-  origem: string;
-  destino: string;
-  voos: Voo[];
+  poltronasOcupadas: number;
+  estado: 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO';
+  origem: Aeroporto;
+  destino: Aeroporto;
+  id: string;
 }
 
 // POST /voos — criar voo
-export async function criarVoo(dados: CriarVooDTO): Promise<Voo> {
+export async function criarVoo(dados: Voo): Promise<Voo> {
   const response = await api.post<Voo>('/voos', dados);
   return response.data;
 }
 
 // GET /voos — buscar voos por data, origem e destino
-export async function buscarVoos(data: string, origem: string, destino: string): Promise<BuscarVoosResponse> {
+export async function buscarVoos(data: string, origem: string, destino: string) {
   const params = { data, origem, destino };
-  const response = await api.get<BuscarVoosResponse>('/voos', { params });
+  const response = await api.get('/voos', { params });
   return response.data;
 }
 
@@ -61,8 +40,8 @@ export async function buscarVooPorCodigo(codigoVoo: string): Promise<Voo> {
   return response.data;
 }
 
-//voos/:codigoVoo/estado — atualizar estado do voo
-export async function atualizarEstadoVoo(codigoVoo: string, novoEstado: EstadoVoo): Promise<Voo> {
+// PATCH /voos/:codigoVoo/estado — atualizar estado do voo
+export async function atualizarEstadoVoo(codigoVoo: string, novoEstado: 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO'): Promise<Voo> {
   const response = await api.patch<Voo>(`/voos/${codigoVoo}/estado`, novoEstado, {
     headers: { 'Content-Type': 'application/json' },
   });
