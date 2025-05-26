@@ -13,13 +13,18 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    // Método usado diretamente pelo consumidor do Rabbit
+    public void enviarEmailComSenha(String email, String senha) {
+        enviarEmail(email, senha);
+    }
+
     public void enviarEmail(String email, String password) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
 
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setTo(email);
-            helper.setSubject("Bem-vindo à nossa plataforma");
+            helper.setSubject("Bem-vindo(a) à nossa plataforma!");
             helper.setText(corpoEmail(password));
             mailSender.send(mimeMessage);
         } catch (Exception e) {
@@ -33,7 +38,6 @@ public class EmailService {
             .append("Sua conta foi criada com sucesso.\n")
             .append("Sua senha temporária é: ")
             .append(password)
-            .append("\n\nPor favor, altere sua senha em seu primeiro login.")
             .toString();
     }
 }
