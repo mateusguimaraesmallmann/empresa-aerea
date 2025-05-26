@@ -29,7 +29,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "cliente")
 public class Cliente implements Serializable {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_cliente")
@@ -40,9 +40,12 @@ public class Cliente implements Serializable {
 
     @Column(name = "nome", nullable = false)
     private String nome;
-    
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "senha", nullable = false)
+    private String senha;
 
     @Column(name = "saldo_milhas", insertable = false, nullable = false)
     private Integer milhas;
