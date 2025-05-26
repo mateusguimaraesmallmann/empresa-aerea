@@ -16,7 +16,7 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({ origin: ['http://localhost:4200'], credentials: true }));
+app.use(cors({ origin: ['http://localhost:4200', 'http://localhost:3039', 'http://localhost:3040'], credentials: true }));
 
 // URLs dos microsserviços
 const authServiceUrl = process.env.MS_AUTH_URL;
@@ -39,6 +39,23 @@ app.post("/api/login",
     pathRewrite: path => path.replace("/api/login", "/auth/login")
   })
 );
+
+// ======================= AEROPORTOS (liberado para testes) ====
+app.use('/api/aeroportos', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3040');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+app.get(
+  '/api/aeroportos',
+  createProxyMiddleware({
+    target: voosServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/aeroportos', '/ms-voos/aeroportos'),
+  })
+);
+
 
 // ======================= JWT Token Middleware ==================
 const requireJwt = jwt({
@@ -371,16 +388,16 @@ app.patch(
 );
 
 // ======================= AEROPORTOS ============================
-app.get(
-  '/api/aeroportos',
-  requireJwt,
-  requireRole('TODOS'),
-  createProxyMiddleware({
-    target: voosServiceUrl,
-    changeOrigin: true,
-    pathRewrite: path => path.replace('/api/aeroportos', '/ms-voos/aeroportos'),
-  })
-);
+// app.get(
+//   '/api/aeroportos',
+//   requireJwt,
+//   requireRole('TODOS'),
+//   createProxyMiddleware({
+//     target: voosServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/aeroportos', '/ms-voos/aeroportos'),
+//   })
+// );
 
 // ======================= INIT O SERVIDOR =======================
 app.listen(port, () => {
