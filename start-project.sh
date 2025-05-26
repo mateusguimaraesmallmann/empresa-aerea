@@ -15,4 +15,4 @@ cd ..
 
 # 3. Subir containers com build forçado
 echo "🐳 Subindo os containers com Docker Compose..."
-docker-compose -f empresa-aerea-compose.yaml up --build
+docker-compose -f empresa-aerea-compose.yaml up --build -d
