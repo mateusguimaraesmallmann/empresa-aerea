@@ -16,18 +16,24 @@ services:
       - empresa-aerea-net
   
   postgres-db:
-      image: postgres
-      container_name: postgres-db
-      restart: always
-      ports:
-        - "5432:5432"
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-      volumes:
-        - ./back-end/init-databases:/docker-entrypoint-initdb.d
-      networks:
-        - empresa-aerea-net
+    image: postgres
+    container_name: postgres-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./back-end/init-databases:/docker-entrypoint-initdb.d
+    networks:
+      - empresa-aerea-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   # ================ RABBIT MQ =====================
   rabbitmq:
     image: rabbitmq:3-management
@@ -104,10 +110,11 @@ services:
     ports:
       - "9094:9094"
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
     networks:
       - empresa-aerea-net
-  
+
   #================ SAGA ======================
 
   saga:
@@ -164,7 +171,7 @@ services:
     networks:
       - empresa-aerea-net
 
-  # =============== NETWORK ===============
+# =============== NETWORK ===============
 networks:
   empresa-aerea-net:
     driver: bridge
