@@ -152,6 +152,8 @@ services:
       MS_FUNCIONARIO_URL: http://ms-funcionario:9092
       MS_RESERVA_URL: http://ms-reserva:9093
       MS_VOOS_URL: http://ms-voos:9094
+      MS_SAGA_URL: http://saga:9095
+      JWT_SECRET: GV0ZXguc2hhcmVwb2025TADSDACRAZER2025GV0ZXguc2hhcmVwb
     networks:
       - empresa-aerea-net
   
