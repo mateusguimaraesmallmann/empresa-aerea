@@ -10,12 +10,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import InputMask from 'react-input-mask';
 import { useRouter } from 'src/routes/hooks';
-
-type RegisterResponse = {
-  id: string;
-  email: string;
-  senha: string;
-};
+import api from 'src/api/api';
 
 export function AutoCadastroView() {
   const router = useRouter();
@@ -24,12 +19,12 @@ export function AutoCadastroView() {
     document.title = 'Autocadastro';
   }, []);
 
-  // Estados do formulário
   const [cpf, setCpf] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [cep, setCep] = useState('');
-  const [ruaNumero, setRuaNumero] = useState('');
+  const [rua, setRua] = useState('');
+  const [numero, setNumero] = useState('');
   const [complemento, setComplemento] = useState('');
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
@@ -44,10 +39,10 @@ export function AutoCadastroView() {
   const handleBuscarEndereco = async () => {
     const cepLimpo = cep.replace(/\D/g, '');
     if (cepLimpo.length !== 8) return;
-    
+
     try {
       const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-      setRuaNumero(response.data.logradouro || '');
+      setRua(response.data.logradouro || '');
       setCidade(response.data.localidade || '');
       setUf(response.data.uf || '');
     } catch (error) {
@@ -57,7 +52,6 @@ export function AutoCadastroView() {
     }
   };
 
-  // Validação dos campos
   const validarCampos = () => {
     const novosErros = {
       cpf: cpf.replace(/\D/g, '').length !== 11,
@@ -65,12 +59,10 @@ export function AutoCadastroView() {
       email: !/^\S+@\S+\.\S+$/.test(email),
       cep: cep.replace(/\D/g, '').length !== 8,
     };
-
     setErros(novosErros);
     return !Object.values(novosErros).some(Boolean);
   };
 
-  // Envio do formulário
   const handleCadastro = async () => {
     if (!validarCampos()) return;
 
@@ -78,30 +70,34 @@ export function AutoCadastroView() {
     setErroCadastro('');
 
     try {
-      const response = await axios.post<RegisterResponse>(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
-        {
-          cpf: cpf.replace(/\D/g, ''),
-          nome,
-          email,
+      const response = await api.post<{ senha: string }>('/saga/ms-cliente/cadastrar-cliente', {
+        cpf: cpf.replace(/\D/g, ''),
+        nome,
+        email,
+        endereco: {
           cep: cep.replace(/\D/g, ''),
-        }
-      );
+          rua,
+          numero,
+          complemento,
+          cidade,
+          estado: uf,
+        },
+      });
 
       setSenhaGerada(response.data.senha);
       setAutocadastroSucesso(true);
-      
-      // Limpar campos
+
       setCpf('');
       setNome('');
       setEmail('');
       setCep('');
-      setRuaNumero('');
+      setRua('');
+      setNumero('');
       setComplemento('');
       setCidade('');
       setUf('');
-
     } catch (error: any) {
+      console.error('Erro no autocadastro:', error);
       if (error.response?.status === 409) {
         setErroCadastro('CPF ou e-mail já cadastrado');
       } else {
@@ -112,7 +108,6 @@ export function AutoCadastroView() {
     }
   };
 
-  // Configuração de campos obrigatórios
   const propsObrigatorios = {
     required: true,
     InputLabelProps: { required: false },
@@ -201,15 +196,25 @@ export function AutoCadastroView() {
 
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Rua e Número"
+            label="Rua"
             fullWidth
-            value={ruaNumero}
-            onChange={(e) => setRuaNumero(e.target.value)}
+            value={rua}
+            onChange={(e) => setRua(e.target.value)}
             {...propsObrigatorios}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={2}>
+          <TextField
+            label="Número"
+            fullWidth
+            value={numero}
+            onChange={(e) => setNumero(e.target.value)}
+            {...propsObrigatorios}
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={4}>
           <TextField
             label="Complemento"
             fullWidth

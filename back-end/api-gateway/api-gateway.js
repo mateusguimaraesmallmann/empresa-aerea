@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const sagaServiceUrl = process.env.MS_SAGA_URL;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -26,7 +27,7 @@ const reservaServiceUrl = process.env.MS_RESERVA_URL;
 const voosServiceUrl = process.env.MS_VOOS_URL;
 
 // Verificação das variáveis 
-if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaServiceUrl || !voosServiceUrl) {
+if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaServiceUrl || !voosServiceUrl || sagaServiceUrl) {
   console.error(" ❌ Alguma variável de ambiente obrigatória está faltando.");
   process.exit(1);
 }
@@ -64,6 +65,17 @@ app.post(
     target: authServiceUrl,
     changeOrigin: true,
     pathRewrite: (path) => path.replace("/api/register", "/auth/register")
+  })
+);
+
+// ======================= SAGA AUTOCADASTRO ======================
+app.post(
+  "/api/saga/autocadastro",
+  createProxyMiddleware({
+    target: sagaServiceUrl,
+    changeOrigin: true,
+    pathRewrite: (path) =>
+      path.replace("/api/saga/autocadastro", "/saga/ms-cliente/cadastrar-cliente"),
   })
 );
 

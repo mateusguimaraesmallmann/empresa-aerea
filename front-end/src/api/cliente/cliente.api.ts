@@ -39,3 +39,8 @@ export async function verificarEmailExiste(email: string): Promise<boolean> {
     return false;
   }
 }
+
+export async function autocadastrarCliente(cliente: Cliente): Promise<{ senha: string }> {
+  const response = await api.post('/saga/autocadastro', cliente);
+  return response.data;
+}
