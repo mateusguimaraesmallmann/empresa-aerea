@@ -13,7 +13,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { voosMockados } from 'src/_mock/voos-mock';
+import { listarAeroportos, criarVoo, Aeroporto, Voo } from 'src/api/voo';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { NumericFormat } from 'react-number-format';
 
@@ -32,11 +32,6 @@ const schema = yup.object({
     .required('Quantidade de poltronas é obrigatória'),
 });
 
-const todosAeroportos = voosMockados
-  .map((v) => [v.origem, v.destino])
-  .flat()
-  .filter((valor, indice, self) => self.indexOf(valor) === indice);
-
 export default function CadastrarVoo() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -45,6 +40,7 @@ export default function CadastrarVoo() {
   const [botaoDesabilitado, setBotaoDesabilitado] = useState(false);
   const [codigoGerado, setCodigoGerado] = useState('');
   const [idGerado, setIdGerado] = useState('');
+  const [todosAeroportos, setTodosAeroportos] = useState<Aeroporto[]>([]);
 
   const {
     register,
@@ -52,7 +48,6 @@ export default function CadastrarVoo() {
     reset,
     control,
     watch,
-    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -65,6 +60,7 @@ export default function CadastrarVoo() {
 
   useEffect(() => {
     gerarIdECodigo();
+    carregarAeroportos();
   }, []);
 
   useEffect(() => {
@@ -79,48 +75,66 @@ export default function CadastrarVoo() {
     }
   }, [valorReais]);
 
+  const carregarAeroportos = async () => {
+    try {
+      const resposta = await listarAeroportos();
+      setTodosAeroportos(resposta);
+    } catch (error) {
+      console.error('Erro ao carregar aeroportos', error);
+    }
+  };
+
   const gerarIdECodigo = () => {
-    const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
-    const proximoNumero = voosSalvos.length + 1;
-    const novoId = proximoNumero.toString();
-    const novoCodigo = `TADS${proximoNumero.toString().padStart(4, '0')}`;
+    const timestamp = Date.now();
+    const novoId = timestamp.toString();
+    const novoCodigo = `TADS${(timestamp % 10000).toString().padStart(4, '0')}`;
     setIdGerado(novoId);
     setCodigoGerado(novoCodigo);
   };
 
   const onSubmit = async (data: any) => {
-    const valor = data.valorReais;
+    try {
+      const valor = data.valorReais;
 
-    const voo = {
-      id: idGerado,
-      codigo: codigoGerado,
-      dataHora: dayjs(data.dataHora).format('YYYY-MM-DDTHH:mm:ss'),
-      origem: data.origem,
-      destino: data.destino,
-      preco: valor,
-      poltronas: data.poltronas,
-      poltronasOcupadas: 0,
-      milhas: Math.floor(valor / 5),
-      estado: 'CONFIRMADO',
-    };
+      const origem = todosAeroportos.find((a) => a.codigo === data.origem);
+      const destino = todosAeroportos.find((a) => a.codigo === data.destino);
 
-    const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
-    voosSalvos.push(voo);
-    localStorage.setItem('voos', JSON.stringify(voosSalvos));
+      if (!origem || !destino) {
+        setSnackbarMessage('Aeroporto de origem ou destino inválido.');
+        setSnackbarTipo('error');
+        setSnackbarOpen(true);
+        return;
+      }
 
-    setSnackbarMessage(`Voo ${codigoGerado} cadastrado com sucesso!`);
-    setSnackbarTipo('success');
-    setSnackbarOpen(true);
-    reset();
-    setMilhasGeradas(0);
-    setBotaoDesabilitado(true);
+      const voo: Voo = {
+        id: idGerado,
+        codigo: codigoGerado,
+        dataHora: dayjs(data.dataHora).format('YYYY-MM-DDTHH:mm:ss'),
+        origem,
+        destino,
+        preco: valor,
+        poltronas: data.poltronas,
+        poltronasOcupadas: 0,
+        estado: 'CONFIRMADO' as const,
+      };
 
-    setTimeout(() => setBotaoDesabilitado(false), 2000);
+      await criarVoo(voo);
+
+      setSnackbarMessage(`Voo ${codigoGerado} cadastrado com sucesso!`);
+      setSnackbarTipo('success');
+      setSnackbarOpen(true);
+      reset();
+      setMilhasGeradas(0);
+      setBotaoDesabilitado(true);
+      setTimeout(() => setBotaoDesabilitado(false), 2000);
+    } catch (error) {
+      setSnackbarMessage('Erro ao cadastrar voo. Verifique os dados.');
+      setSnackbarTipo('error');
+      setSnackbarOpen(true);
+    }
   };
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
+  const handleSnackbarClose = () => setSnackbarOpen(false);
 
   return (
     <DashboardContent>
@@ -130,23 +144,11 @@ export default function CadastrarVoo() {
         </Typography>
       </Box>
 
-      <Box
-        sx={{
-          backgroundColor: 'white',
-          p: 3,
-          borderRadius: 2,
-          width: '100%',
-        }}
-      >
+      <Box sx={{ backgroundColor: 'white', p: 3, borderRadius: 2, width: '100%' }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="Código do Voo"
-                fullWidth
-                value={codigoGerado}
-                disabled
-              />
+              <TextField label="Código do Voo" fullWidth value={codigoGerado} disabled />
             </Grid>
 
             <Grid item xs={12} sm={6}>
@@ -167,7 +169,7 @@ export default function CadastrarVoo() {
                 control={control}
                 render={({ field }) => (
                   <Autocomplete
-                    options={todosAeroportos}
+                    options={todosAeroportos.map((a) => a.codigo)}
                     onChange={(_, value) => field.onChange(value)}
                     renderInput={(params) => (
                       <TextField
@@ -189,7 +191,7 @@ export default function CadastrarVoo() {
                 control={control}
                 render={({ field }) => (
                   <Autocomplete
-                    options={todosAeroportos}
+                    options={todosAeroportos.map((a) => a.codigo)}
                     onChange={(_, value) => field.onChange(value)}
                     renderInput={(params) => (
                       <TextField
@@ -233,12 +235,7 @@ export default function CadastrarVoo() {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="Milhas Geradas"
-                fullWidth
-                value={milhasGeradas}
-                disabled
-              />
+              <TextField label="Milhas Geradas" fullWidth value={milhasGeradas} disabled />
             </Grid>
 
             <Grid item xs={12} sm={6}>
