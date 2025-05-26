@@ -6,7 +6,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const sagaServiceUrl = process.env.MS_SAGA_URL;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,12 +24,15 @@ const clienteServiceUrl = process.env.MS_CLIENTE_URL;
 const funcionarioServiceUrl = process.env.MS_FUNCIONARIO_URL;
 const reservaServiceUrl = process.env.MS_RESERVA_URL;
 const voosServiceUrl = process.env.MS_VOOS_URL;
+const sagaServiceUrl = process.env.MS_SAGA_URL;
 
 // Verificação das variáveis 
-if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaServiceUrl || !voosServiceUrl || sagaServiceUrl) {
+if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaServiceUrl || !voosServiceUrl || !sagaServiceUrl) {
   console.error(" ❌ Alguma variável de ambiente obrigatória está faltando.");
   process.exit(1);
 }
+
+// ======================= ROTAS PÚBLICAS ========================
 
 // ======================= LOGIN =================================
 app.post("/api/login",
@@ -38,23 +40,6 @@ app.post("/api/login",
     target: authServiceUrl,
     changeOrigin: true,
     pathRewrite: path => path.replace("/api/login", "/auth/login")
-  })
-);
-
-// ======================= JWT Token Middleware ==================
-const requireJwt = jwt({
-  secret: process.env.JWT_SECRET,
-  algorithms: ['HS256'],
-  requestProperty: 'user'
-});
-
-// ======================= Cadastro Cliente ======================
-app.post(
-  "/api/clientes",
-  createProxyMiddleware({
-    target: clienteServiceUrl,
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/clientes", "/ms-cliente/clientes")
   })
 );
 
@@ -79,9 +64,26 @@ app.post(
   })
 );
 
+// ======================= Cadastro Cliente ======================
+app.post(
+  "/api/clientes",
+  createProxyMiddleware({
+    target: clienteServiceUrl,
+    changeOrigin: true,
+    pathRewrite: (path) => path.replace("/api/clientes", "/ms-cliente/clientes")
+  })
+);
+
 // ======================= LOGOUT ================================
 app.post('/api/logout', function (req, res) {
   res.status(200).json({ auth: false, token: null });
+});
+
+// ======================= JWT Token Middleware ==================
+const requireJwt = jwt({
+  secret: process.env.JWT_SECRET,
+  algorithms: ['HS256'],
+  requestProperty: 'user'
 });
 
 // Middleware de proteção JWT
@@ -106,7 +108,6 @@ function requireRole(role) {
 
 app.get(
   '/api/clientes/:codigoCliente',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: clienteServiceUrl,
@@ -117,7 +118,6 @@ app.get(
 
 app.get(
   '/api/clientes/cpf/:cpf',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: clienteServiceUrl,
@@ -128,7 +128,6 @@ app.get(
 
 app.get(
   '/api/clientes/email/:email',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: clienteServiceUrl,
@@ -139,7 +138,6 @@ app.get(
 
 app.get(
   '/api/clientes/:codigoCliente/reservas',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: clienteServiceUrl,
@@ -150,7 +148,6 @@ app.get(
 
 app.put(
   '/api/clientes/:codigoCliente/milhas',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: clienteServiceUrl,
@@ -161,7 +158,6 @@ app.put(
 
 app.get(
   '/api/clientes/:codigoCliente/milhas',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: clienteServiceUrl,
@@ -173,7 +169,6 @@ app.get(
 // ======================= FUNCIONARIO ===========================
 app.get(
   '/api/funcionarios',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: funcionarioServiceUrl,
@@ -184,7 +179,6 @@ app.get(
 
 app.post(
   '/api/funcionarios',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: funcionarioServiceUrl,
@@ -195,7 +189,6 @@ app.post(
 
 app.put(
   '/api/funcionarios/:codigoFuncionario',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: funcionarioServiceUrl,
@@ -206,7 +199,6 @@ app.put(
 
 app.delete(
   '/api/funcionarios/:codigoFuncionario',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: funcionarioServiceUrl,
@@ -218,7 +210,6 @@ app.delete(
 // ======================= RESERVAS ==============================
 app.get(
   '/api/reservas/:codigoReserva',
-  requireJwt,
   requireRole('TODOS'),
   createProxyMiddleware({
     target: reservaServiceUrl,
@@ -229,7 +220,6 @@ app.get(
 
 app.post(
   '/api/reservas',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
@@ -240,7 +230,6 @@ app.post(
 
 app.delete(
   '/api/reservas/:codigoReserva',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
@@ -251,7 +240,6 @@ app.delete(
 
 app.patch(
   '/api/reservas/:codigoReserva/estado',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
@@ -263,7 +251,6 @@ app.patch(
 // ======================= CHECK-IN ==============================
 app.patch(
   '/api/reservas/:codigoReserva/checkin',
-  requireJwt,
   requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
@@ -280,7 +267,6 @@ app.patch(
 // ======================= EMBARQUE =============================
 app.patch(
   '/api/reservas/:codigoReserva/embarque',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: reservaServiceUrl,
@@ -297,7 +283,6 @@ app.patch(
 // ======================= VOOS ==================================
 app.get(
   '/api/voos',
-  requireJwt,
   requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
@@ -308,7 +293,6 @@ app.get(
 
 app.get(
   '/api/voos/busca',
-  requireJwt,
   requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
@@ -319,7 +303,6 @@ app.get(
 
 app.post(
   '/api/voos',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: voosServiceUrl,
@@ -330,7 +313,6 @@ app.post(
 
 app.get(
   '/api/voos/:codigoVoo',
-  requireJwt,
   requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
@@ -341,7 +323,6 @@ app.get(
 
 app.patch(
   '/api/voos/:codigoVoo/estado',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: voosServiceUrl,
@@ -352,7 +333,6 @@ app.patch(
 
 app.patch(
   '/api/voos/:codigoVoo/cancelar',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: voosServiceUrl,
@@ -368,7 +348,6 @@ app.patch(
 
 app.patch(
   '/api/voos/:codigoVoo/realizar',
-  requireJwt,
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: voosServiceUrl,
@@ -385,7 +364,6 @@ app.patch(
 // ======================= AEROPORTOS ============================
 app.get(
   '/api/aeroportos',
-  requireJwt,
   requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
