@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { useAuth } from 'src/context/AuthContext';
 import { IconButton, Tooltip, Snackbar, Alert } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
+import { atualizarEstadoVoo, Voo } from 'src/api/voo';
 import { ConfirmarRealizacaoDialog } from './dialogs/ConfirmarRealizaçãoDialog';
 
 type Props = {
-  voo: any;
+  voo: Voo;
   onRealizacaoSucesso: () => void;
 };
 
 export function RealizarVooActions({ voo, onRealizacaoSucesso }: Props) {
-  const { usuario } = useAuth();
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMensagem, setSnackbarMensagem] = useState('');
@@ -18,24 +17,13 @@ export function RealizarVooActions({ voo, onRealizacaoSucesso }: Props) {
 
   const handleRealizarVoo = async () => {
     try {
-      const response = await fetch(`/api/funcionario/voos/${voo.codigo}/realizar`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${usuario?.email}`,
-        },
-      });
-
-      if (response.ok) {
-        setSnackbarMensagem('Voo realizado com sucesso.');
-        setSnackbarTipo('success');
-        setSnackbarOpen(true);
-        onRealizacaoSucesso();
-        setOpenDialog(false);
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
+      await atualizarEstadoVoo(voo.codigo, 'REALIZADO');
+      setSnackbarMensagem('Voo realizado com sucesso.');
+      setSnackbarTipo('success');
+      setSnackbarOpen(true);
+      setOpenDialog(false);
+      onRealizacaoSucesso();
+    } catch (error) {
       setSnackbarMensagem('Erro ao realizar voo.');
       setSnackbarTipo('error');
       setSnackbarOpen(true);

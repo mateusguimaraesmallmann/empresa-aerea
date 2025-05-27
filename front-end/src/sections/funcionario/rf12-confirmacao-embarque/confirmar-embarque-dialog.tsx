@@ -10,22 +10,13 @@ import {
   Alert,
 } from '@mui/material';
 import { createPortal } from 'react-dom';
+import api from 'src/api/api';
 
-type Reserva = {
-  codigo: string;
-  estado: string;
-  voo: {
-    id: string;
-    origem: string;
-    destino: string;
-  };
-};
-
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
   vooId: string;
-};
+}
 
 export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
   const [codigo, setCodigo] = useState('');
@@ -33,46 +24,23 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
   const [snackbarMensagem, setSnackbarMensagem] = useState('');
   const [snackbarTipo, setSnackbarTipo] = useState<'success' | 'error'>('success');
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
-  };
+  const handleCloseSnackbar = () => setSnackbarOpen(false);
 
-  const handleConfirmar = () => {
-    const reservas: Reserva[] = JSON.parse(localStorage.getItem('reservas') || '[]');
-    const reserva = reservas.find((r) => r.codigo === codigo);
-
-    if (!reserva) {
-      setSnackbarMensagem('Reserva não encontrada.');
+  const handleConfirmar = async () => {
+    try {
+      await api.patch(`/reservas/${codigo}/embarque`, {});
+      setSnackbarMensagem('Embarque confirmado com sucesso!');
+      setSnackbarTipo('success');
+      setSnackbarOpen(true);
+      setTimeout(() => {
+        onClose();
+        setCodigo('');
+      }, 2000);
+    } catch (error) {
+      setSnackbarMensagem('Erro ao confirmar embarque. Verifique o código.');
       setSnackbarTipo('error');
       setSnackbarOpen(true);
-      return;
     }
-
-    if (reserva.voo?.id !== vooId) {
-      setSnackbarMensagem('Esta reserva não pertence a este voo.');
-      setSnackbarTipo('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    if (reserva.estado !== 'CHECK-IN') {
-      setSnackbarMensagem('A reserva precisa estar no estado CHECK-IN.');
-      setSnackbarTipo('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    reserva.estado = 'EMBARCADO';
-    localStorage.setItem('reservas', JSON.stringify(reservas));
-
-    setSnackbarMensagem('Embarque confirmado com sucesso!');
-    setSnackbarTipo('success');
-    setSnackbarOpen(true);
-
-    setTimeout(() => {
-      onClose();
-      setCodigo('');
-    }, 2000);
   };
 
   return (
@@ -91,13 +59,10 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
 
         <DialogActions>
           <Button onClick={onClose}>Cancelar</Button>
-          <Button variant="contained" onClick={handleConfirmar}>
-            Confirmar
-          </Button>
+          <Button variant="contained" onClick={handleConfirmar}>Confirmar</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar fora do Dialog */}
       {createPortal(
         <Snackbar
           open={snackbarOpen}
@@ -105,11 +70,7 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          <Alert
-            onClose={handleCloseSnackbar}
-            severity={snackbarTipo}
-            sx={{ width: '100%' }}
-          >
+          <Alert onClose={handleCloseSnackbar} severity={snackbarTipo} sx={{ width: '100%' }}>
             {snackbarMensagem}
           </Alert>
         </Snackbar>,
