@@ -46,6 +46,11 @@ services:
       RABBITMQ_DEFAULT_PASS: rabbitmq
     networks:
       - empresa-aerea-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # =============== MICROSERVIÇOS ===============
 
@@ -125,8 +130,10 @@ services:
     ports:
       - "9095:9095"
     depends_on:
-      - postgres-db
-      - rabbitmq
+      postgres-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - empresa-aerea-net
 
