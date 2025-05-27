@@ -3,25 +3,29 @@ import { Helmet } from 'react-helmet-async';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
+import { Voo, buscarTodosVoos } from 'src/api/voo';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { Voo } from 'src/_mock/voos-mock';
 import { TabelaVoosFuncionario } from '../tabela-voos-funcionario';
 
 export function TelaInicialView() {
   const [voos, setVoos] = useState<Voo[]>([]);
 
-  const carregarVoos = () => {
-    const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]') as Voo[];
-    const agora = new Date();
-    const daqui48h = new Date(agora.getTime() + 48 * 60 * 60 * 1000);
+  const carregarVoos = async () => {
+    try {
+      const todosVoos = await buscarTodosVoos();
+      const agora = new Date();
+      const daqui48h = new Date(agora.getTime() + 48 * 60 * 60 * 1000);
 
-    const voosFiltrados = voosSalvos.filter((voo) => {
-      const dataVoo = new Date(voo.dataHora);
-      return dataVoo > agora && dataVoo <= daqui48h;
-    });
+      const voosFiltrados = todosVoos.filter((voo: Voo) => {
+        const dataVoo = new Date(voo.dataHora);
+        return dataVoo > agora && dataVoo <= daqui48h;
+      });
 
-    setVoos(voosFiltrados);
-  }
+      setVoos(voosFiltrados);
+    } catch (error) {
+      console.error('Erro ao carregar voos:', error);
+    }
+  };
 
   useEffect(() => {
     carregarVoos();
@@ -41,7 +45,6 @@ export function TelaInicialView() {
         </Box>
 
         <TabelaVoosFuncionario voos={voos} />
-        
       </DashboardContent>
     </>
   );

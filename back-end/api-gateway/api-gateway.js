@@ -16,7 +16,10 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({ origin: ['http://localhost:4200', 'http://localhost:3039', 'http://localhost:3040'], credentials: true }));
+app.use(cors({
+  origin: ['http://localhost:3040', 'http://localhost:4200'],
+  credentials: true,
+}));
 
 // URLs dos microsserviços
 const authServiceUrl = process.env.MS_AUTH_URL;
@@ -26,10 +29,25 @@ const reservaServiceUrl = process.env.MS_RESERVA_URL;
 const voosServiceUrl = process.env.MS_VOOS_URL;
 const sagaServiceUrl = process.env.MS_SAGA_URL;
 
-// Verificação das variáveis 
+// ================= Verificação das variáveis ===================
 if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaServiceUrl || !voosServiceUrl || !sagaServiceUrl) {
   console.error("Alguma variável de ambiente obrigatória está faltando.");
   process.exit(1);
+}
+
+// ======================= Controle de Papeis ====================
+function requireRole(role) {
+  return (req, res, next) => {
+    if (!req.user) {
+      console.warn("Acesso negado: usuário não autenticado");
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (role !== 'TODOS' && req.user.tipo !== role) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  };
 }
 
 // ======================= ROTAS PÚBLICAS ========================
@@ -75,18 +93,26 @@ app.post(
 );
 
 // ======================= AEROPORTOS (liberado para testes) ====
-app.use('/api/aeroportos', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3040');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  next();
-});
-
+// app.use('/api/aeroportos', (req, res, next) => {
+//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3040');
+//   res.setHeader('Access-Control-Allow-Credentials', 'true');
+//   next();
+// });
 app.get(
   '/api/aeroportos',
+  requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
     changeOrigin: true,
     pathRewrite: path => path.replace('/api/aeroportos', '/ms-voos/aeroportos'),
+    onProxyRes: function (proxyRes, req, res) {
+      const allowedOrigins = ['http://localhost:3040', 'http://localhost:4200'];
+      const origin = req.headers.origin;
+      if (allowedOrigins.includes(origin)) {
+        proxyRes.headers['Access-Control-Allow-Origin'] = origin;
+        proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+      }
+    },
   })
 );
 
@@ -111,21 +137,6 @@ const requireJwt = jwt({
 });
 
 app.use("/api", requireJwt);
-
-// ======================= Controle de Papeis ====================
-function requireRole(role) {
-  return (req, res, next) => {
-    if (!req.user) {
-      console.warn("Acesso negado: usuário não autenticado");
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    if (role !== 'TODOS' && req.user.tipo !== role) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-    next();
-  };
-}
 
 // ======================= CLIENTE ===============================
 
