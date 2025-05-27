@@ -1,4 +1,4 @@
-# Etapa 1: build do Angular
+# Etapa 1: build
 FROM node:20 AS builder
 WORKDIR /app
 COPY package*.json ./

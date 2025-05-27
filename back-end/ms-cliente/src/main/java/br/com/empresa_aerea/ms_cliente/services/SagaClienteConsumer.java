@@ -2,10 +2,7 @@ package br.com.empresa_aerea.ms_cliente.services;
 
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.models.Endereco;
-import br.com.empresa_aerea.ms_cliente.services.ClienteService;
 import br.com.empresa_aerea.ms_cliente.messaging.SagaMessaging;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
@@ -41,12 +38,12 @@ public class SagaClienteConsumer {
             endereco.setComplemento((String) enderecoMap.get("complemento"));
             endereco.setCidade((String) enderecoMap.get("cidade"));
             endereco.setEstado((String) enderecoMap.get("estado"));
-            endereco.setBairro("Padrão"); 
+            endereco.setBairro("Padrão");
 
             cliente.setEndereco(endereco);
 
             String senhaGerada = gerarSenha(4);
-            cliente.setSenha(senhaGerada); 
+            cliente.setSenha(senhaGerada);
 
             clienteService.salvar(cliente);
 

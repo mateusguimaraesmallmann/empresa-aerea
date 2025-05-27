@@ -28,7 +28,7 @@ const sagaServiceUrl = process.env.MS_SAGA_URL;
 
 // Verificação das variáveis 
 if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaServiceUrl || !voosServiceUrl || !sagaServiceUrl) {
-  console.error(" ❌ Alguma variável de ambiente obrigatória está faltando.");
+  console.error("Alguma variável de ambiente obrigatória está faltando.");
   process.exit(1);
 }
 
@@ -100,16 +100,16 @@ const requireJwt = jwt({
   secret: process.env.JWT_SECRET,
   algorithms: ['HS256'],
   requestProperty: 'user'
+}).unless({
+  path: [
+    '/api/login',
+    '/api/register',
+    '/api/saga/autocadastro',
+    '/saga/ms-cliente/cadastrar-cliente',
+    '/api/clientes',
+  ]
 });
 
-// ======================= JWT Token Middleware ==================
-const requireJwt = jwt({
-  secret: process.env.JWT_SECRET,
-  algorithms: ['HS256'],
-  requestProperty: 'user'
-});
-
-// Middleware de proteção JWT
 app.use("/api", requireJwt);
 
 // ======================= Controle de Papeis ====================
