@@ -9,25 +9,29 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
+import api from 'src/api/api';
+import { Voo } from 'src/api/voo';
 
-type Props = {
+interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: () => void;
-  voo: any;
-};
+  onConfirm?: () => void;
+  voo: Voo;
+}
 
 export function CancelarVooDialog({ open, onClose, onConfirm, voo }: Props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMensagem, setSnackbarMensagem] = useState('');
   const [snackbarTipo, setSnackbarTipo] = useState<'success' | 'error'>('success');
 
-  const handleConfirmar = () => {
+  const handleConfirmar = async () => {
     try {
-      onConfirm();
+      await api.patch(`/voos/${voo.codigo}/cancelar`, {});
       setSnackbarMensagem('Voo cancelado com sucesso.');
       setSnackbarTipo('success');
       setSnackbarOpen(true);
+      if (onConfirm) onConfirm();
+      onClose();
     } catch (error) {
       setSnackbarMensagem('Erro ao cancelar voo.');
       setSnackbarTipo('error');
@@ -35,20 +39,16 @@ export function CancelarVooDialog({ open, onClose, onConfirm, voo }: Props) {
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbarOpen(false);
-  };
+  const handleCloseSnackbar = () => setSnackbarOpen(false);
 
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ color: 'error.main' }}>⚠️ Cancelar Voo</DialogTitle>
         <DialogContent>
-          <Typography>
-            Confirma o cancelamento do voo <strong>{voo?.codigo}</strong>?
-          </Typography>
+          <Typography>Confirma o cancelamento do voo <strong>{voo?.codigo}</strong>?</Typography>
           <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-            Origem: {voo?.origem} → Destino: {voo?.destino}
+            Origem: {voo?.origem?.nome} → Destino: {voo?.destino?.nome}
           </Typography>
         </DialogContent>
         <DialogActions>

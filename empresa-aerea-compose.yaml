@@ -145,6 +145,8 @@ services:
       - ms-reserva
       - ms-voos
       - saga
+    env_file:
+      - ./back-end/api-gateway/.env
     environment:
       PORT: 3000
       MS_AUTH_URL: http://ms-auth:9090

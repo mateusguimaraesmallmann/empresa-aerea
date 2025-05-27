@@ -34,6 +34,13 @@ export async function buscarVoos(data: string, origem: string, destino: string) 
   return response.data;
 }
 
+// GET /voos — buscar todos os voos
+export async function buscarTodosVoos(): Promise<Voo[]> {
+  const response = await api.get<Voo[]>('/voos');
+  return response.data;
+}
+
+
 // GET /voos/:codigoVoo — buscar voo por código
 export async function buscarVooPorCodigo(codigoVoo: string): Promise<Voo> {
   const response = await api.get<Voo>(`/voos/${codigoVoo}`);

@@ -21,14 +21,15 @@ import {
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
-import { Voo } from 'src/_mock/voos-mock';
+import { Voo, atualizarEstadoVoo } from 'src/api/voo';
+import api from 'src/api/api';
 import { ConfirmarEmbarqueDialog } from 'src/sections/funcionario/rf12-confirmacao-embarque/confirmar-embarque-dialog';
 import { CancelarVooDialog } from '../rf13-cancelar-voo/dialogo-cancelamento';
 import { ConfirmarRealizacaoDialog } from '../rf14-realizar-voo/dialogs/ConfirmarRealizaçãoDialog';
 
-type Props = {
+interface Props {
   voos: Voo[];
-};
+}
 
 export function TabelaVoosFuncionario({ voos }: Props) {
   const [page, setPage] = useState(0);
@@ -61,9 +62,13 @@ export function TabelaVoosFuncionario({ voos }: Props) {
     setPage(newPage);
   };
 
-  const atualizarListaVoos = () => {
-    const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
-    setListaVoos(voosSalvos);
+  const atualizarListaVoos = async () => {
+    try {
+      const response = await api.get<Voo[]>('/voos');
+      setListaVoos(response.data);
+    } catch (error) {
+      mostrarSnackbar('Erro ao atualizar lista de voos.', 'error');
+    }
   };
 
   const mostrarSnackbar = (mensagem: string, tipo: 'success' | 'error') => {
@@ -97,12 +102,30 @@ export function TabelaVoosFuncionario({ voos }: Props) {
     }
   };
 
+  const cancelarVoo = async (codigoVoo: string) => {
+    try {
+      await atualizarEstadoVoo(codigoVoo, 'CANCELADO');
+      mostrarSnackbar('Voo cancelado com sucesso.', 'success');
+      atualizarListaVoos();
+    } catch (error) {
+      mostrarSnackbar('Erro ao cancelar voo.', 'error');
+    }
+  };
+
+  const realizarVoo = async (codigoVoo: string) => {
+    try {
+      await atualizarEstadoVoo(codigoVoo, 'REALIZADO');
+      mostrarSnackbar('Voo realizado com sucesso.', 'success');
+      atualizarListaVoos();
+    } catch (error) {
+      mostrarSnackbar('Erro ao realizar voo.', 'error');
+    }
+  };
+
   return (
     <>
       <Card>
-        <Toolbar
-          sx={{ height: 96, display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 3 }}
-        >
+        <Toolbar sx={{ height: 96, display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 3 }}>
           <Typography variant="h6">Voos nas próximas 48 horas</Typography>
         </Toolbar>
 
@@ -129,8 +152,8 @@ export function TabelaVoosFuncionario({ voos }: Props) {
                       <TableRow key={voo.id}>
                         <TableCell>{voo.codigo}</TableCell>
                         <TableCell>{new Date(voo.dataHora).toLocaleString('pt-BR')}</TableCell>
-                        <TableCell>{voo.origem}</TableCell>
-                        <TableCell>{voo.destino}</TableCell>
+                        <TableCell>{voo.origem.nome}</TableCell>
+                        <TableCell>{voo.destino.nome}</TableCell>
                         <TableCell>
                           <Chip
                             label={voo.estado}
@@ -215,28 +238,8 @@ export function TabelaVoosFuncionario({ voos }: Props) {
               open={modalCancelamentoAberto}
               onClose={() => setModalCancelamentoAberto(false)}
               onConfirm={() => {
-                const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
-                const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
-                const voo = voosSalvos.find((v: Voo) => v.id === vooSelecionado.id);
-
-                if (voo?.estado !== 'CONFIRMADO') {
-                  mostrarSnackbar('O voo precisa estar no estado CONFIRMADO para ser cancelado.', 'error');
-                  return;
-                }
-
-                const voosAtualizados = voosSalvos.map((v: Voo) =>
-                  v.id === vooSelecionado.id ? { ...v, estado: 'CANCELADO' } : v
-                );
-                localStorage.setItem('voos', JSON.stringify(voosAtualizados));
-
-                const reservasAtualizadas = reservas.map((r: any) =>
-                  r.voo?.id === vooSelecionado.id ? { ...r, estado: 'CANCELADO VOO' } : r
-                );
-                localStorage.setItem('reservas', JSON.stringify(reservasAtualizadas));
-
+                cancelarVoo(vooSelecionado.codigo);
                 setModalCancelamentoAberto(false);
-                atualizarListaVoos();
-                mostrarSnackbar('Voo cancelado com sucesso.', 'success');
               }}
               voo={vooSelecionado}
             />
@@ -245,30 +248,8 @@ export function TabelaVoosFuncionario({ voos }: Props) {
               open={modalRealizacaoAberto}
               onClose={() => setModalRealizacaoAberto(false)}
               onConfirm={() => {
-                const voosSalvos = JSON.parse(localStorage.getItem('voos') || '[]');
-                const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
-                const voo = voosSalvos.find((v: Voo) => v.id === vooSelecionado.id);
-
-                if (voo?.estado !== 'CONFIRMADO') {
-                  mostrarSnackbar('O voo precisa estar no estado CONFIRMADO para ser realizado.', 'error');
-                  return;
-                }
-
-                const voosAtualizados = voosSalvos.map((v: Voo) =>
-                  v.id === vooSelecionado.id ? { ...v, estado: 'REALIZADA' } : v
-                );
-                localStorage.setItem('voos', JSON.stringify(voosAtualizados));
-
-                const reservasAtualizadas = reservas.map((r: any) => {
-                  if (r.voo?.id !== vooSelecionado.id) return r;
-                  if (r.estado === 'EMBARCADO') return { ...r, estado: 'REALIZADA' };
-                  return { ...r, estado: 'NÃO REALIZADA' };
-                });
-                localStorage.setItem('reservas', JSON.stringify(reservasAtualizadas));
-
+                realizarVoo(vooSelecionado.codigo);
                 setModalRealizacaoAberto(false);
-                atualizarListaVoos();
-                mostrarSnackbar('Voo realizado com sucesso.', 'success');
               }}
               voo={vooSelecionado}
             />
