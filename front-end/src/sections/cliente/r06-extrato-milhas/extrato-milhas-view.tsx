@@ -8,40 +8,33 @@ import { v4 as uuidv4 } from 'uuid';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { ExtratoMilhasTabela } from './extrato-milhas-tabela';
 import { TransacaoMilhas } from './types';
+import { obterExtratoMilhas } from 'src/api/milha';
 
 export function ExtratoMilhasView() {
   const [transacoes, setTransacoes] = useState<TransacaoMilhas[]>([]);
 
   useEffect(() => {
-    const carregarTransacoes = () => {
-      const compras = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
-      const reservas = JSON.parse(localStorage.getItem('reservas') || '[]');
+    const carregarTransacoes = async () => {
+      try {
+        const id = localStorage.getItem('cliente_codigo');
+        if (!id) throw new Error('Cliente não identificado');
 
-      const transacoesCompra: TransacaoMilhas[] = compras.map((compra: any) => ({
-        id: uuidv4(),
-        dataHora: new Date(compra.dataHora).toISOString(),
-        codigoReserva: null,
-        valorReais: parseFloat(compra.valor),
-        quantidadeMilhas: compra.milhas,
-        descricao: 'COMPRA DE MILHAS',
-        tipo: 'ENTRADA',
-      }));
+        const { data } = await obterExtratoMilhas(Number(id));
 
-      const transacoesReserva: TransacaoMilhas[] = reservas.map((reserva: any) => ({
-        id: uuidv4(),
-        dataHora: new Date(reserva.dataHoraCriacao || new Date()).toISOString(),
-        codigoReserva: reserva.codigo || null,
-        valorReais: reserva.restanteEmDinheiro || 0,
-        quantidadeMilhas: reserva.milhasUsadas || 0,
-        descricao: `${(reserva.voo?.origem || '').slice(-4, -1)}->${(reserva.voo?.destino || '').slice(-4, -1)}`,
-        tipo: 'SAÍDA',
-      }));
+        const transacoesFormatadas: TransacaoMilhas[] = data.transacoes.map((t: any) => ({
+          id: uuidv4(),
+          dataHora: t.dataHora || new Date().toISOString(),
+          codigoReserva: t.codigoReserva || null,
+          valorReais: t.valorReais || 0,
+          quantidadeMilhas: t.quantidade_milhas,
+          descricao: t.descricao || 'Transação',
+          tipo: t.tipo,
+        }));
 
-      const todasTransacoes = [...transacoesCompra, ...transacoesReserva].sort(
-        (a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
-      );
-
-      setTransacoes(todasTransacoes);
+        setTransacoes(transacoesFormatadas);
+      } catch (error) {
+        console.error('Erro ao carregar extrato de milhas:', error);
+      }
     };
 
     carregarTransacoes();
