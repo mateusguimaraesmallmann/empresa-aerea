@@ -19,24 +19,21 @@ function ComprarMilhasView() {
 
   const valorPorMilha = 5;
 
-  const handleCompra = () => {
-    const valorTotal = milhas * valorPorMilha;
-    const dataHora = new Date().toISOString();
+  const handleCompra = async () => {
+    try {
+      const id = localStorage.getItem('cliente_codigo'); // Simulado via localStorage
+      if (!id) throw new Error('Cliente não identificado');
 
-    const novaTransacao = {
-      dataHora,
-      milhas,
-      valor: valorTotal.toFixed(2),
-      descricao: 'COMPRA DE MILHAS',
-    };
+      const { atualizarMilhasCliente } = await import('src/api/milha');
+      await atualizarMilhasCliente(Number(id), milhas);
 
-    const historico = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
-    historico.push(novaTransacao);
-    localStorage.setItem('comprasMilhas', JSON.stringify(historico));
-
-    setSnackbarMessage('Compra registrada com sucesso!');
-    setOpenSnackbar(true);
-    setMilhas(0);
+      setSnackbarMessage('Compra registrada com sucesso!');
+      setOpenSnackbar(true);
+      setMilhas(0);
+    } catch (err) {
+      setSnackbarMessage('Erro ao comprar milhas.');
+      setOpenSnackbar(true);
+    }
   };
 
   const handleIrParaExtrato = () => {
