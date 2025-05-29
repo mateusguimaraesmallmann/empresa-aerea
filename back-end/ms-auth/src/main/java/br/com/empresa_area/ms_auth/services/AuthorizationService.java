@@ -30,7 +30,7 @@ public class AuthorizationService {
         Usuario novo = new Usuario();
         novo.setLogin(dto.getEmail());
         novo.setSenha(passwordEncoder.encode(dto.getSenha()));
-        novo.setRole(dto.getTipo());
+        novo.setTipo(dto.getTipo());
         return usuarioRepository.save(novo);
     }
 

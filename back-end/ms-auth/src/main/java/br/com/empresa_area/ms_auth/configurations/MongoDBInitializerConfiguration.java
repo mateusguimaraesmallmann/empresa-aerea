@@ -55,7 +55,7 @@ public class MongoDBInitializerConfiguration {
                 for (Usuario u : usuarios) {
                     System.out.println("--------------------------------------------------");
                     System.out.println("> id:     " + u.getId());
-                    System.out.println("> email:  " + u.getEmail());
+                    System.out.println("> email:  " + u.getLogin());
                     System.out.println("> senha:  " + u.getSenha());
                     System.out.println("> tipo:   " + u.getTipo());
                     System.out.println("--------------------------------------------------");

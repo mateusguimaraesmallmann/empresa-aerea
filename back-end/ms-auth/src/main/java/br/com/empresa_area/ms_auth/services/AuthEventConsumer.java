@@ -27,7 +27,7 @@ public class AuthEventConsumer {
         }
 
         Usuario usuario = new Usuario();
-        usuario.setEmail(event.getEmail());
+        usuario.setLogin(event.getEmail());
         usuario.setSenha(passwordEncoder.encode(event.getSenha()));
         usuario.setTipo(event.getTipo());
 

@@ -42,15 +42,12 @@ public class SagaClienteConsumer {
 
             cliente.setEndereco(endereco);
 
-            String senhaGerada = gerarSenha(4);
-            cliente.setSenha(senhaGerada);
-
             clienteService.salvar(cliente);
 
             rabbitTemplate.convertAndSend(
                 SagaMessaging.EXCHANGE,
                 SagaMessaging.RPL_CADASTRO_CLIENTE,
-                Map.of("senha", senhaGerada)
+                Map.of("senha", "senhaGerada")
             );
 
         } catch (Exception e) {

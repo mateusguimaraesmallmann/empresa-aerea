@@ -5,7 +5,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,9 +17,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
 @Document(collection = "usuarios")
 public class Usuario implements UserDetails {
 
@@ -25,7 +30,7 @@ public class Usuario implements UserDetails {
 
     @NotBlank(message = "E-mail é obrigatório")
     @Email(message = "E-mail inválido")
-    private String email;
+    private String login;
 
     @NotBlank(message = "Senha é obrigatória")
     private String senha;
@@ -44,35 +49,27 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return login;
     }
-
-    public String getLogin() {
-        return email;
-    }
-
-    public TipoUsuario getRole() {
-        return tipo;
-    }
-
-    public void setLogin(String email) {
-    this.email = email;
-    }
-
-    public void setRole(TipoUsuario tipo) {
-        this.tipo = tipo;
-    }
-
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() { 
+        return true; 
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() { 
+        return true; 
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() { 
+        return true; 
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { 
+        return true; 
+    }
+
 }

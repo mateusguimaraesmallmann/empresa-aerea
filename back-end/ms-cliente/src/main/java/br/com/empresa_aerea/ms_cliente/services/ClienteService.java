@@ -1,15 +1,16 @@
 package br.com.empresa_aerea.ms_cliente.services;
 
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
-import br.com.empresa_aerea.ms_cliente.models.TransacaoMilhas;
+import br.com.empresa_aerea.ms_cliente.models.Milha;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
-import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
+import br.com.empresa_aerea.ms_cliente.repositories.MilhasRepository;
+import br.com.empresa_aerea.ms_cliente.enums.TipoTransacaoEnum;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Service
@@ -19,7 +20,7 @@ public class ClienteService {
     private ClienteRepository clienteRepository;
 
     @Autowired
-    private TransacaoMilhasRepository transacaoMilhasRepository;
+    private MilhasRepository milhasRepository;
 
     public ClienteService(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
@@ -55,16 +56,16 @@ public class ClienteService {
         cliente.setMilhas(saldoAtual + quantidade);
         clienteRepository.save(cliente);
 
-        TransacaoMilhas transacao = new TransacaoMilhas();
-        transacao.setCliente(cliente);
-        transacao.setQuantidade(quantidade);
-        transacao.setTipo("ENTRADA");
-        transacao.setDescricao("COMPRA DE MILHAS");
-        transacao.setValorReais(null);
-        transacao.setCodigoReserva(null);
-        transacao.setDataHora(LocalDateTime.now());
+        Milha milha = new Milha();
+        milha.setCliente(cliente);
+        milha.setQuantidadeMilhas(Integer.parseInt(String.valueOf(quantidade)));
+        milha.setTipoTransacao(TipoTransacaoEnum.ENTRADA);
+        milha.setDescricao("COMPRA DE MILHAS");
+        milha.setValorReais(null);
+//        milha.setCodigoReserva(null);
+        milha.setDataTransacao(OffsetDateTime.now());
 
-        transacaoMilhasRepository.save(transacao);
+        milhasRepository.save(milha);
 
         Map<String, Object> response = new HashMap<>();
         response.put("codigo", cliente.getIdCliente());
@@ -78,10 +79,10 @@ public class ClienteService {
             .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         List<Map<String, Object>> transacoes = new ArrayList<>();
-        for (TransacaoMilhas t : transacaoMilhasRepository.findByClienteOrderByDataHoraDesc(cliente)) {
+        for (Milha t : milhasRepository.findByClienteIdCliente(cliente.getIdCliente()).get()) {
             Map<String, Object> item = new HashMap<>();
-            item.put("quantidade_milhas", t.getQuantidade());
-            item.put("tipo", t.getTipo());
+            item.put("quantidade_milhas", t.getQuantidadeMilhas());
+            item.put("tipo", t.getTipoTransacao());
             transacoes.add(item);
         }
 

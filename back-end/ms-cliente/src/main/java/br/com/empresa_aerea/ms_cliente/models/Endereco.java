@@ -1,9 +1,17 @@
 package br.com.empresa_aerea.ms_cliente.models;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.io.Serializable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Setter
 @Getter
@@ -15,7 +23,7 @@ public class Endereco implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "endereco_id")
+    @Column(name = "id_endereco")
     private Long idEndereco = 0L;
 
     @Column(name = "cep", nullable = false)
@@ -39,22 +47,4 @@ public class Endereco implements Serializable {
     @Column(name = "complemento")
     private String complemento;
 
- 
-    public Endereco(
-        String cep, 
-        String estado, 
-        String cidade, 
-        String bairro, 
-        String rua, 
-        String numero, 
-        String complemento
-    ) {
-        this.cep = cep;
-        this.estado = estado;
-        this.cidade = cidade;
-        this.bairro = bairro;
-        this.rua = rua;
-        this.numero = numero;
-        this.complemento = complemento;
-    }
 }

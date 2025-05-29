@@ -52,9 +52,7 @@ public class ClienteController {
 
     // Atualizar saldo de milhas (PUT)
     @PutMapping("/clientes/{id}/milhas")
-    public ResponseEntity<Map<String, Object>> atualizarMilhas(
-            @PathVariable Long id,
-            @RequestBody Map<String, Integer> payload) {
+    public ResponseEntity<Map<String, Object>> atualizarMilhas(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
         if (!payload.containsKey("quantidade")) {
             return ResponseEntity.badRequest().body(Map.of("erro", "Campo 'quantidade' é obrigatório"));
         }

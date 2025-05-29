@@ -24,7 +24,7 @@ public class AuthenticationController {
             new TokenResponseDTO(
                 usuario.getId(),
                 usuario.getLogin(),
-                usuario.getRole(),
+                usuario.getTipo(),
                 authorizationService.generateToken(usuario)
             )
         );
@@ -36,7 +36,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(new UserDTO(
             usuario.getId(),
             usuario.getLogin(),
-            usuario.getRole()
+            usuario.getTipo()
         ));
     }
 }

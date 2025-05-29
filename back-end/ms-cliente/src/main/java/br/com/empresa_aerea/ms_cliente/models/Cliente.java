@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,7 +16,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Setter
@@ -44,9 +41,6 @@ public class Cliente implements Serializable {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "senha", nullable = false)
-    private String senha;
-
     @Column(name = "saldo_milhas", insertable = false, nullable = false)
     private Integer milhas;
 
@@ -54,6 +48,4 @@ public class Cliente implements Serializable {
     @JoinColumn(name = "id_endereco", nullable = false)
     private Endereco endereco;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TransacaoMilhas> transacoesMilhas = new ArrayList<>();
 }

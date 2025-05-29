@@ -26,7 +26,7 @@ public class TokenService {
 
     public String generateToken(Usuario usuario) {
         return Jwts.builder()
-                .setSubject(usuario.getEmail())
+                .setSubject(usuario.getLogin())
                 .claim("tipo", usuario.getTipo().toString())
                 .claim("id", usuario.getId())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10h
@@ -60,7 +60,7 @@ public class TokenService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         return User.builder()
-                .username(user.getEmail())
+                .username(user.getLogin())
                 .password(user.getSenha())
                 .roles(user.getTipo().toString())
                 .build();
