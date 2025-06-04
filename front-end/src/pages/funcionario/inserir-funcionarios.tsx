@@ -20,7 +20,7 @@ export default function InserirFuncionarioPage() {
       <InserirFuncionariosView
         aberto
         onFechar={() => navigate('/listar-funcionarios')}
-        onInserir={handleInserir}
+        onSucesso={handleInserir}
       />
     </>
   );

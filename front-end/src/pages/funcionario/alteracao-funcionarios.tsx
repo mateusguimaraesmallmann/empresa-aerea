@@ -22,7 +22,7 @@ export default function AlteracaoFuncionariosPage() {
         aberto
         funcionario={funcionarioSelecionado}
         onFechar={() => navigate('/listar-funcionarios')}
-        onAtualizar={() => navigate('/listar-funcionarios')}
+        onAtualizado={() => navigate('/listar-funcionarios')}
       />
     </>
   );
