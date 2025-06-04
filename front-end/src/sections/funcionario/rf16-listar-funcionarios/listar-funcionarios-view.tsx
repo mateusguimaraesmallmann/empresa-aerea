@@ -1,42 +1,67 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import { Box, Typography, Button, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Funcionario } from '../types/funcionario';
 import { TabelaFuncionarios } from './tabela-funcionarios-view';
-import { InserirFuncionariosView } from '../rf17-inserir-funcionarios/inserir-funcionarios-view';
-import { RemoverFuncionariosView } from '../rf19-remocao-funcionarios/remocao-funcionarios';
+import axios from 'axios';
 
 export function ListarFuncionariosView() {
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
-  const [funcionarioRemovendo, setFuncionarioRemovendo] = useState<Funcionario | null>(null);
+  const [erroCarregamento, setErroCarregamento] = useState('');
+  const [carregando, setCarregando] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const lista: Funcionario[] = JSON.parse(localStorage.getItem('funcionarios') || '[]');
-    const ordenados = lista.sort((a, b) => a.nome.localeCompare(b.nome));
-    setFuncionarios(ordenados);
+    const carregarFuncionarios = async () => {
+      try {
+        const response = await axios.get<Funcionario[]>('/api/funcionarios', {
+          headers: { 
+            Authorization: `Bearer ${localStorage.getItem('token')}` 
+          }
+        });
+
+        const dadosOrdenados = response.data.sort((a: Funcionario, b: Funcionario) => 
+          a.nome.localeCompare(b.nome)
+        );
+        
+        setFuncionarios(dadosOrdenados);
+      } catch (erro) {
+        setErroCarregamento('Falha ao carregar funcionários');
+        console.error("Erro ao carregar:", erro);
+      } finally {
+        setCarregando(false);
+      }
+    };
+    
+    carregarFuncionarios();
   }, []);
 
-  const handleInserirFuncionario = (novo: Funcionario) => {
-    const atualizados = [...funcionarios, novo].sort((a, b) =>
-      a.nome.localeCompare(b.nome)
-    );
-    setFuncionarios(atualizados);
+  const handleRemover = async (cpf: string) => {
+    try {
+      await axios.delete(`/api/funcionarios/${cpf}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setFuncionarios(prev => prev.filter(f => f.cpf !== cpf));
+    } catch (erro) {
+      console.error("Erro ao remover:", erro);
+      setErroCarregamento('Falha ao remover funcionário');
+    }
   };
 
-  const handleReativarFuncionario = (funcionario: Funcionario) => {
-    const listaAtual: Funcionario[] = JSON.parse(localStorage.getItem('funcionarios') || '[]');
-    const index = listaAtual.findIndex((f) => f.id === funcionario.id);
-
-    if (index !== -1) {
-      listaAtual[index].ativo = true;
-      localStorage.setItem('funcionarios', JSON.stringify(listaAtual));
-      const atualizados = listaAtual.sort((a, b) => a.nome.localeCompare(b.nome));
-      setFuncionarios(atualizados);
+  const handleReativarFuncionario = async (cpf: string) => {
+    try {
+      await axios.patch(`/api/funcionarios/${cpf}/reativar`, null, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+      
+      setFuncionarios(prev => prev.map(f => 
+        f.cpf === cpf ? { ...f, ativo: true } : f
+      ));
+    } catch (erro) {
+      console.error("Erro ao reativar:", erro);
+      setErroCarregamento('Falha ao reativar funcionário');
     }
   };
 
@@ -49,16 +74,28 @@ export function ListarFuncionariosView() {
       <DashboardContent>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4">Listagem de Funcionários</Typography>
-          <Button variant="contained" onClick={() => navigate('/inserir-funcionario')}>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/inserir-funcionario')}
+            disabled={carregando}
+          >
             Adicionar +
           </Button>
         </Box>
 
-        <TabelaFuncionarios
-          funcionarios={funcionarios}
-          onRemover={(funcionario) => navigate(`/remover-funcionario?id=${funcionario.id}`)}
-          onReativar={handleReativarFuncionario}
-        />
+        {erroCarregamento && (
+          <Alert severity="error" sx={{ mb: 2 }}>{erroCarregamento}</Alert>
+        )}
+
+        {carregando ? (
+          <Typography variant="body1">Carregando funcionários...</Typography>
+        ) : (
+          <TabelaFuncionarios
+            funcionarios={funcionarios}
+            onRemover={(funcionario) => handleRemover(funcionario.cpf)}
+            onReativar={(funcionario) => handleReativarFuncionario(funcionario.cpf)}
+          />
+        )}
       </DashboardContent>
     </>
   );

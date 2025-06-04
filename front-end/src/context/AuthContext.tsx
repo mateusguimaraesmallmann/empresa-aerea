@@ -14,7 +14,10 @@ import { usuariosMock } from '../_mock/usuarios-mock';
 type Usuario = {
   email: string;
   tipo: 'CLIENTE' | 'FUNCIONARIO';
+  idCliente?: number; 
+  token?: string;
 };
+
 
 type AuthContextType = {
   isAuthenticated: boolean
