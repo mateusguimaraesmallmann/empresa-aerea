@@ -70,7 +70,7 @@ export function AutoCadastroView() {
     setErroCadastro('');
 
     try {
-      const response = await api.post<{ senha: string }>('/saga/ms-cliente/cadastrar-cliente', {
+      const response = await api.post<{ senha: string }>('/saga/autocadastro', {
         cpf: cpf.replace(/\D/g, ''),
         nome,
         email,
@@ -82,7 +82,11 @@ export function AutoCadastroView() {
           cidade,
           estado: uf,
         },
-      });
+      },
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
 
       setSenhaGerada(response.data.senha);
       setAutocadastroSucesso(true);

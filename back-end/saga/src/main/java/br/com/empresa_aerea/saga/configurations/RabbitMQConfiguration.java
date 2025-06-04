@@ -22,7 +22,7 @@ public class RabbitMQConfiguration {
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
         RabbitAdmin admin = new RabbitAdmin(connectionFactory);
-        admin.setAutoStartup(false);
+        admin.setAutoStartup(true);
         return admin;
     }
 

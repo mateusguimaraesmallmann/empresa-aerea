@@ -18,30 +18,35 @@ public class RabbitMQConfiguration {
     public static final String RPC_QUEUE_CLIENTE = "rpc.cliente.fetch";
     public static final String RPC_QUEUE_FUNCIONARIO = "rpc.funcionario.fetch";
 
-    @Bean TopicExchange sagaExchange() {
+    @Bean
+    TopicExchange sagaExchange() {
         return new TopicExchange(EXCHANGE, true, false);
     }
 
-    @Bean Queue clienteFetchQueue() {
+    @Bean
+    Queue clienteFetchQueue() {
         return new Queue(RPC_QUEUE_CLIENTE, true);
     }
 
-    @Bean Queue funcionarioFetchQueue() {
+    @Bean
+    Queue funcionarioFetchQueue() {
         return new Queue(RPC_QUEUE_FUNCIONARIO, true);
     }
 
-    @Bean Binding bindClienteFetch(Queue clienteFetchQueue, TopicExchange ex) {
+    @Bean
+    Binding bindClienteFetch(Queue clienteFetchQueue, TopicExchange ex) {
         return BindingBuilder
-          .bind(clienteFetchQueue)
-          .to(ex)
-          .with(RPC_QUEUE_CLIENTE);
+                .bind(clienteFetchQueue)
+                .to(ex)
+                .with(RPC_QUEUE_CLIENTE);
     }
 
-    @Bean Binding bindFuncionarioFetch(Queue funcionarioFetchQueue, TopicExchange ex) {
+    @Bean
+    Binding bindFuncionarioFetch(Queue funcionarioFetchQueue, TopicExchange ex) {
         return BindingBuilder
-          .bind(funcionarioFetchQueue)
-          .to(ex)
-          .with(RPC_QUEUE_FUNCIONARIO);
+                .bind(funcionarioFetchQueue)
+                .to(ex)
+                .with(RPC_QUEUE_FUNCIONARIO);
     }
 
     @Bean
@@ -57,5 +62,17 @@ public class RabbitMQConfiguration {
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
-    
+
+    @Bean
+    public void forcarCriacaoFilasEBindings(
+            Queue clienteCriarQueue,
+            Queue usuarioCriarQueue,
+            Queue msClienteCadastrarQueue,
+            Queue respostaCadastroClienteQueue,
+            Binding bindingClienteCriar,
+            Binding bindingUsuarioCriar,
+            Binding bindingMsClienteCadastrar,
+            Binding bindingRespostaCadastroCliente) {
+        // Força o Spring a inicializar todas as filas/bindings
+    }
 }
