@@ -325,7 +325,6 @@ app.patch(
 // ======================= VOOS ==================================
 app.get(
   '/api/voos',
-  requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
     changeOrigin: true,
@@ -418,6 +417,15 @@ app.patch(
       proxyReq.write(JSON.stringify({ estado: 'REALIZADO' }));
       proxyReq.end();
     },
+  })
+);
+
+app.get(
+  '/api/voos/listar',
+  createProxyMiddleware({
+    target: voosServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/voos/listar', '/ms-voos/voos/listar'),
   })
 );
 

@@ -49,7 +49,7 @@ export async function buscarVoos(data: string, origem: string, destino: string) 
 
 // GET /voos — buscar todos os voos
 export async function buscarTodosVoos(): Promise<Voo[]> {
-  const response = await api.get<Voo[]>('/voos');
+  const response = await api.get<Voo[]>('/voos/listar');
   return response.data;
 }
 

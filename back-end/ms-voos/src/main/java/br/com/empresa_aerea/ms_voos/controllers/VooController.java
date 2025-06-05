@@ -95,6 +95,11 @@ public class VooController {
         return ResponseEntity.ok(atualizado);
     }
 
+    @GetMapping("/voos/listar")
+    public ResponseEntity<List<Voo>> listarTodosVoos() {
+        return ResponseEntity.ok(vooService.listarTodos());
+    }
+
     @GetMapping("/aeroportos")
     public List<Aeroporto> listarAeroportos() {
         return aeroportoService.listarTodos();
