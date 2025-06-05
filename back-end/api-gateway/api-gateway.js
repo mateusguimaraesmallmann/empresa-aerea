@@ -77,6 +77,7 @@ app.post(
   createProxyMiddleware({
     target: sagaServiceUrl,
     changeOrigin: true,
+    selfHandleResponse: false,
     pathRewrite: (path) =>
       path.replace("/api/saga/autocadastro", "/saga/ms-cliente/cadastrar-cliente"),
   })
@@ -136,7 +137,6 @@ const requireJwt = jwt({
     '/api/login',
     '/api/register',
     '/api/saga/autocadastro',
-    '/saga/ms-cliente/cadastrar-cliente',
     '/api/clientes',
     '/api/voos',
     '/api/aeroportos',

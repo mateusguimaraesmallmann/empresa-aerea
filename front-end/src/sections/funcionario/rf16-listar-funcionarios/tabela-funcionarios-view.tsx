@@ -1,16 +1,17 @@
+import React from 'react';
 import {
   Table,
+  TableHead,
   TableBody,
+  TableRow,
   TableCell,
   TableContainer,
-  TableHead,
-  TableRow,
   Paper,
-  Box,
   Button,
+  Box
 } from '@mui/material';
-import { Iconify } from 'src/components/iconify';
 import { useNavigate } from 'react-router-dom';
+import { Iconify } from 'src/components/iconify';
 import { Funcionario } from '../types/funcionario';
 
 type Props = {
@@ -19,7 +20,6 @@ type Props = {
   onReativar: (funcionario: Funcionario) => void;
 };
 
-// Formata o CPF para exibição 
 function formatarCPF(cpf: string): string {
   return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
 }
@@ -36,16 +36,17 @@ export function TabelaFuncionarios({ funcionarios, onRemover, onReativar }: Prop
             <TableCell>CPF</TableCell>
             <TableCell>E-mail</TableCell>
             <TableCell>Telefone</TableCell>
-            <TableCell>Ações</TableCell>
+            <TableCell align="center">Ações</TableCell>
           </TableRow>
         </TableHead>
+
         <TableBody>
-          {funcionarios.map((funcionario, index) => (
+          {funcionarios.map((funcionario) => (
             <TableRow
-              key={index}
+              key={funcionario.id}
               sx={{
                 opacity: funcionario.ativo ? 1 : 0.5,
-                color: funcionario.ativo ? 'inherit' : 'gray',
+                color: funcionario.ativo ? 'inherit' : 'gray'
               }}
             >
               <TableCell>{funcionario.nome}</TableCell>
@@ -53,20 +54,20 @@ export function TabelaFuncionarios({ funcionarios, onRemover, onReativar }: Prop
               <TableCell>{funcionario.email}</TableCell>
               <TableCell>{funcionario.telefone}</TableCell>
               <TableCell>
-                <Box display="flex" alignItems="center">
+                <Box display="flex" alignItems="center" gap={1}>
                   {funcionario.ativo ? (
                     <Button
                       size="small"
-                      color="primary"
+                      aria-label="Editar"
                       startIcon={<Iconify icon="mdi:pencil" width={18} />}
                       onClick={() => navigate(`/alterar-funcionario?id=${funcionario.id}`)}
                     >
-                      Alterar
+                      Editar
                     </Button>
                   ) : (
                     <Button
                       size="small"
-                      color="primary"
+                      aria-label="Reativar"
                       startIcon={<Iconify icon="mdi:refresh" width={18} />}
                       onClick={() => onReativar(funcionario)}
                     >
@@ -77,10 +78,10 @@ export function TabelaFuncionarios({ funcionarios, onRemover, onReativar }: Prop
                   <Button
                     size="small"
                     color="error"
+                    aria-label="Remover"
                     startIcon={<Iconify icon="mdi:delete" width={18} />}
                     onClick={() => onRemover(funcionario)}
-                    sx={{ ml: 1 }}
-                    disabled={!funcionario.ativo} // Desativado se inativo
+                    disabled={!funcionario.ativo}
                   >
                     Remover
                   </Button>

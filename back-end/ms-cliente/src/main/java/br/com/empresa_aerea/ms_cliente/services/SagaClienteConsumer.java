@@ -47,6 +47,7 @@ public class SagaClienteConsumer {
 
             clienteService.salvar(cliente);
 
+            System.out.println("Enviando resposta para saga: " + senhaGerada);
             rabbitTemplate.convertAndSend(
                 SagaMessaging.EXCHANGE,
                 SagaMessaging.RPL_CADASTRO_CLIENTE,

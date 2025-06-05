@@ -7,54 +7,100 @@ import {
   Divider,
   Snackbar,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Label } from 'src/components/label';
+import axios from 'axios';
+import { useAuth } from 'src/context/AuthContext'; // Supondo que você tenha um contexto de autenticação
+import { format, addHours } from 'date-fns';
 
 export function FazerCheckIn() {
-  const [voos, setVoos] = useState<any[]>([]);
+  const { usuario } = useAuth(); // Contexto com usuário logado
   const [reservas, setReservas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
+  const [error, setError] = useState('');
 
   const agora = new Date();
-  const daqui48h = new Date(agora.getTime() + 48 * 60 * 60 * 1000);
+  const daqui48h = addHours(agora, 48);
 
   useEffect(() => {
-    const voosLS = JSON.parse(localStorage.getItem('voos') || '[]');
-    const reservasLS = JSON.parse(localStorage.getItem('reservas') || '[]');
-    setVoos(voosLS);
-    setReservas(reservasLS);
-  }, []);
+    const carregarReservasParaCheckIn = async () => {
+      try {
+        setLoading(true);
+        
+        // 1. Buscar reservas do cliente nas próximas 48h
+        const response = await axios.get(
+          `/api/clientes/${usuario?.idCliente}/reservas?estado=CRIADA`,
+          {
+            headers: {
+              Authorization: `Bearer ${usuario?.token}`,
+            },
+          }
+        );
 
-  const fazerCheckIn = (codigoVoo: string, codigoReserva: string) => {
+        // 2. Filtrar reservas com voo nas próximas 48h e estado CONFIRMADO
+        const reservasValidas = response.data.filter((reserva: any) => {
+          const dataVoo = new Date(reserva.voo.dataHora);
+          return (
+            dataVoo >= agora && 
+            dataVoo <= daqui48h &&
+            reserva.voo.estado === 'CONFIRMADO'
+          );
+        });
 
-    // Atualiza reserva específica
-    const reservasAtualizadas = reservas.map((reserva) =>
-      reserva.codigo === codigoReserva ? { ...reserva, estado: 'CHECK-IN' } : reserva
-    );
-    localStorage.setItem('reservas', JSON.stringify(reservasAtualizadas));
-    setReservas(reservasAtualizadas);
+        setReservas(reservasValidas);
+      } catch (err) {
+        setError('Erro ao carregar reservas');
+        console.error('Erro ao buscar reservas:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setSnackbarMsg(`Check-in realizado com sucesso para a reserva ${codigoReserva}`);
-    setSnackbarOpen(true);
+    if (usuario?.idCliente) {
+      carregarReservasParaCheckIn();
+    }
+  }, [usuario]);
+
+  const fazerCheckIn = async (codigoReserva: string) => {
+    try {
+      // 3. Atualizar estado da reserva para CHECK-IN
+      await axios.patch(
+        `/api/reservas/${codigoReserva}/checkin`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${usuario?.token}`,
+          },
+        }
+      );
+
+      // 4. Atualizar estado local
+      setReservas(reservas.map(reserva => 
+        reserva.codigo === codigoReserva 
+          ? { ...reserva, estado: 'CHECK-IN' } 
+          : reserva
+      ));
+
+      setSnackbarMsg(`Check-in realizado com sucesso para a reserva ${codigoReserva}`);
+      setSnackbarOpen(true);
+    } catch (err) {
+      setError('Erro ao realizar check-in');
+      console.error('Erro no check-in:', err);
+    }
   };
 
   const handleSnackbarClose = () => setSnackbarOpen(false);
 
-  // Renderizar um card por reserva com voo em até 48h
-  const reservasParaCheckIn = reservas.filter((reserva) => {
-    const vooData = new Date(reserva.voo?.dataHora);
-    return (
-      reserva.estado === 'CRIADA' &&
-      reserva.voo &&
-      vooData >= agora &&
-      vooData <= daqui48h &&
-      reserva.voo.estado === 'CONFIRMADO'
-    );
-  });
+  // 5. Filtrar apenas reservas ainda elegíveis para check-in
+  const reservasParaCheckIn = reservas.filter(
+    reserva => reserva.estado === 'CRIADA'
+  );
 
   const renderCard = (reserva: any) => {
     const voo = reserva.voo;
@@ -72,13 +118,13 @@ export function FazerCheckIn() {
           <Divider sx={{ mb: 2 }} />
 
           <Typography variant="body2" color="text.secondary">
-            <strong>Origem:</strong> {voo.origem}
+            <strong>Origem:</strong> {voo.aeroportoOrigem.codigo} - {voo.aeroportoOrigem.cidade}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>Destino:</strong> {voo.destino}
+            <strong>Destino:</strong> {voo.aeroportoDestino.codigo} - {voo.aeroportoDestino.cidade}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}
+            <strong>Data/Hora:</strong> {format(new Date(voo.dataHora), 'dd/MM/yyyy HH:mm')}
           </Typography>
 
           <Divider sx={{ my: 2 }} />
@@ -86,22 +132,25 @@ export function FazerCheckIn() {
           <Grid container spacing={1}>
             <Grid item xs={6}>
               <Typography variant="body2">
-                <strong>Preço:</strong> R$ {voo.preco}
+                <strong>Preço:</strong> R$ {voo.valorPassagem.toFixed(2)}
               </Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography variant="body2">
-                <strong>Milhas:</strong> {voo.milhas}
+                <strong>Milhas:</strong> {voo.milhasNecessarias}
               </Typography>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <Typography variant="body2">
-                <strong>Poltronas:</strong> {voo.poltronas}
+                <strong>Status Voo:</strong> {voo.estado}
               </Typography>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <Typography variant="body2">
-                <strong>Status:</strong> {voo.estado}
+                <strong>Status Reserva:</strong> 
+                <Label color={reserva.estado === 'CRIADA' ? 'primary' : 'success'}>
+                  {reserva.estado}
+                </Label>
               </Typography>
             </Grid>
           </Grid>
@@ -109,9 +158,10 @@ export function FazerCheckIn() {
           <Box mt={2} display="flex" justifyContent="flex-end">
             <Button
               variant="contained"
-              onClick={() => fazerCheckIn(voo.codigo, reserva.codigo)}
+              disabled={reserva.estado !== 'CRIADA'}
+              onClick={() => fazerCheckIn(reserva.codigo)}
             >
-              Fazer Check-in
+              {reserva.estado === 'CRIADA' ? 'Fazer Check-in' : 'Check-in Realizado'}
             </Button>
           </Box>
         </Paper>
@@ -132,7 +182,17 @@ export function FazerCheckIn() {
             Voos nas próximas 48h com reservas ativas
           </Typography>
 
-          {reservasParaCheckIn.length === 0 ? (
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          {loading ? (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress />
+            </Box>
+          ) : reservasParaCheckIn.length === 0 ? (
             <Typography color="text.secondary">
               Nenhuma reserva disponível para check-in nas próximas 48 horas.
             </Typography>
@@ -153,9 +213,7 @@ export function FazerCheckIn() {
         <Alert
           onClose={handleSnackbarClose}
           severity="success"
-          sx={{ backgroundColor: '#d0f2d0', color: '#1e4620', width: '100%' }}
-          elevation={6}
-          variant="filled"
+          sx={{ width: '100%' }}
         >
           {snackbarMsg}
         </Alert>
@@ -163,5 +221,3 @@ export function FazerCheckIn() {
     </>
   );
 }
-
-

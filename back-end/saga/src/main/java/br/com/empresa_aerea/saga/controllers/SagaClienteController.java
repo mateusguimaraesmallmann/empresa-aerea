@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 @CrossOrigin(origins = "*")
 public class SagaClienteController {
     private static final Logger logger = LoggerFactory.getLogger(SagaClienteController.class);
-    private static final long FUTURE_TIMEOUT = 30;
+    private static final long FUTURE_TIMEOUT = 60; // antes era 30
 
     private final RabbitTemplate rabbitTemplate;
     private final ConnectionFactory connectionFactory;
