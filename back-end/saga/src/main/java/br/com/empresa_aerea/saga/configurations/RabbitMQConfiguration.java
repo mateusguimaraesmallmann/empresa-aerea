@@ -27,7 +27,8 @@ public class RabbitMQConfiguration {
     }
 
     @Bean
-    public ApplicationListener<ApplicationReadyEvent> applicationReadyEventApplicationListener(RabbitAdmin rabbitAdmin) {
+    public ApplicationListener<ApplicationReadyEvent> applicationReadyEventApplicationListener(
+            RabbitAdmin rabbitAdmin) {
         return event -> {
             try {
                 rabbitAdmin.initialize();
@@ -91,4 +92,9 @@ public class RabbitMQConfiguration {
     public Binding bindingRespostaCadastroCliente(Queue respostaCadastroClienteQueue, TopicExchange exchange) {
         return BindingBuilder.bind(respostaCadastroClienteQueue).to(exchange).with(SagaMessaging.RPL_CADASTRO_CLIENTE);
     }
-} 
+
+    @Bean
+    public Queue rpcClienteFetchQueue() {
+        return new Queue("rpc.cliente.fetch", true);
+    }
+}
