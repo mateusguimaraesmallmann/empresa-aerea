@@ -44,6 +44,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: rabbitmq
       RABBITMQ_DEFAULT_PASS: rabbitmq
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - empresa-aerea-net
     healthcheck:
@@ -186,3 +188,7 @@ services:
 networks:
   empresa-aerea-net:
     driver: bridge
+
+# =============== VOLUMES ===============
+volumes:
+  rabbitmq-data:

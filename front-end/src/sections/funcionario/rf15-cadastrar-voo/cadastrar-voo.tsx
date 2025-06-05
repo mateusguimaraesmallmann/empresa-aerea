@@ -13,14 +13,14 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { listarAeroportos, criarVoo, Aeroporto, Voo } from 'src/api/voo';
+import { listarAeroportos, criarVoo, Aeroporto, CriarVooDTO } from 'src/api/voo';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { NumericFormat } from 'react-number-format';
 
 const schema = yup.object({
   dataHora: yup.string().required('Data e hora são obrigatórias'),
-  origem: yup.string().required('Origem é obrigatória'),
-  destino: yup.string().required('Destino é obrigatória'),
+  origem: yup.mixed().required('Origem é obrigatória'),
+  destino: yup.mixed().required('Destino é obrigatória'),
   valorReais: yup
     .number()
     .typeError('Digite um valor válido')
@@ -94,29 +94,17 @@ export default function CadastrarVoo() {
 
   const onSubmit = async (data: any) => {
     try {
-      const valor = data.valorReais;
-
-      const origem = todosAeroportos.find((a) => a.codigo === data.origem);
-      const destino = todosAeroportos.find((a) => a.codigo === data.destino);
-
-      if (!origem || !destino) {
-        setSnackbarMessage('Aeroporto de origem ou destino inválido.');
-        setSnackbarTipo('error');
-        setSnackbarOpen(true);
-        return;
-      }
-
-      const voo: Voo = {
+      const voo: CriarVooDTO = {
         id: idGerado,
         codigo: codigoGerado,
         dataHora: dayjs(data.dataHora).format('YYYY-MM-DDTHH:mm:ss'),
-        origem,
-        destino,
-        preco: valor,
+        origemCodigo: data.origem.codigo,
+        destinoCodigo: data.destino.codigo,
+        preco: data.valorReais,
         poltronas: data.poltronas,
         poltronasOcupadas: 0,
-        estado: 'CONFIRMADO' as const,
-      };
+        estado: 'CONFIRMADO',
+      };      
 
       await criarVoo(voo);
 
@@ -169,7 +157,8 @@ export default function CadastrarVoo() {
                 control={control}
                 render={({ field }) => (
                   <Autocomplete
-                    options={todosAeroportos.map((a) => a.codigo)}
+                    options={todosAeroportos}
+                    getOptionLabel={(option) => option?.nome || ''}
                     onChange={(_, value) => field.onChange(value)}
                     renderInput={(params) => (
                       <TextField
@@ -191,7 +180,8 @@ export default function CadastrarVoo() {
                 control={control}
                 render={({ field }) => (
                   <Autocomplete
-                    options={todosAeroportos.map((a) => a.codigo)}
+                    options={todosAeroportos}
+                    getOptionLabel={(option) => option?.nome || ''}
                     onChange={(_, value) => field.onChange(value)}
                     renderInput={(params) => (
                       <TextField

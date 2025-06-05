@@ -8,8 +8,9 @@ export interface Aeroporto {
   estado: string;
 }
 
-// Modelo de voo conforme o back-end
+// Modelo completo de voo (usado em listagens e atualizações)
 export interface Voo {
+  id: string;
   codigo: string;
   dataHora: string;
   preco: number;
@@ -18,11 +19,23 @@ export interface Voo {
   estado: 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO';
   origem: Aeroporto;
   destino: Aeroporto;
+}
+
+// DTO para criação de voo (envio no cadastro)
+export interface CriarVooDTO {
   id: string;
+  codigo: string;
+  dataHora: string;
+  origemCodigo: string;
+  destinoCodigo: string;
+  preco: number;
+  poltronas: number;
+  poltronasOcupadas: number;
+  estado: 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO';
 }
 
 // POST /voos — criar voo
-export async function criarVoo(dados: Voo): Promise<Voo> {
+export async function criarVoo(dados: CriarVooDTO): Promise<Voo> {
   const response = await api.post<Voo>('/voos', dados);
   return response.data;
 }
@@ -40,7 +53,6 @@ export async function buscarTodosVoos(): Promise<Voo[]> {
   return response.data;
 }
 
-
 // GET /voos/:codigoVoo — buscar voo por código
 export async function buscarVooPorCodigo(codigoVoo: string): Promise<Voo> {
   const response = await api.get<Voo>(`/voos/${codigoVoo}`);
@@ -48,7 +60,10 @@ export async function buscarVooPorCodigo(codigoVoo: string): Promise<Voo> {
 }
 
 // PATCH /voos/:codigoVoo/estado — atualizar estado do voo
-export async function atualizarEstadoVoo(codigoVoo: string, novoEstado: 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO'): Promise<Voo> {
+export async function atualizarEstadoVoo(
+  codigoVoo: string,
+  novoEstado: 'CONFIRMADO' | 'CANCELADO' | 'REALIZADO'
+): Promise<Voo> {
   const response = await api.patch<Voo>(`/voos/${codigoVoo}/estado`, novoEstado, {
     headers: { 'Content-Type': 'application/json' },
   });

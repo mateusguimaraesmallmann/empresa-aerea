@@ -18,4 +18,9 @@ public class AeroportoService {
     public List<Aeroporto> listarTodos() {
         return aeroportoRepository.findAll();
     }
+
+    public Aeroporto buscarPorCodigo(String codigo) {
+        return aeroportoRepository.findById(codigo)
+            .orElseThrow(() -> new RuntimeException("Aeroporto não encontrado: " + codigo));
+    }
 }
