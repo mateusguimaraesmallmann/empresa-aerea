@@ -2,7 +2,7 @@ import api from 'src/api/api';
 
 // Modelo de aeroporto
 export interface Aeroporto {
-  codigo: string;
+  codigoAeroporto: string;
   nome: string;
   cidade: string;
   estado: string;

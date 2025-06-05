@@ -17,10 +17,19 @@ import { listarAeroportos, criarVoo, Aeroporto, CriarVooDTO } from 'src/api/voo'
 import { DashboardContent } from 'src/layouts/dashboard';
 import { NumericFormat } from 'react-number-format';
 
-const schema = yup.object({
+// Tipagem do formulário
+type FormularioVoo = {
+  dataHora: string;
+  origem: Aeroporto | null;
+  destino: Aeroporto | null;
+  valorReais: number;
+  poltronas: number;
+};
+
+const schema: yup.ObjectSchema<FormularioVoo> = yup.object({
   dataHora: yup.string().required('Data e hora são obrigatórias'),
-  origem: yup.mixed().required('Origem é obrigatória'),
-  destino: yup.mixed().required('Destino é obrigatória'),
+  origem: yup.mixed<Aeroporto>().required('Origem é obrigatória').nullable(),
+  destino: yup.mixed<Aeroporto>().required('Destino é obrigatória').nullable(),
   valorReais: yup
     .number()
     .typeError('Digite um valor válido')
@@ -49,10 +58,12 @@ export default function CadastrarVoo() {
     control,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormularioVoo>({
     resolver: yupResolver(schema),
     defaultValues: {
       valorReais: 0,
+      origem: null,
+      destino: null,
     },
   });
 
@@ -92,19 +103,19 @@ export default function CadastrarVoo() {
     setCodigoGerado(novoCodigo);
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormularioVoo) => {
     try {
       const voo: CriarVooDTO = {
         id: idGerado,
         codigo: codigoGerado,
-        dataHora: dayjs(data.dataHora).format('YYYY-MM-DDTHH:mm:ss'),
-        origemCodigo: data.origem.codigo,
-        destinoCodigo: data.destino.codigo,
+        dataHora: dayjs(data.dataHora).toISOString(),
+        origemCodigo: data.origem?.codigoAeroporto ?? '',
+        destinoCodigo: data.destino?.codigoAeroporto ?? '',        
         preco: data.valorReais,
         poltronas: data.poltronas,
         poltronasOcupadas: 0,
         estado: 'CONFIRMADO',
-      };      
+      };
 
       await criarVoo(voo);
 
@@ -159,7 +170,9 @@ export default function CadastrarVoo() {
                   <Autocomplete
                     options={todosAeroportos}
                     getOptionLabel={(option) => option?.nome || ''}
+                    isOptionEqualToValue={(option, value) => option.codigoAeroporto === value?.codigoAeroporto}
                     onChange={(_, value) => field.onChange(value)}
+                    value={field.value}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -182,7 +195,9 @@ export default function CadastrarVoo() {
                   <Autocomplete
                     options={todosAeroportos}
                     getOptionLabel={(option) => option?.nome || ''}
+                    isOptionEqualToValue={(option, value) => option.codigoAeroporto === value?.codigoAeroporto}
                     onChange={(_, value) => field.onChange(value)}
+                    value={field.value}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -205,7 +220,7 @@ export default function CadastrarVoo() {
                   <NumericFormat
                     value={value}
                     thousandSeparator="."
-                    decimalSeparator=","
+                    decimalSeparator="," 
                     prefix="R$ "
                     decimalScale={2}
                     fixedDecimalScale
