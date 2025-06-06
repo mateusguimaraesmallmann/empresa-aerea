@@ -14,7 +14,7 @@ import { Helmet } from 'react-helmet-async';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Label } from 'src/components/label';
 import axios from 'axios';
-import { useAuth } from 'src/context/AuthContext'; // Supondo que você tenha um contexto de autenticação
+import { useAuth } from 'src/context/AuthContext'; 
 import { format, addHours } from 'date-fns';
 
 export function FazerCheckIn() {
@@ -25,11 +25,12 @@ export function FazerCheckIn() {
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [error, setError] = useState('');
 
-  const agora = new Date();
-  const daqui48h = addHours(agora, 48);
-
   useEffect(() => {
     const carregarReservasParaCheckIn = async () => {
+
+      const agora = new Date();
+      const daqui48h = addHours(agora, 48);
+      
       try {
         setLoading(true);
         

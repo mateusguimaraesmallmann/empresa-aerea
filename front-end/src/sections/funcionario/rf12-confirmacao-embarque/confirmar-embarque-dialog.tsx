@@ -17,11 +17,11 @@ import { useAuth } from 'src/context/AuthContext';
 interface Props {
   open: boolean;
   onClose: () => void;
-  vooId: string; 
+  vooId: string;
 }
 
 export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
-  const { usuario } = useAuth(); 
+  const { usuario } = useAuth();
   const [codigo, setCodigo] = useState('');
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -40,8 +40,8 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
 
     try {
       setLoading(true);
-      
-      
+
+
       await axios.patch(
         `/api/reservas/${codigo}/embarque`,
         { vooId },
@@ -52,12 +52,12 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
         }
       );
 
-      
+
       setSnackbarMensagem('Embarque confirmado com sucesso!');
       setSnackbarTipo('success');
       setSnackbarOpen(true);
-      
-      
+
+
       setTimeout(() => {
         onClose();
         setCodigo('');
@@ -65,8 +65,8 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
       }, 2000);
     } catch (error: any) {
       setLoading(false);
-      
-      
+
+
       let errorMsg = 'Erro ao confirmar embarque';
       if (error.response) {
         switch (error.response.status) {
@@ -79,9 +79,11 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
           case 403:
             errorMsg = 'Reserva não está em estado de CHECK-IN';
             break;
+          default:
+            errorMsg = 'Erro inesperado ao confirmar embarque';
         }
       }
-      
+
       setSnackbarMensagem(errorMsg);
       setSnackbarTipo('error');
       setSnackbarOpen(true);
@@ -107,8 +109,8 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
           <Button onClick={onClose} disabled={loading}>
             Cancelar
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleConfirmar}
             disabled={loading}
           >
@@ -124,9 +126,9 @@ export function ConfirmarEmbarqueDialog({ open, onClose, vooId }: Props) {
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          <Alert 
-            onClose={handleCloseSnackbar} 
-            severity={snackbarTipo} 
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbarTipo}
             sx={{ width: '100%' }}
           >
             {snackbarMensagem}

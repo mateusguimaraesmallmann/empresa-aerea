@@ -48,11 +48,20 @@ public class SagaClienteConsumer {
             clienteService.salvar(cliente);
 
             System.out.println("Enviando resposta para saga: " + senhaGerada);
+            // Envia para o Auth criar o usuário
             rabbitTemplate.convertAndSend(
-                SagaMessaging.EXCHANGE,
-                SagaMessaging.RPL_CADASTRO_CLIENTE,
-                Map.of("senha", senhaGerada)
-            );
+                    SagaMessaging.EXCHANGE,
+                    "usuario.criar",
+                    Map.of(
+                            "email", cliente.getEmail(),
+                            "senha", senhaGerada,
+                            "tipo", "CLIENTE"));
+
+            // Responde à Saga
+            rabbitTemplate.convertAndSend(
+                    SagaMessaging.EXCHANGE,
+                    SagaMessaging.RPL_CADASTRO_CLIENTE,
+                    Map.of("senha", senhaGerada));
 
         } catch (Exception e) {
             e.printStackTrace();

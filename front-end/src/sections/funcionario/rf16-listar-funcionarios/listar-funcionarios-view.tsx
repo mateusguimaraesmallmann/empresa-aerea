@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Box, Typography, Button, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Funcionario } from '../types/funcionario';
 import { TabelaFuncionarios } from './tabela-funcionarios-view';
-import axios from 'axios';
 
 export function ListarFuncionariosView() {
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);

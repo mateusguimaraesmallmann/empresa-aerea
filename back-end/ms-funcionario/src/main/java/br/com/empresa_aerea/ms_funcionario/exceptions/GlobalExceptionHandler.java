@@ -11,4 +11,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+
+    @ExceptionHandler(FuncionarioNotFoundException.class)
+    public ResponseEntity<String> handleFuncionarioNotFound(FuncionarioNotFoundException ex) {
+        return ResponseEntity.status(404).body(ex.getMessage());
+    }
 }
