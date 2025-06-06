@@ -13,14 +13,23 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { listarAeroportos, criarVoo, Aeroporto, Voo } from 'src/api/voo';
+import { listarAeroportos, criarVoo, Aeroporto, CriarVooDTO } from 'src/api/voo';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { NumericFormat } from 'react-number-format';
 
-const schema = yup.object({
+// Tipagem do formulário
+type FormularioVoo = {
+  dataHora: string;
+  origem: Aeroporto | null;
+  destino: Aeroporto | null;
+  valorReais: number;
+  poltronas: number;
+};
+
+const schema: yup.ObjectSchema<FormularioVoo> = yup.object({
   dataHora: yup.string().required('Data e hora são obrigatórias'),
-  origem: yup.string().required('Origem é obrigatória'),
-  destino: yup.string().required('Destino é obrigatória'),
+  origem: yup.mixed<Aeroporto>().required('Origem é obrigatória').nullable(),
+  destino: yup.mixed<Aeroporto>().required('Destino é obrigatória').nullable(),
   valorReais: yup
     .number()
     .typeError('Digite um valor válido')
@@ -49,10 +58,12 @@ export default function CadastrarVoo() {
     control,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormularioVoo>({
     resolver: yupResolver(schema),
     defaultValues: {
       valorReais: 0,
+      origem: null,
+      destino: null,
     },
   });
 
@@ -92,30 +103,18 @@ export default function CadastrarVoo() {
     setCodigoGerado(novoCodigo);
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormularioVoo) => {
     try {
-      const valor = data.valorReais;
-
-      const origem = todosAeroportos.find((a) => a.codigo === data.origem);
-      const destino = todosAeroportos.find((a) => a.codigo === data.destino);
-
-      if (!origem || !destino) {
-        setSnackbarMessage('Aeroporto de origem ou destino inválido.');
-        setSnackbarTipo('error');
-        setSnackbarOpen(true);
-        return;
-      }
-
-      const voo: Voo = {
+      const voo: CriarVooDTO = {
         id: idGerado,
         codigo: codigoGerado,
-        dataHora: dayjs(data.dataHora).format('YYYY-MM-DDTHH:mm:ss'),
-        origem,
-        destino,
-        preco: valor,
+        dataHora: dayjs(data.dataHora).toISOString(),
+        origemCodigo: data.origem?.codigoAeroporto ?? '',
+        destinoCodigo: data.destino?.codigoAeroporto ?? '',        
+        preco: data.valorReais,
         poltronas: data.poltronas,
         poltronasOcupadas: 0,
-        estado: 'CONFIRMADO' as const,
+        estado: 'CONFIRMADO',
       };
 
       await criarVoo(voo);
@@ -169,8 +168,11 @@ export default function CadastrarVoo() {
                 control={control}
                 render={({ field }) => (
                   <Autocomplete
-                    options={todosAeroportos.map((a) => a.codigo)}
+                    options={todosAeroportos}
+                    getOptionLabel={(option) => option?.nome || ''}
+                    isOptionEqualToValue={(option, value) => option.codigoAeroporto === value?.codigoAeroporto}
                     onChange={(_, value) => field.onChange(value)}
+                    value={field.value}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -191,8 +193,11 @@ export default function CadastrarVoo() {
                 control={control}
                 render={({ field }) => (
                   <Autocomplete
-                    options={todosAeroportos.map((a) => a.codigo)}
+                    options={todosAeroportos}
+                    getOptionLabel={(option) => option?.nome || ''}
+                    isOptionEqualToValue={(option, value) => option.codigoAeroporto === value?.codigoAeroporto}
                     onChange={(_, value) => field.onChange(value)}
+                    value={field.value}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -215,7 +220,7 @@ export default function CadastrarVoo() {
                   <NumericFormat
                     value={value}
                     thousandSeparator="."
-                    decimalSeparator=","
+                    decimalSeparator="," 
                     prefix="R$ "
                     decimalScale={2}
                     fixedDecimalScale

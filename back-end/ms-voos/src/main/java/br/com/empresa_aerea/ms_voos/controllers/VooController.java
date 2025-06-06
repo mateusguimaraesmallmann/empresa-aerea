@@ -1,6 +1,7 @@
 package br.com.empresa_aerea.ms_voos.controllers;
 
 import br.com.empresa_aerea.ms_voos.dto.BuscarVoosResponseDTO;
+import br.com.empresa_aerea.ms_voos.dto.CriarVooDTO;
 import br.com.empresa_aerea.ms_voos.dto.VooDTO;
 import br.com.empresa_aerea.ms_voos.enums.EstadoVooEnum;
 import br.com.empresa_aerea.ms_voos.models.Aeroporto;
@@ -28,9 +29,24 @@ public class VooController {
     }
 
     @PostMapping("/voos")
-    public ResponseEntity<Voo> criarVoo(@RequestBody Voo voo) {
-        Voo criado = vooService.criar(voo);
-        return ResponseEntity.status(201).body(criado);
+    public ResponseEntity<Voo> criarVoo(@RequestBody CriarVooDTO dto) {
+        Aeroporto origem = aeroportoService.buscarPorCodigo(dto.getOrigemCodigo());
+        Aeroporto destino = aeroportoService.buscarPorCodigo(dto.getDestinoCodigo());
+
+        Voo novo = new Voo(
+            dto.getId(),
+            dto.getCodigo(),
+            dto.getDataHora(),
+            origem,
+            destino,
+            dto.getPreco(),
+            dto.getPoltronas(),
+            dto.getPoltronasOcupadas(),
+            dto.getEstado()
+        );
+
+        Voo salvo = vooService.criar(novo);
+        return ResponseEntity.status(201).body(salvo);
     }
 
     // busca voos por data, origem e destino no formato exigido
@@ -77,6 +93,11 @@ public class VooController {
             @RequestBody EstadoVooEnum estado) {
         Voo atualizado = vooService.atualizarEstado(codigoVoo, estado);
         return ResponseEntity.ok(atualizado);
+    }
+
+    @GetMapping("/voos/listar")
+    public ResponseEntity<List<Voo>> listarTodosVoos() {
+        return ResponseEntity.ok(vooService.listarTodos());
     }
 
     @GetMapping("/aeroportos")

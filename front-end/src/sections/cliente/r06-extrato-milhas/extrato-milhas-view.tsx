@@ -5,8 +5,10 @@ import {
   Typography,
 } from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
+
 import { obterExtratoMilhas } from 'src/api/milha';
 import { DashboardContent } from 'src/layouts/dashboard';
+
 import { ExtratoMilhasTabela } from './extrato-milhas-tabela';
 import { TransacaoMilhas } from './types';
 

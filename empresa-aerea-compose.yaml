@@ -36,7 +36,8 @@ services:
 
   # ================ RABBIT MQ =====================
   rabbitmq:
-    image: rabbitmq:3-management
+    # image: rabbitmq:3-management
+    image: rabbitmq:3.11-management
     container_name: rabbitmq
     ports:
       - "5672:5672"
@@ -44,6 +45,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: rabbitmq
       RABBITMQ_DEFAULT_PASS: rabbitmq
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - empresa-aerea-net
     healthcheck:
@@ -186,3 +189,7 @@ services:
 networks:
   empresa-aerea-net:
     driver: bridge
+
+# =============== VOLUMES ===============
+volumes:
+  rabbitmq-data:

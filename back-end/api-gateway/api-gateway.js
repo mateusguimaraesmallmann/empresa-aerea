@@ -17,7 +17,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({
-  origin: ['http://localhost:3040', 'http://localhost:4200'],
+  origin: ['http://localhost:3039', 'http://localhost:3040', 'http://localhost:4200'],
   credentials: true,
 }));
 
@@ -94,28 +94,33 @@ app.post(
 );
 
 // ======================= AEROPORTOS (liberado para testes) ====
-// app.use('/api/aeroportos', (req, res, next) => {
-//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3040');
-//   res.setHeader('Access-Control-Allow-Credentials', 'true');
-//   next();
-// });
+
 app.get(
   '/api/aeroportos',
-  requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
     changeOrigin: true,
     pathRewrite: path => path.replace('/api/aeroportos', '/ms-voos/aeroportos'),
-    onProxyRes: function (proxyRes, req, res) {
-      const allowedOrigins = ['http://localhost:3040', 'http://localhost:4200'];
-      const origin = req.headers.origin;
-      if (allowedOrigins.includes(origin)) {
-        proxyRes.headers['Access-Control-Allow-Origin'] = origin;
-        proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
-      }
-    },
   })
 );
+
+// app.get(
+//   '/api/aeroportos',
+//   requireRole('TODOS'),
+//   createProxyMiddleware({
+//     target: voosServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/aeroportos', '/ms-voos/aeroportos'),
+//     onProxyRes: function (proxyRes, req, res) {
+//       const allowedOrigins = ['http://localhost:3040', 'http://localhost:4200'];
+//       const origin = req.headers.origin;
+//       if (allowedOrigins.includes(origin)) {
+//         proxyRes.headers['Access-Control-Allow-Origin'] = origin;
+//         proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+//       }
+//     },
+//   })
+// );
 
 // ======================= LOGOUT ================================
 app.post('/api/logout', function (req, res) {
@@ -133,6 +138,9 @@ const requireJwt = jwt({
     '/api/register',
     '/api/saga/autocadastro',
     '/api/clientes',
+    '/api/voos',
+    '/api/aeroportos',
+    '/api/voos'
   ]
 });
 
@@ -317,7 +325,6 @@ app.patch(
 // ======================= VOOS ==================================
 app.get(
   '/api/voos',
-  requireRole('TODOS'),
   createProxyMiddleware({
     target: voosServiceUrl,
     changeOrigin: true,
@@ -335,13 +342,31 @@ app.get(
   })
 );
 
+// COMENTADO PARA EVITAR AUTENTICAÇÃO
+// app.post(
+//   '/api/voos',
+//   requireRole('FUNCIONARIO'),
+//   createProxyMiddleware({
+//     target: voosServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/voos', '/ms-voos/voos'),
+//   })
+// );
+
 app.post(
   '/api/voos',
-  requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: voosServiceUrl,
     changeOrigin: true,
     pathRewrite: path => path.replace('/api/voos', '/ms-voos/voos'),
+    onProxyReq: (proxyReq, req) => {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
   })
 );
 
@@ -392,6 +417,15 @@ app.patch(
       proxyReq.write(JSON.stringify({ estado: 'REALIZADO' }));
       proxyReq.end();
     },
+  })
+);
+
+app.get(
+  '/api/voos/listar',
+  createProxyMiddleware({
+    target: voosServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/voos/listar', '/ms-voos/voos/listar'),
   })
 );
 
