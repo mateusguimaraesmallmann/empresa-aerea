@@ -128,24 +128,50 @@ app.post('/api/logout', function (req, res) {
 });
 
 // ======================= JWT Token Middleware ==================
+// const requireJwt = jwt({
+//   secret: process.env.JWT_SECRET,
+//   algorithms: ['HS256'],
+//   requestProperty: 'user'
+// }).unless({
+//   path: [
+//     '/api/login',
+//     '/api/register',
+//     '/api/saga/autocadastro',
+//     '/api/clientes',
+//     '/api/aeroportos',
+//     '/api/voos',
+//     '/api/voos/listar'
+//   ]
+// });
+
+// app.use("/api", requireJwt);
+
+app.get(
+  '/api/voos/listar',
+  createProxyMiddleware({
+    target: voosServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/voos/listar', '/ms-voos/voos/listar'),
+  })
+);
+
+
 const requireJwt = jwt({
   secret: process.env.JWT_SECRET,
   algorithms: ['HS256'],
   requestProperty: 'user'
 }).unless({
   path: [
-    '/api/login',
-    '/api/register',
-    '/api/saga/autocadastro',
-    '/api/clientes',
-    '/api/voos',
-    '/api/aeroportos',
-    '/api/voos'
+    /^\/api\/login/,
+    /^\/api\/register/,
+    /^\/api\/saga\/autocadastro/,
+    /^\/api\/clientes/,
+    /^\/api\/aeroportos/,
+    /^\/api\/voos\/listar\/?$/,   // <- aceita /api/voos/listar e /api/voos/listar/
+    /^\/api\/voos$/,              // <- evita bloquear GET /api/voos com query params
   ]
 });
-
 app.use("/api", requireJwt);
-
 // ======================= CLIENTE ===============================
 
 app.get(
@@ -420,14 +446,14 @@ app.patch(
   })
 );
 
-app.get(
-  '/api/voos/listar',
-  createProxyMiddleware({
-    target: voosServiceUrl,
-    changeOrigin: true,
-    pathRewrite: path => path.replace('/api/voos/listar', '/ms-voos/voos/listar'),
-  })
-);
+// app.get(
+//   '/api/voos/listar',
+//   createProxyMiddleware({
+//     target: voosServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/voos/listar', '/ms-voos/voos/listar'),
+//   })
+// );
 
 // ======================= AEROPORTOS ============================
 // app.get(
