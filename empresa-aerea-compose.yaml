@@ -82,7 +82,12 @@ services:
     ports:
       - "9091:9091"
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      saga:
+        condition: service_started
     networks:
       - empresa-aerea-net
 

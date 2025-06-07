@@ -29,7 +29,9 @@ public class ClienteService {
         this.transacaoMilhasRepository = transacaoMilhasRepository;
     }
 
-    public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
+    // Método usado pelo fluxo da SAGA, onde a senha é gerada previamente e usada em todos os passos.
+
+    public Cliente salvar(Cliente cliente, String senha) throws ClienteJaExisteException {
         if (clienteRepository.findByCpf(cliente.getCpf()).isPresent()
                 || clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
             throw new ClienteJaExisteException("CPF ou e-mail já cadastrado.");
@@ -38,10 +40,6 @@ public class ClienteService {
         cliente.setMilhas(0);
         Cliente salvo = clienteRepository.save(cliente);
 
-        // Gerar senha aleatória
-        String senha = gerarSenhaAleatoria();
-
-        // Enviar evento para o ms-auth
         UsuarioCriadoEvent evento = new UsuarioCriadoEvent(
             salvo.getEmail(),
             senha,
@@ -50,6 +48,13 @@ public class ClienteService {
         usuarioProducer.enviarUsuarioCriado(evento);
 
         return salvo;
+    }
+
+    // Método usado pelo endpoint direto (sem saga), com geração interna de senha.
+     
+    public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
+        String senhaGerada = gerarSenhaAleatoria();
+        return salvar(cliente, senhaGerada);
     }
 
     private String gerarSenhaAleatoria() {
@@ -112,4 +117,5 @@ public class ClienteService {
         return response;
     }
 }
+
 
