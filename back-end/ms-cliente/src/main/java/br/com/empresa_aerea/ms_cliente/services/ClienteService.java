@@ -7,8 +7,6 @@ import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
 import br.com.empresa_aerea.ms_cliente.dtos.UsuarioCriadoEvent;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 import br.com.empresa_aerea.ms_cliente.messaging.UsuarioProducer;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,17 +15,18 @@ import java.util.*;
 @Service
 public class ClienteService {
 
-    @Autowired
-    private UsuarioProducer usuarioProducer;
+    private final UsuarioProducer usuarioProducer;
+    private final ClienteRepository clienteRepository;
+    private final TransacaoMilhasRepository transacaoMilhasRepository;
 
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private TransacaoMilhasRepository transacaoMilhasRepository;
-
-    public ClienteService(ClienteRepository clienteRepository) {
+    public ClienteService(
+        UsuarioProducer usuarioProducer,
+        ClienteRepository clienteRepository,
+        TransacaoMilhasRepository transacaoMilhasRepository
+    ) {
+        this.usuarioProducer = usuarioProducer;
         this.clienteRepository = clienteRepository;
+        this.transacaoMilhasRepository = transacaoMilhasRepository;
     }
 
     public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
@@ -35,6 +34,7 @@ public class ClienteService {
                 || clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
             throw new ClienteJaExisteException("CPF ou e-mail já cadastrado.");
         }
+
         cliente.setMilhas(0);
         Cliente salvo = clienteRepository.save(cliente);
 
@@ -43,11 +43,12 @@ public class ClienteService {
 
         // Enviar evento para o ms-auth
         UsuarioCriadoEvent evento = new UsuarioCriadoEvent(
-                salvo.getEmail(),
-                senha,
-                "CLIENTE"
+            salvo.getEmail(),
+            senha,
+            "CLIENTE"
         );
         usuarioProducer.enviarUsuarioCriado(evento);
+
         return salvo;
     }
 
@@ -67,7 +68,6 @@ public class ClienteService {
         return clienteRepository.findByEmail(email);
     }
 
-    // Atualizar saldo de milhas e registra
     public Map<String, Object> atualizarMilhas(Long id, int quantidade) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
@@ -93,7 +93,6 @@ public class ClienteService {
         return response;
     }
 
-    // Extrato de milhas
     public Map<String, Object> listarExtratoMilhas(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
@@ -113,3 +112,4 @@ public class ClienteService {
         return response;
     }
 }
+

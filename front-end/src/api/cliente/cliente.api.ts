@@ -5,13 +5,14 @@ export type Cliente = {
   cpf: string;
   nome: string;
   email: string;
-  cep: string;
-  ruaNumero: string;
-  complemento: string;
-  cidade: string;
-  uf: string;
-  milhas?: number;
-  senha: string;
+  endereco: {
+    cep: string;
+    rua: string;
+    numero: string;
+    complemento: string;
+    cidade: string;
+    estado: string;
+  };
 };
 
 // Envia os dados de um novo cliente para o backend via Gateway
