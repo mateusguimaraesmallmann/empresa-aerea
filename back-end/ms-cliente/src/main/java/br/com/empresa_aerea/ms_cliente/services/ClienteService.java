@@ -4,9 +4,9 @@ import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.models.TransacaoMilhas;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
 import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
+import br.com.empresa_aerea.ms_cliente.dtos.UsuarioCriadoEvent;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import br.com.empresa_aerea.ms_cliente.messaging.UsuarioProducer;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,23 +15,50 @@ import java.util.*;
 @Service
 public class ClienteService {
 
-    @Autowired
-    private ClienteRepository clienteRepository;
+    private final UsuarioProducer usuarioProducer;
+    private final ClienteRepository clienteRepository;
+    private final TransacaoMilhasRepository transacaoMilhasRepository;
 
-    @Autowired
-    private TransacaoMilhasRepository transacaoMilhasRepository;
-
-    public ClienteService(ClienteRepository clienteRepository) {
+    public ClienteService(
+        UsuarioProducer usuarioProducer,
+        ClienteRepository clienteRepository,
+        TransacaoMilhasRepository transacaoMilhasRepository
+    ) {
+        this.usuarioProducer = usuarioProducer;
         this.clienteRepository = clienteRepository;
+        this.transacaoMilhasRepository = transacaoMilhasRepository;
     }
 
-    public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
-        if (clienteRepository.findByCpf(cliente.getCpf()).isPresent() 
+    // Método usado pelo fluxo da SAGA, onde a senha é gerada previamente e usada em todos os passos.
+
+    public Cliente salvar(Cliente cliente, String senha) throws ClienteJaExisteException {
+        if (clienteRepository.findByCpf(cliente.getCpf()).isPresent()
                 || clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
             throw new ClienteJaExisteException("CPF ou e-mail já cadastrado.");
         }
+
         cliente.setMilhas(0);
-        return clienteRepository.save(cliente);
+        Cliente salvo = clienteRepository.save(cliente);
+
+        UsuarioCriadoEvent evento = new UsuarioCriadoEvent(
+            salvo.getEmail(),
+            senha,
+            "CLIENTE"
+        );
+        usuarioProducer.enviarUsuarioCriado(evento);
+
+        return salvo;
+    }
+
+    // Método usado pelo endpoint direto (sem saga), com geração interna de senha.
+     
+    public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
+        String senhaGerada = gerarSenhaAleatoria();
+        return salvar(cliente, senhaGerada);
+    }
+
+    private String gerarSenhaAleatoria() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
     public List<Cliente> listarTodos() {
@@ -46,10 +73,9 @@ public class ClienteService {
         return clienteRepository.findByEmail(email);
     }
 
-    // Atualizar saldo de milhas e registra
     public Map<String, Object> atualizarMilhas(Long id, int quantidade) {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         Integer saldoAtual = cliente.getMilhas() != null ? cliente.getMilhas() : 0;
         cliente.setMilhas(saldoAtual + quantidade);
@@ -72,10 +98,9 @@ public class ClienteService {
         return response;
     }
 
-    // Extrato de milhas 
     public Map<String, Object> listarExtratoMilhas(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         List<Map<String, Object>> transacoes = new ArrayList<>();
         for (TransacaoMilhas t : transacaoMilhasRepository.findByClienteOrderByDataHoraDesc(cliente)) {
@@ -92,3 +117,5 @@ public class ClienteService {
         return response;
     }
 }
+
+

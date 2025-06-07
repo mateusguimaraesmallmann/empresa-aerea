@@ -12,9 +12,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClienteCriadoEvent {
+    private String email;
+    private String senha;
+    private String tipo;
     private String cpf;
     private String nome;
-    private String email;
     private EnderecoDTO endereco;
 }
 

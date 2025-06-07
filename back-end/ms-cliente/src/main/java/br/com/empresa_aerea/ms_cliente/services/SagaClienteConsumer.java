@@ -42,26 +42,31 @@ public class SagaClienteConsumer {
 
             cliente.setEndereco(endereco);
 
-            String senhaGerada = gerarSenha(4);
-            cliente.setSenha(senhaGerada);
+            // Geração única e consistente da senha
+            String senhaGerada = gerarSenha(8);
 
-            clienteService.salvar(cliente);
+            // Salvar o cliente com a senha gerada
+            clienteService.salvar(cliente, senhaGerada);
 
             System.out.println("Enviando resposta para saga: " + senhaGerada);
+
             // Envia para o Auth criar o usuário
             rabbitTemplate.convertAndSend(
-                    SagaMessaging.EXCHANGE,
-                    "usuario.criar",
-                    Map.of(
-                            "email", cliente.getEmail(),
-                            "senha", senhaGerada,
-                            "tipo", "CLIENTE"));
+                SagaMessaging.EXCHANGE,
+                "usuario.criar",
+                Map.of(
+                    "email", cliente.getEmail(),
+                    "senha", senhaGerada,
+                    "tipo", "CLIENTE"
+                )
+            );
 
-            // Responde à Saga
+            // Responde à Saga com a senha
             rabbitTemplate.convertAndSend(
-                    SagaMessaging.EXCHANGE,
-                    SagaMessaging.RPL_CADASTRO_CLIENTE,
-                    Map.of("senha", senhaGerada));
+                SagaMessaging.EXCHANGE,
+                SagaMessaging.RPL_CADASTRO_CLIENTE,
+                Map.of("senha", senhaGerada)
+            );
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -4,12 +4,12 @@ import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.services.ClienteService;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/ms-cliente")
@@ -27,7 +27,11 @@ public class ClienteController {
             Cliente clienteEntity = clienteService.salvar(cliente);
             return ResponseEntity.status(HttpStatus.CREATED).body(clienteEntity);
         } catch (ClienteJaExisteException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("erro", ex.getMessage()));
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("erro", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro inesperado ao criar cliente. " + ex.getMessage()));
         }
     }
 
@@ -50,24 +54,34 @@ public class ClienteController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Atualizar saldo de milhas (PUT)
     @PutMapping("/clientes/{id}/milhas")
-    public ResponseEntity<Map<String, Object>> atualizarMilhas(
+    public ResponseEntity<?> atualizarMilhas(
             @PathVariable Long id,
             @RequestBody Map<String, Integer> payload) {
+
         if (!payload.containsKey("quantidade")) {
             return ResponseEntity.badRequest().body(Map.of("erro", "Campo 'quantidade' é obrigatório"));
         }
 
-        int quantidade = payload.get("quantidade");
-        Map<String, Object> response = clienteService.atualizarMilhas(id, quantidade);
-        return ResponseEntity.ok(response);
+        try {
+            int quantidade = payload.get("quantidade");
+            Map<String, Object> response = clienteService.atualizarMilhas(id, quantidade);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", ex.getMessage()));
+        }
     }
 
-    // Obter extrato de milhas (GET)
     @GetMapping("/clientes/{id}/milhas")
-    public ResponseEntity<Map<String, Object>> extratoMilhas(@PathVariable Long id) {
-        Map<String, Object> response = clienteService.listarExtratoMilhas(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> extratoMilhas(@PathVariable Long id) {
+        try {
+            Map<String, Object> response = clienteService.listarExtratoMilhas(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", ex.getMessage()));
+        }
     }
 }
+

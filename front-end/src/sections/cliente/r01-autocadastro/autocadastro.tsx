@@ -74,6 +74,7 @@ export function AutoCadastroView() {
         cpf: cpf.replace(/\D/g, ''),
         nome,
         email,
+        role: 'CLIENTE',
         endereco: {
           cep: cep.replace(/\D/g, ''),
           rua,
