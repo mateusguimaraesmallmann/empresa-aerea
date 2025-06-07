@@ -4,7 +4,9 @@ import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.models.TransacaoMilhas;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
 import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
+import br.com.empresa_aerea.ms_cliente.dtos.UsuarioCriadoEvent;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
+import br.com.empresa_aerea.ms_cliente.messaging.UsuarioProducer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,9 @@ import java.util.*;
 
 @Service
 public class ClienteService {
+
+    @Autowired
+    private UsuarioProducer usuarioProducer;
 
     @Autowired
     private ClienteRepository clienteRepository;
@@ -26,12 +31,28 @@ public class ClienteService {
     }
 
     public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
-        if (clienteRepository.findByCpf(cliente.getCpf()).isPresent() 
+        if (clienteRepository.findByCpf(cliente.getCpf()).isPresent()
                 || clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
             throw new ClienteJaExisteException("CPF ou e-mail já cadastrado.");
         }
         cliente.setMilhas(0);
-        return clienteRepository.save(cliente);
+        Cliente salvo = clienteRepository.save(cliente);
+
+        // Gerar senha aleatória
+        String senha = gerarSenhaAleatoria();
+
+        // Enviar evento para o ms-auth
+        UsuarioCriadoEvent evento = new UsuarioCriadoEvent(
+                salvo.getEmail(),
+                senha,
+                "CLIENTE"
+        );
+        usuarioProducer.enviarUsuarioCriado(evento);
+        return salvo;
+    }
+
+    private String gerarSenhaAleatoria() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
     public List<Cliente> listarTodos() {
@@ -49,7 +70,7 @@ public class ClienteService {
     // Atualizar saldo de milhas e registra
     public Map<String, Object> atualizarMilhas(Long id, int quantidade) {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         Integer saldoAtual = cliente.getMilhas() != null ? cliente.getMilhas() : 0;
         cliente.setMilhas(saldoAtual + quantidade);
@@ -72,10 +93,10 @@ public class ClienteService {
         return response;
     }
 
-    // Extrato de milhas 
+    // Extrato de milhas
     public Map<String, Object> listarExtratoMilhas(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         List<Map<String, Object>> transacoes = new ArrayList<>();
         for (TransacaoMilhas t : transacaoMilhasRepository.findByClienteOrderByDataHoraDesc(cliente)) {

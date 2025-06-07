@@ -64,15 +64,16 @@ public class RabbitMQConfiguration {
     }
 
     @Bean
-    public void forcarCriacaoFilasEBindings(
-            Queue clienteCriarQueue,
-            Queue usuarioCriarQueue,
-            Queue msClienteCadastrarQueue,
-            Queue respostaCadastroClienteQueue,
-            Binding bindingClienteCriar,
-            Binding bindingUsuarioCriar,
-            Binding bindingMsClienteCadastrar,
-            Binding bindingRespostaCadastroCliente) {
-        // Força o Spring a inicializar todas as filas/bindings
+    public Queue usuarioCriarQueue() {
+        return new Queue("usuario.criar", true);
     }
+
+    @Bean
+    public Binding bindUsuarioCriar(Queue usuarioCriarQueue, TopicExchange ex) {
+        return BindingBuilder
+                .bind(usuarioCriarQueue)
+                .to(ex)
+                .with("usuario.criar");
+    }
+
 }
