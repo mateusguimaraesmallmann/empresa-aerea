@@ -1,4 +1,5 @@
 import api from 'src/api/api';
+import axios from 'axios';
 
 // Modelo de aeroporto
 export interface Aeroporto {
@@ -47,9 +48,15 @@ export async function buscarVoos(data: string, origem: string, destino: string) 
   return response.data;
 }
 
-// GET /voos — buscar todos os voos
+// GET /voos/listar — buscar todos os voos
 export async function buscarTodosVoos(): Promise<Voo[]> {
-  const response = await api.get<Voo[]>('/voos/listar');
+  const response = await axios.get<Voo[]>('http://localhost:3000/api/voos/listar', {
+    headers: {
+      // Isso impede que o token seja enviado, mesmo se estiver no interceptor global
+      Authorization: undefined,
+    },
+    withCredentials: false // reforça que não envie cookies JWT
+  });
   return response.data;
 }
 

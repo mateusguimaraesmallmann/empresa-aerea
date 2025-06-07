@@ -5,12 +5,20 @@ const api = axios.create({
   baseURL: 'http://localhost:3000/api',
 });
 
-// Interceptor para adicionar token JWT (se existir) no cabeçalho Authorization
+// Interceptor para adicionar token JWT (se existir) no cabeçalho Authorization,
+// exceto para rotas públicas como /voos/listar
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  if (token) {
+
+  // Verifica se a URL NÃO é de rota pública
+  const isPublicRoute =
+    config.url?.includes('/voos/listar') ||
+    config.url?.includes('/aeroportos');
+
+  if (token && !isPublicRoute) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
