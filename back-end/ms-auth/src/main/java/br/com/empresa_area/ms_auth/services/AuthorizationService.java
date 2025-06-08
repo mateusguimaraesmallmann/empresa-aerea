@@ -27,17 +27,23 @@ public class AuthorizationService {
     private AuthenticationManager authenticationManager;
 
     public Usuario register(RegisterDTO dto) {
+        // Verifica se já existe usuário com o mesmo e-mail (login)
+        if (usuarioRepository.existsByLogin(dto.email())) {
+            throw new RuntimeException("E-mail já cadastrado.");
+        }
+
         Usuario novo = new Usuario();
-        novo.setLogin(dto.getEmail());
-        novo.setSenha(passwordEncoder.encode(dto.getSenha()));
-        novo.setRole(dto.getTipo());
+        novo.setLogin(dto.email());
+        novo.setSenha(passwordEncoder.encode(dto.senha()));
+        novo.setRole(dto.tipo());
         return usuarioRepository.save(novo);
     }
 
     public Usuario login(LoginDTO dto) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(dto.getLogin(), dto.getSenha());
         authenticationManager.authenticate(usernamePassword);
-        return usuarioRepository.findByLogin(dto.getLogin()).orElseThrow();
+        return usuarioRepository.findByLogin(dto.getLogin())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
     }
 
     public String generateToken(Usuario usuario) {

@@ -1,13 +1,15 @@
-import api from 'src/api/api';  // importa a instância configurada do axios
+import api from 'src/api/api';
 
 export type Cliente = {
   id?: number;
   cpf: string;
   nome: string;
   email: string;
+  tipo: string;
   endereco: {
     cep: string;
     rua: string;
+    bairro: string;
     numero: string;
     complemento: string;
     cidade: string;
@@ -41,6 +43,7 @@ export async function verificarEmailExiste(email: string): Promise<boolean> {
   }
 }
 
+// Autocadastro
 export async function autocadastrarCliente(cliente: Cliente): Promise<{ senha: string }> {
   const response = await api.post('/saga/autocadastro', cliente);
   return response.data;

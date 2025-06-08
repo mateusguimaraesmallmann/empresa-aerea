@@ -50,6 +50,9 @@ public class Cliente implements Serializable {
     @Column(name = "saldo_milhas", insertable = false, nullable = false)
     private Integer milhas;
 
+    @Column(name = "tipo", nullable = false)
+    private String tipo;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_endereco", nullable = false)
     private Endereco endereco;
@@ -57,3 +60,4 @@ public class Cliente implements Serializable {
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransacaoMilhas> transacoesMilhas = new ArrayList<>();
 }
+

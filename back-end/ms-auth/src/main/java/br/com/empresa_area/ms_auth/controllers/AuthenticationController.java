@@ -28,7 +28,7 @@ public class AuthenticationController {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // Usa PasswordEncoderWithSalt
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginDTO dto) {
@@ -55,7 +55,7 @@ public class AuthenticationController {
     public ResponseEntity<Map<String, String>> autocadastrarUsuario(@RequestBody RegisterDTO data) {
         try {
             // Verifica se já existe usuário com o mesmo e-mail
-            if (usuarioRepository.existsByLogin(data.getEmail())) {
+            if (usuarioRepository.existsByLogin(data.email())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("error", "E-mail já cadastrado"));
             }
@@ -66,13 +66,13 @@ public class AuthenticationController {
 
             // Cria e salva novo usuário
             Usuario usuario = new Usuario();
-            usuario.setLogin(data.getEmail());
+            usuario.setLogin(data.email());
             usuario.setSenha(senhaHash);
-            usuario.setRole(data.getTipo());
+            usuario.setRole(data.tipo());
 
             usuarioRepository.save(usuario);
 
-            // Retorna senha gerada para o front
+            // Retorna senha gerada para o Saga (frontend)
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("senha", senhaGerada));
 
