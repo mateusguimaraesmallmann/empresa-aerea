@@ -11,7 +11,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.Random;
 
 @Component
 public class SagaClienteConsumer {
@@ -38,6 +37,7 @@ public class SagaClienteConsumer {
             cliente.setCpf((String) dados.get("cpf"));
             cliente.setNome((String) dados.get("nome"));
             cliente.setEmail((String) dados.get("email"));
+            cliente.setTipo((String) dados.get("tipo"));
 
             Endereco endereco = new Endereco();
             endereco.setCep((String) enderecoMap.get("cep"));
@@ -50,22 +50,13 @@ public class SagaClienteConsumer {
 
             cliente.setEndereco(endereco);
 
-            // Geração única e consistente da senha
-            String senhaGerada = gerarSenha(8);
-
-            // Salvar o cliente com a senha gerada
-            clienteService.salvar(cliente, senhaGerada);
-
-            // Envia para o Auth criar o usuário
-            rabbitTemplate.convertAndSend(
-                SagaMessaging.EXCHANGE,
-                "usuario.criar",
-                Map.of(
-                    "email", cliente.getEmail(),
-                    "senha", senhaGerada,
-                    "tipo", "CLIENTE"
-                )
-            );
+            // Usa a senha recebida do Saga (ms-auth)
+            String senhaRecebida = (String) dados.get("senha");
+            if (senhaRecebida == null || senhaRecebida.isEmpty()) {
+                throw new IllegalArgumentException("Senha não recebida do Saga!");
+            }
+            cliente.setSenha(senhaRecebida);
+            clienteService.salvar(cliente, senhaRecebida);
 
             // Responde à saga na fila replyTo, usando o correlationId
             String replyTo = message.getMessageProperties().getReplyTo();
@@ -79,7 +70,7 @@ public class SagaClienteConsumer {
             Message replyMsg = new Message(
                 objectMapper.writeValueAsBytes(
                     Map.of(
-                        "senha", senhaGerada,
+                        "senha", senhaRecebida,
                         "email", cliente.getEmail(),
                         "cpf", cliente.getCpf(),
                         "nome", cliente.getNome()
@@ -116,14 +107,5 @@ public class SagaClienteConsumer {
             }
         }
     }
-
-    private String gerarSenha(int tamanho) {
-        String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder senha = new StringBuilder();
-        Random random = new Random();
-        for (int i = 0; i < tamanho; i++) {
-            senha.append(caracteres.charAt(random.nextInt(caracteres.length())));
-        }
-        return senha.toString();
-    }
 }
+

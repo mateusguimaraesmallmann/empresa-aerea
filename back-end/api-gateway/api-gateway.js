@@ -1,4 +1,7 @@
-require('dotenv-safe').config();
+// Carrega variáveis .env SOMENTE fora do Docker
+if (!process.env.MS_AUTH_URL) {
+  require('dotenv-safe').config();
+}
 const express = require('express');
 const { expressjwt: jwt } = require('express-jwt');
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -80,6 +83,14 @@ app.post(
     selfHandleResponse: false,
     pathRewrite: (path) =>
       path.replace("/api/saga/autocadastro", "/saga/ms-cliente/cadastrar-cliente"),
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.body && Object.keys(req.body).length > 0) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
   })
 );
 
@@ -172,6 +183,7 @@ const requireJwt = jwt({
   ]
 });
 app.use("/api", requireJwt);
+
 // ======================= CLIENTE ===============================
 
 app.get(

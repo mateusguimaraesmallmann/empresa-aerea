@@ -28,7 +28,7 @@ public class AuthorizationService {
 
     public Usuario register(RegisterDTO dto) {
         // Verifica se já existe usuário com o mesmo e-mail (login)
-        if (usuarioRepository.existsByLogin(dto.email())) {
+        if (usuarioRepository.existsByEmail(dto.email())) {
             throw new RuntimeException("E-mail já cadastrado.");
         }
 
@@ -42,7 +42,7 @@ public class AuthorizationService {
     public Usuario login(LoginDTO dto) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(dto.getLogin(), dto.getSenha());
         authenticationManager.authenticate(usernamePassword);
-        return usuarioRepository.findByLogin(dto.getLogin())
+        return usuarioRepository.findByEmail(dto.getLogin())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
     }
 

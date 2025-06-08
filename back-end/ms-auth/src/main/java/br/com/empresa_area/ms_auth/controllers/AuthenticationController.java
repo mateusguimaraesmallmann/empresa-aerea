@@ -55,7 +55,7 @@ public class AuthenticationController {
     public ResponseEntity<Map<String, String>> autocadastrarUsuario(@RequestBody RegisterDTO data) {
         try {
             // Verifica se já existe usuário com o mesmo e-mail
-            if (usuarioRepository.existsByLogin(data.email())) {
+            if (usuarioRepository.existsByEmail(data.email())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("error", "E-mail já cadastrado"));
             }
@@ -90,3 +90,4 @@ public class AuthenticationController {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }
+

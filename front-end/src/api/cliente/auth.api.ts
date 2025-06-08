@@ -9,7 +9,7 @@ export type TokenResponse = {
   token: string;
   auth: boolean;
   userId: number;
-  role: string;
+  tipo: string;
 };
 
 // Realiza login no sistema via API Gateway

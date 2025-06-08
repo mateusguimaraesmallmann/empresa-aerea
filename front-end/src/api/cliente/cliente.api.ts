@@ -5,6 +5,7 @@ export type Cliente = {
   cpf: string;
   nome: string;
   email: string;
+  senha?: string;
   tipo: string;
   endereco: {
     cep: string;
@@ -17,7 +18,7 @@ export type Cliente = {
   };
 };
 
-// Envia os dados de um novo cliente para o backend via Gateway
+// Envia os dados de um novo cliente para o backend via Gateway (cadastro REST normal)
 export async function registrarCliente(cliente: Cliente): Promise<Cliente> {
   const response = await api.post('/clientes', cliente);
   return response.data;
@@ -43,8 +44,9 @@ export async function verificarEmailExiste(email: string): Promise<boolean> {
   }
 }
 
-// Autocadastro
+// Autocadastro: envia cliente com campo senha vazio, obrigatório para o ms-auth
 export async function autocadastrarCliente(cliente: Cliente): Promise<{ senha: string }> {
-  const response = await api.post('/saga/autocadastro', cliente);
+  const payload = { ...cliente, senha: '' }; // garante campo obrigatório para backend
+  const response = await api.post('/saga/autocadastro', payload);
   return response.data;
 }
