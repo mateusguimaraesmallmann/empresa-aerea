@@ -52,11 +52,13 @@ export function CancelarVooView({ onCancelamento, onVoltar }: Props) {
 
   const handleConfirmarCancelamento = async () => {
     try {
-      const response = await fetch(`/api/funcionario/voos/${codigo}/cancelar`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      const response = await fetch(`/api/voos/${codigo}/cancelar`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-
+  
       if (response.ok) {
         setSnackbarMensagem('Voo cancelado com sucesso.');
         setSnackbarTipo('success');
@@ -70,7 +72,7 @@ export function CancelarVooView({ onCancelamento, onVoltar }: Props) {
       setSnackbarTipo('error');
       setSnackbarOpen(true);
     }
-  };
+  };  
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
