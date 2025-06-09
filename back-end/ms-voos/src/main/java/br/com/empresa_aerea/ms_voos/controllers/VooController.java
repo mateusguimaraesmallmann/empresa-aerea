@@ -1,5 +1,6 @@
 package br.com.empresa_aerea.ms_voos.controllers;
 
+import br.com.empresa_aerea.ms_voos.dto.AtualizarEstadoDTO;
 import br.com.empresa_aerea.ms_voos.dto.BuscarVoosResponseDTO;
 import br.com.empresa_aerea.ms_voos.dto.CriarVooDTO;
 import br.com.empresa_aerea.ms_voos.dto.VooDTO;
@@ -94,7 +95,7 @@ public class VooController {
         Voo atualizado = vooService.atualizarEstado(codigoVoo, estado);
         return ResponseEntity.ok(atualizado);
     }
-
+    
     @GetMapping("/voos/listar")
     public ResponseEntity<List<Voo>> listarTodosVoos() {
         return ResponseEntity.ok(vooService.listarTodos());
