@@ -82,3 +82,12 @@ export async function listarAeroportos(): Promise<Aeroporto[]> {
   const response = await api.get<Aeroporto[]>('/aeroportos');
   return response.data;
 }
+
+export async function cancelarVoo(codigoVoo: string): Promise<Voo> {
+  const response = await api.patch<Voo>(`/voos/${codigoVoo}/cancelar`, null, {
+    headers: {
+      Authorization: undefined
+    }
+  });
+  return response.data;
+}

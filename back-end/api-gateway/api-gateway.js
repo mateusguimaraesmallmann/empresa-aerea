@@ -155,6 +155,24 @@ app.get(
   })
 );
 
+app.patch(
+  '/api/voos/:codigoVoo/cancelar',
+  createProxyMiddleware({
+    target: voosServiceUrl,
+    changeOrigin: true,
+    pathRewrite: (path, req) => {
+      const codigoVoo = req.params.codigoVoo;
+      return `/ms-voos/voos/${codigoVoo}/estado`;
+    },
+    onProxyReq: (proxyReq) => {
+      const body = JSON.stringify('CANCELADO');
+      proxyReq.setHeader('Content-Type', 'application/json');
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(body));
+      proxyReq.write(body);
+      proxyReq.end();
+    },    
+  })
+);
 
 const requireJwt = jwt({
   secret: process.env.JWT_SECRET,
@@ -169,6 +187,7 @@ const requireJwt = jwt({
     /^\/api\/aeroportos/,
     /^\/api\/voos\/listar\/?$/,   // <- aceita /api/voos/listar e /api/voos/listar/
     /^\/api\/voos$/,              // <- evita bloquear GET /api/voos com query params
+    /^\/api\/voos\/[^/]+\/cancelar$/
   ]
 });
 app.use("/api", requireJwt);
@@ -416,20 +435,20 @@ app.patch(
   })
 );
 
-app.patch(
-  '/api/voos/:codigoVoo/cancelar',
-  requireRole('FUNCIONARIO'),
-  createProxyMiddleware({
-    target: voosServiceUrl,
-    changeOrigin: true,
-    pathRewrite: path => path.replace('/api/voos/:codigoVoo/cancelar', '/ms-voos/voos/:codigoVoo/estado'),
-    onProxyReq: (proxyReq) => {
-      proxyReq.setHeader('Content-Type', 'application/json');
-      proxyReq.write(JSON.stringify({ estado: 'CANCELADO' }));
-      proxyReq.end();
-    },
-  })
-);
+// app.patch(
+//   '/api/voos/:codigoVoo/cancelar',
+//   // requireRole('FUNCIONARIO'),
+//   createProxyMiddleware({
+//     target: voosServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/voos/:codigoVoo/cancelar', '/ms-voos/voos/:codigoVoo/estado'),
+//     onProxyReq: (proxyReq) => {
+//       proxyReq.setHeader('Content-Type', 'application/json');
+//       proxyReq.write(JSON.stringify({ estado: 'CANCELADO' }));
+//       proxyReq.end();
+//     },
+//   })
+// );
 
 app.patch(
   '/api/voos/:codigoVoo/realizar',

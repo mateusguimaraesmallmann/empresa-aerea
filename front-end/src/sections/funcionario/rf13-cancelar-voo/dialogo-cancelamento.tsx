@@ -26,7 +26,9 @@ export function CancelarVooDialog({ open, onClose, onConfirm, voo }: Props) {
 
   const handleConfirmar = async () => {
     try {
-      await api.patch(`/voos/${voo.codigo}/cancelar`, {});
+      await api.patch(`/voos/${voo.codigo}/cancelar`, 'CANCELADO', {
+        headers: { 'Content-Type': 'application/json' }
+      });      
       setSnackbarMensagem('Voo cancelado com sucesso.');
       setSnackbarTipo('success');
       setSnackbarOpen(true);
@@ -37,7 +39,7 @@ export function CancelarVooDialog({ open, onClose, onConfirm, voo }: Props) {
       setSnackbarTipo('error');
       setSnackbarOpen(true);
     }
-  };
+  };  
 
   const handleCloseSnackbar = () => setSnackbarOpen(false);
 
