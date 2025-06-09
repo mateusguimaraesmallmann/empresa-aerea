@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
- 
+
   # ================= DATA BASES =================
   mongo-db:
     image: mongo
@@ -16,7 +16,12 @@ services:
       - mongo-data:/data/db   # <-- persistência do MongoDB
     networks:
       - empresa-aerea-net
-  
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres-db:
     image: postgres
     container_name: postgres-db
@@ -39,7 +44,6 @@ services:
 
   # ================ RABBIT MQ =====================
   rabbitmq:
-    # image: rabbitmq:3-management
     image: rabbitmq:3.11-management
     container_name: rabbitmq
     ports:
@@ -73,7 +77,10 @@ services:
       SPRING_DATA_MONGODB_DATABASE: auth_db
       SPRING_DATA_MONGODB_URI: mongodb://admin:admin@mongo-db:27017/auth_db?authSource=admin
     depends_on:
-      - mongo-db
+      mongo-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - empresa-aerea-net
 
@@ -102,7 +109,10 @@ services:
     ports:
       - "9092:9092"
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - empresa-aerea-net
 
@@ -114,7 +124,10 @@ services:
     ports:
       - "9093:9093"
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - empresa-aerea-net
 
@@ -128,11 +141,12 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - empresa-aerea-net
 
   #================ SAGA ======================
-
   saga:
     build:
       context: ./back-end/saga
@@ -176,7 +190,7 @@ services:
       JWT_SECRET: GV0ZXguc2hhcmVwb2025TADSDACRAZER2025GV0ZXguc2hhcmVwb
     networks:
       - empresa-aerea-net
-  
+
   # =============== FRONTEND ===============
   angular-frontend:
     container_name: frontend

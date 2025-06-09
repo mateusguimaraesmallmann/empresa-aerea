@@ -98,3 +98,4 @@ public class RabbitMQConfiguration {
         return new Queue("rpc.cliente.fetch", true);
     }
 }
+

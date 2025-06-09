@@ -3,18 +3,20 @@ package br.com.empresa_aerea.ms_cliente.services;
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.models.Endereco;
 import br.com.empresa_aerea.ms_cliente.messaging.SagaMessaging;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.Random;
 
 @Component
 public class SagaClienteConsumer {
 
     private final ClienteService clienteService;
     private final RabbitTemplate rabbitTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public SagaClienteConsumer(ClienteService clienteService, RabbitTemplate rabbitTemplate) {
         this.clienteService = clienteService;
@@ -22,7 +24,7 @@ public class SagaClienteConsumer {
     }
 
     @RabbitListener(queues = SagaMessaging.CMD_CADASTRAR_CLIENTE)
-    public void receberCadastroCliente(Map<String, Object> dados) {
+    public void receberCadastroCliente(Map<String, Object> dados, org.springframework.amqp.core.Message message) {
         try {
             Map<String, Object> enderecoMap = (Map<String, Object>) dados.get("endereco");
 
@@ -30,6 +32,7 @@ public class SagaClienteConsumer {
             cliente.setCpf((String) dados.get("cpf"));
             cliente.setNome((String) dados.get("nome"));
             cliente.setEmail((String) dados.get("email"));
+            cliente.setTipo((String) dados.get("tipo"));
 
             Endereco endereco = new Endereco();
             endereco.setCep((String) enderecoMap.get("cep"));
@@ -38,48 +41,68 @@ public class SagaClienteConsumer {
             endereco.setComplemento((String) enderecoMap.get("complemento"));
             endereco.setCidade((String) enderecoMap.get("cidade"));
             endereco.setEstado((String) enderecoMap.get("estado"));
-            endereco.setBairro("Padrão");
+            endereco.setBairro((String) enderecoMap.get("bairro"));
 
             cliente.setEndereco(endereco);
 
-            // Geração única e consistente da senha
-            String senhaGerada = gerarSenha(8);
+            // Usa a senha recebida do Saga (ms-auth)
+            String senhaRecebida = (String) dados.get("senha");
+            if (senhaRecebida == null || senhaRecebida.isEmpty()) {
+                throw new IllegalArgumentException("Senha não recebida do Saga!");
+            }
+            cliente.setSenha(senhaRecebida);
+            clienteService.salvar(cliente, senhaRecebida);
 
-            // Salvar o cliente com a senha gerada
-            clienteService.salvar(cliente, senhaGerada);
+            // Responde à saga na fila replyTo, usando o correlationId
+            String replyTo = message.getMessageProperties().getReplyTo();
+            String correlationId = message.getMessageProperties().getCorrelationId();
 
-            System.out.println("Enviando resposta para saga: " + senhaGerada);
+            MessageProperties props = new MessageProperties();
+            if (correlationId != null) {
+                props.setCorrelationId(correlationId);
+            }
+            props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
-            // Envia para o Auth criar o usuário
-            rabbitTemplate.convertAndSend(
-                SagaMessaging.EXCHANGE,
-                "usuario.criar",
-                Map.of(
-                    "email", cliente.getEmail(),
-                    "senha", senhaGerada,
-                    "tipo", "CLIENTE"
-                )
+            org.springframework.amqp.core.Message replyMsg = new org.springframework.amqp.core.Message(
+                objectMapper.writeValueAsBytes(
+                    Map.of(
+                        "senha", senhaRecebida,
+                        "email", cliente.getEmail(),
+                        "cpf", cliente.getCpf(),
+                        "nome", cliente.getNome()
+                    )
+                ),
+                props
             );
 
-            // Responde à Saga com a senha
-            rabbitTemplate.convertAndSend(
-                SagaMessaging.EXCHANGE,
-                SagaMessaging.RPL_CADASTRO_CLIENTE,
-                Map.of("senha", senhaGerada)
-            );
+            rabbitTemplate.send(replyTo, replyMsg);
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
 
-    private String gerarSenha(int tamanho) {
-        String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder senha = new StringBuilder();
-        Random random = new Random();
-        for (int i = 0; i < tamanho; i++) {
-            senha.append(caracteres.charAt(random.nextInt(caracteres.length())));
+            try {
+                String replyTo = message.getMessageProperties().getReplyTo();
+                String correlationId = message.getMessageProperties().getCorrelationId();
+
+                MessageProperties props = new MessageProperties();
+                if (correlationId != null) {
+                    props.setCorrelationId(correlationId);
+                }
+                props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+
+                org.springframework.amqp.core.Message replyMsg = new org.springframework.amqp.core.Message(
+                    objectMapper.writeValueAsBytes(
+                        Map.of("errorMessage", "Erro ao processar cadastro: " + e.getMessage())
+                    ),
+                    props
+                );
+                rabbitTemplate.send(replyTo, replyMsg);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
-        return senha.toString();
     }
 }
+
+
+

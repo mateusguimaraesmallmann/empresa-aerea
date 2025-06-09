@@ -7,6 +7,8 @@ import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
 import br.com.empresa_aerea.ms_cliente.dtos.UsuarioCriadoEvent;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 import br.com.empresa_aerea.ms_cliente.messaging.UsuarioProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,6 +16,8 @@ import java.util.*;
 
 @Service
 public class ClienteService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ClienteService.class);
 
     private final UsuarioProducer usuarioProducer;
     private final ClienteRepository clienteRepository;
@@ -30,13 +34,25 @@ public class ClienteService {
     }
 
     // Método usado pelo fluxo da SAGA, onde a senha é gerada previamente e usada em todos os passos.
-
     public Cliente salvar(Cliente cliente, String senha) throws ClienteJaExisteException {
-        if (clienteRepository.findByCpf(cliente.getCpf()).isPresent()
-                || clienteRepository.findByEmail(cliente.getEmail()).isPresent()) {
+        logger.info("Verificando existência de cliente: cpf={}, email={}", cliente.getCpf(), cliente.getEmail());
+
+        boolean existeCpf = clienteRepository.findByCpf(cliente.getCpf()).isPresent();
+        boolean existeEmail = clienteRepository.findByEmail(cliente.getEmail()).isPresent();
+
+        logger.info("Resultado - existeCpf: {}, existeEmail: {}", existeCpf, existeEmail);
+
+        if (existeCpf || existeEmail) {
             throw new ClienteJaExisteException("CPF ou e-mail já cadastrado.");
         }
 
+        // Garante que a senha nunca será nula ou vazia
+        if (senha == null || senha.trim().isEmpty()) {
+            logger.error("Tentativa de salvar cliente com senha nula/vazia! Email: {}", cliente.getEmail());
+            throw new IllegalArgumentException("Senha não pode ser nula ou vazia!");
+        }
+
+        cliente.setSenha(senha);
         cliente.setMilhas(0);
         Cliente salvo = clienteRepository.save(cliente);
 
@@ -51,7 +67,6 @@ public class ClienteService {
     }
 
     // Método usado pelo endpoint direto (sem saga), com geração interna de senha.
-     
     public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
         String senhaGerada = gerarSenhaAleatoria();
         return salvar(cliente, senhaGerada);
@@ -117,5 +132,6 @@ public class ClienteService {
         return response;
     }
 }
+
 
 

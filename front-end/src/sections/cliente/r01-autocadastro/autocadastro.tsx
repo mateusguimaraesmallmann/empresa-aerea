@@ -24,6 +24,7 @@ export function AutoCadastroView() {
   const [email, setEmail] = useState('');
   const [cep, setCep] = useState('');
   const [rua, setRua] = useState('');
+  const [bairro, setBairro] = useState('');         
   const [numero, setNumero] = useState('');
   const [complemento, setComplemento] = useState('');
   const [cidade, setCidade] = useState('');
@@ -43,6 +44,7 @@ export function AutoCadastroView() {
     try {
       const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
       setRua(response.data.logradouro || '');
+      setBairro(response.data.bairro || '');        // <--- NOVO
       setCidade(response.data.localidade || '');
       setUf(response.data.uf || '');
     } catch (error) {
@@ -74,10 +76,12 @@ export function AutoCadastroView() {
         cpf: cpf.replace(/\D/g, ''),
         nome,
         email,
-        role: 'CLIENTE',
+        senha: '',
+        tipo: 'CLIENTE',
         endereco: {
           cep: cep.replace(/\D/g, ''),
           rua,
+          bairro,     
           numero,
           complemento,
           cidade,
@@ -97,6 +101,7 @@ export function AutoCadastroView() {
       setEmail('');
       setCep('');
       setRua('');
+      setBairro('');     
       setNumero('');
       setComplemento('');
       setCidade('');
@@ -209,7 +214,17 @@ export function AutoCadastroView() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={2}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            label="Bairro"
+            fullWidth
+            value={bairro}
+            onChange={(e) => setBairro(e.target.value)}
+            {...propsObrigatorios}
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Número"
             fullWidth
@@ -219,7 +234,7 @@ export function AutoCadastroView() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Complemento"
             fullWidth
@@ -229,7 +244,7 @@ export function AutoCadastroView() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Cidade"
             fullWidth
@@ -239,7 +254,7 @@ export function AutoCadastroView() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={3}>
           <TextField
             label="Estado"
             fullWidth
@@ -292,3 +307,4 @@ export function AutoCadastroView() {
     </Box>
   );
 }
+

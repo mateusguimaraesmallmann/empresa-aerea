@@ -56,13 +56,12 @@ public class Usuario implements UserDetails {
     }
 
     public void setLogin(String email) {
-    this.email = email;
+        this.email = email;
     }
 
     public void setRole(TipoUsuario tipo) {
         this.tipo = tipo;
     }
-
 
     @Override
     public boolean isAccountNonExpired() { return true; }
@@ -76,3 +75,4 @@ public class Usuario implements UserDetails {
     @Override
     public boolean isEnabled() { return true; }
 }
+

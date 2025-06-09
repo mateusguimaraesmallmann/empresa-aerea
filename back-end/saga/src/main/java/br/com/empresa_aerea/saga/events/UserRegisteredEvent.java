@@ -16,5 +16,5 @@ public class UserRegisteredEvent {
     private String nome;
     private String email;
     private String cep;
-    
+    private String senha;
 }
