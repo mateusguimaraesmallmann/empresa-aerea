@@ -84,7 +84,7 @@ export async function listarAeroportos(): Promise<Aeroporto[]> {
 }
 
 export async function cancelarVoo(codigoVoo: string): Promise<Voo> {
-  const response = await api.patch<Voo>(`/voos/${codigoVoo}/cancelar`, {}, {
+  const response = await api.patch<Voo>(`/voos/${codigoVoo}/cancelar`, null, {
     headers: {
       Authorization: undefined
     }

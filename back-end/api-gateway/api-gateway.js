@@ -157,16 +157,20 @@ app.get(
 
 app.patch(
   '/api/voos/:codigoVoo/cancelar',
-  // requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: voosServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/voos/:codigoVoo/cancelar', '/ms-voos/voos/:codigoVoo/estado'),
-    onProxyReq: (proxyReq) => {
-      proxyReq.setHeader('Content-Type', 'application/json');
-      proxyReq.write(JSON.stringify({ estado: 'CANCELADO' }));
-      proxyReq.end();
+    pathRewrite: (path, req) => {
+      const codigoVoo = req.params.codigoVoo;
+      return `/ms-voos/voos/${codigoVoo}/estado`;
     },
+    onProxyReq: (proxyReq) => {
+      const body = JSON.stringify('CANCELADO');
+      proxyReq.setHeader('Content-Type', 'application/json');
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(body));
+      proxyReq.write(body);
+      proxyReq.end();
+    },    
   })
 );
 

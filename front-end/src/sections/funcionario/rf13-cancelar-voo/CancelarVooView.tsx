@@ -56,8 +56,9 @@ export function CancelarVooView({ onCancelamento, onVoltar }: Props) {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
-        }
-      });
+        },
+        body: JSON.stringify({ estado: 'CANCELADO' })
+      });      
   
       if (response.ok) {
         setSnackbarMensagem('Voo cancelado com sucesso.');
