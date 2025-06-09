@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
 
@@ -46,17 +47,38 @@ public class SagaClienteController {
                 "tipo", "CLIENTE");
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Map> result = restTemplate.postForEntity(
-                "http://ms-auth:9090/auth/autocadastro", dtoAuth, Map.class);
+        Map resultBody;
+        String senha;
 
-        if (!result.getStatusCode().is2xxSuccessful()) {
+        try {
+            ResponseEntity<Map> result = restTemplate.postForEntity(
+                    "http://ms-auth:9090/auth/autocadastro", dtoAuth, Map.class);
+
+            // Se retornar sucesso, obter a senha
+            if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Erro ao criar usuário"));
+            }
+            resultBody = result.getBody();
+            senha = (String) resultBody.get("senha");
+        } catch (HttpClientErrorException.Conflict e) {
+            // 409 - E-mail já cadastrado
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "E-mail já cadastrado"));
+        } catch (Exception e) {
+            logger.error("Erro ao chamar ms-auth: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Erro ao criar usuário"));
+                    .body(Map.of("error", "Erro ao criar usuário: " + e.getMessage()));
         }
 
-        String senha = (String) result.getBody().get("senha");
-        clienteDto.put("senha", senha); // Inclui a senha no DTO
-        clienteDto.put("tipo", "CLIENTE"); // Inclui o tipo para o ms-cliente
+        // Não deixa seguir se não tem senha
+        if (senha == null || senha.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Senha não foi gerada. Cadastro não pode continuar."));
+        }
+
+        clienteDto.put("senha", senha);
+        clienteDto.put("tipo", "CLIENTE");
 
         // LOG antes do envio para RabbitMQ
         logger.info("Enviando comando para cadastrar cliente via RabbitMQ, email={}, cpf={}", email, cpf);
@@ -75,7 +97,7 @@ public class SagaClienteController {
                     future);
             container.start();
 
-            Map<String, Object> response = future.get(15, TimeUnit.SECONDS); // <= Timeout menor
+            Map<String, Object> response = future.get(15, TimeUnit.SECONDS);
             container.stop();
 
             if (response.get("errorMessage") != null) {
@@ -83,7 +105,7 @@ public class SagaClienteController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
-            response.put("senha", senha);
+            response.put("senha", senha); // devolve a senha para o frontend
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (TimeoutException e) {
@@ -96,5 +118,5 @@ public class SagaClienteController {
                     .body(Map.of("error", "Erro interno: " + e.getMessage()));
         }
     }
-
 }
+

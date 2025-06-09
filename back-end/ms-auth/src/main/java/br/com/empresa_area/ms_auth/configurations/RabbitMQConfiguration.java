@@ -4,16 +4,17 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 
 @Configuration
+@EnableRabbit
 public class RabbitMQConfiguration {
 
-    // Nomes das filas de requisição
     public static final String EXCHANGE = "saga-exchange";
     public static final String RPC_QUEUE_CLIENTE = "rpc.cliente.fetch";
     public static final String RPC_QUEUE_FUNCIONARIO = "rpc.funcionario.fetch";
@@ -75,5 +76,4 @@ public class RabbitMQConfiguration {
                 .to(ex)
                 .with("usuario.criar");
     }
-
 }

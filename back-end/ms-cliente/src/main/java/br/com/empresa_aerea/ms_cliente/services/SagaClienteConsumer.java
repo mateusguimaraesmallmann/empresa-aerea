@@ -4,7 +4,6 @@ import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.models.Endereco;
 import br.com.empresa_aerea.ms_cliente.messaging.SagaMessaging;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -25,12 +24,8 @@ public class SagaClienteConsumer {
     }
 
     @RabbitListener(queues = SagaMessaging.CMD_CADASTRAR_CLIENTE)
-    public void receberCadastroCliente(Message message) {
+    public void receberCadastroCliente(Map<String, Object> dados, org.springframework.amqp.core.Message message) {
         try {
-            // Lê o payload JSON enviado pelo Saga
-            String body = new String(message.getBody());
-            Map<String, Object> dados = objectMapper.readValue(body, Map.class);
-
             Map<String, Object> enderecoMap = (Map<String, Object>) dados.get("endereco");
 
             Cliente cliente = new Cliente();
@@ -66,8 +61,9 @@ public class SagaClienteConsumer {
             if (correlationId != null) {
                 props.setCorrelationId(correlationId);
             }
+            props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
-            Message replyMsg = new Message(
+            org.springframework.amqp.core.Message replyMsg = new org.springframework.amqp.core.Message(
                 objectMapper.writeValueAsBytes(
                     Map.of(
                         "senha", senhaRecebida,
@@ -79,13 +75,11 @@ public class SagaClienteConsumer {
                 props
             );
 
-            // Envia resposta para a saga na fila replyTo
             rabbitTemplate.send(replyTo, replyMsg);
 
         } catch (Exception e) {
             e.printStackTrace();
 
-            // Em caso de erro, responde também na fila replyTo para evitar timeout no Saga
             try {
                 String replyTo = message.getMessageProperties().getReplyTo();
                 String correlationId = message.getMessageProperties().getCorrelationId();
@@ -94,8 +88,9 @@ public class SagaClienteConsumer {
                 if (correlationId != null) {
                     props.setCorrelationId(correlationId);
                 }
+                props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
-                Message replyMsg = new Message(
+                org.springframework.amqp.core.Message replyMsg = new org.springframework.amqp.core.Message(
                     objectMapper.writeValueAsBytes(
                         Map.of("errorMessage", "Erro ao processar cadastro: " + e.getMessage())
                     ),
@@ -108,4 +103,6 @@ public class SagaClienteConsumer {
         }
     }
 }
+
+
 
