@@ -1,10 +1,10 @@
-INSERT INTO estado_reserva (sigla_estado_reserva, tipo_estado_reserva) 
-VALUES 
-('CRIA', 'CRIADA'),
-('CONF', 'CONFIRMADA'), 
-('CHECK', 'CHECK_IN'), 
-('CANC', 'CANCELADA'),
-('CANCV', 'CANCELADA_VOO'), 
-('EMBAR', 'EMBARCADA'), 
-('REA', 'REALIZADA'),
-('NREA', 'NAO_REALIZADA');
+-- INSERT INTO estado_reserva (sigla_estado_reserva, tipo_estado_reserva) 
+-- VALUES 
+-- ('CRIA', 'CRIADA'),
+-- ('CONF', 'CONFIRMADA'), 
+-- ('CHECK', 'CHECK_IN'), 
+-- ('CANC', 'CANCELADA'),
+-- ('CANCV', 'CANCELADA_VOO'), 
+-- ('EMBAR', 'EMBARCADA'), 
+-- ('REA', 'REALIZADA'),
+-- ('NREA', 'NAO_REALIZADA');

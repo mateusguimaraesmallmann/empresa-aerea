@@ -1,5 +1,5 @@
-INSERT INTO estado_voo (sigla_estado_voo, tipo_estado_voo) 
-VALUES 
-('CONF', 'CONFIRMADO'), 
-('CANC', 'CANCELADO'), 
-('REA', 'REALIZADO');
+-- INSERT INTO estado_voo (sigla_estado_voo, tipo_estado_voo) 
+-- VALUES 
+-- ('CONF', 'CONFIRMADO'), 
+-- ('CANC', 'CANCELADO'), 
+-- ('REA', 'REALIZADO');
