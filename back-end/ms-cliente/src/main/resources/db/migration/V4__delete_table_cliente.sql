@@ -1,0 +1,1 @@
+-- DELETE FROM cliente where nome in ('Cliente01', 'Cliente02', 'Cliente03', 'Cliente04', 'Cliente05');

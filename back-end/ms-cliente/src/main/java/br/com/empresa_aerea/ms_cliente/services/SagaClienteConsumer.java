@@ -66,6 +66,7 @@ public class SagaClienteConsumer {
             org.springframework.amqp.core.Message replyMsg = new org.springframework.amqp.core.Message(
                 objectMapper.writeValueAsBytes(
                     Map.of(
+                        "ok", true,
                         "senha", senhaRecebida,
                         "email", cliente.getEmail(),
                         "cpf", cliente.getCpf(),

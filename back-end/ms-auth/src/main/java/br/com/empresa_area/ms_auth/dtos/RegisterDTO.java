@@ -7,5 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 public record RegisterDTO(
     @NotBlank String email,
     @NotBlank String senha, 
-    TipoUsuario tipo
+    TipoUsuario tipo,
+    String cpf
 ) {}

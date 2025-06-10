@@ -101,11 +101,27 @@ public class SagaClienteController {
             container.stop();
 
             if (response.get("errorMessage") != null) {
-                logger.error("Erro recebido do ms-cliente: " + response.get("errorMessage"));
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                String error = (String) response.get("errorMessage");
+            
+                if (error.contains("já cadastrado") || error.contains("já existe")) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(Map.of("error", error));
+                }
+            
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", error));
             }
-
-            response.put("senha", senha); // devolve a senha para o frontend
+            
+            
+            // Verifica se a resposta veio com sucesso explícito
+            if (!Boolean.TRUE.equals(response.get("ok"))) {
+                logger.error("Resposta do ms-cliente sem confirmação de sucesso.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Falha ao processar cadastro do cliente."));
+            }
+            
+            // Retorna sucesso com os dados e a senha
+            response.put("senha", senha);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (TimeoutException e) {
