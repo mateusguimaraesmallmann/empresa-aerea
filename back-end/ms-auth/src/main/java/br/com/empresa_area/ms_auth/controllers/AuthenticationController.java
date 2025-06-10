@@ -55,10 +55,10 @@ public class AuthenticationController {
     public ResponseEntity<Map<String, String>> autocadastrarUsuario(@RequestBody RegisterDTO data) {
         try {
             // Verifica se já existe usuário com o mesmo e-mail
-            if (usuarioRepository.existsByEmail(data.email())) {
+            if (usuarioRepository.existsByEmail(data.email()) || usuarioRepository.existsByCpf(data.cpf())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(Map.of("error", "E-mail já cadastrado"));
-            }
+                        .body(Map.of("error", "CPF ou e-mail já cadastrado"));
+            }            
 
             // Gera senha aleatória segura
             String senhaGerada = gerarSenhaAleatoria();
