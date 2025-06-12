@@ -1,6 +1,5 @@
 package br.com.empresa_aerea.ms_voos.controllers;
 
-import br.com.empresa_aerea.ms_voos.dto.AtualizarEstadoDTO;
 import br.com.empresa_aerea.ms_voos.dto.BuscarVoosResponseDTO;
 import br.com.empresa_aerea.ms_voos.dto.CriarVooDTO;
 import br.com.empresa_aerea.ms_voos.dto.VooDTO;

@@ -21,7 +21,7 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
-    @PostMapping("/clientes")
+    /*@PostMapping("/clientes")
     public ResponseEntity<?> criar(@RequestBody Cliente cliente) {
         try {
             Cliente clienteEntity = clienteService.salvar(cliente);
@@ -33,7 +33,7 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("erro", "Erro inesperado ao criar cliente. " + ex.getMessage()));
         }
-    }
+    }*/
 
     @GetMapping
     public List<Cliente> listarTodos() {

@@ -2,6 +2,7 @@
 if (!process.env.MS_AUTH_URL) {
   require('dotenv-safe').config();
 }
+
 const express = require('express');
 const { expressjwt: jwt } = require('express-jwt');
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -74,8 +75,8 @@ app.post(
   })
 );
 
-// ======================= SAGA AUTOCADASTRO ======================
-app.post(
+// ======================= SAGA AUTOCADASTRO ====================== NAO DEVE EXISTIR, POIS O ENDPOINT DE CADASTRO DEVE SER /CLIENTES
+/*app.post(
   "/api/saga/autocadastro",
   createProxyMiddleware({
     target: sagaServiceUrl,
@@ -92,15 +93,15 @@ app.post(
       }
     }
   })
-);
+);*/
 
 // ======================= Cadastro Cliente ======================
 app.post(
   "/api/clientes",
   createProxyMiddleware({
-    target: clienteServiceUrl,
+    target: sagaServiceUrl,
     changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/clientes", "/ms-cliente/clientes")
+    pathRewrite: path => path.replace("/api/clientes", "/saga/ms-cliente/clientes")
   })
 );
 
