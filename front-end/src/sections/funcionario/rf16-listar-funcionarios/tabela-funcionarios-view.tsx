@@ -1,14 +1,7 @@
 import React from 'react';
 import {
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
-  Paper,
-  Button,
-  Box
+  Table, TableHead, TableBody, TableRow, TableCell,
+  TableContainer, Paper, Button, Box
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Iconify } from 'src/components/iconify';
@@ -16,8 +9,8 @@ import { Funcionario } from '../types/funcionario';
 
 type Props = {
   funcionarios: Funcionario[];
-  onRemover: (funcionario: Funcionario) => void;
-  onReativar: (funcionario: Funcionario) => void;
+  onRemover: (func: Funcionario) => void;
+  onReativar: (func: Funcionario) => void;
 };
 
 function formatarCPF(cpf: string): string {
@@ -39,52 +32,38 @@ export function TabelaFuncionarios({ funcionarios, onRemover, onReativar }: Prop
             <TableCell align="center">Ações</TableCell>
           </TableRow>
         </TableHead>
-
         <TableBody>
-          {funcionarios.map((funcionario) => (
+          {funcionarios.map(func => (
             <TableRow
-              key={funcionario.id}
-              sx={{
-                opacity: funcionario.ativo ? 1 : 0.5,
-                color: funcionario.ativo ? 'inherit' : 'gray'
-              }}
+              key={func.id}
+              sx={{ opacity: func.ativo ? 1 : 0.5, color: func.ativo ? 'inherit' : 'gray' }}
             >
-              <TableCell>{funcionario.nome}</TableCell>
-              <TableCell>{formatarCPF(funcionario.cpf)}</TableCell>
-              <TableCell>{funcionario.email}</TableCell>
-              <TableCell>{funcionario.telefone}</TableCell>
+              <TableCell>{func.nome}</TableCell>
+              <TableCell>{formatarCPF(func.cpf)}</TableCell>
+              <TableCell>{func.email}</TableCell>
+              <TableCell>{func.telefone}</TableCell>
               <TableCell>
-                <Box display="flex" alignItems="center" gap={1}>
-                  {funcionario.ativo ? (
+                <Box display="flex" gap={1}>
+                  {func.ativo ? (
                     <Button
                       size="small"
-                      aria-label="Editar"
                       startIcon={<Iconify icon="mdi:pencil" width={18} />}
-                      onClick={() => navigate(`/alterar-funcionario?id=${funcionario.id}`)}
-                    >
-                      Editar
-                    </Button>
+                      onClick={() => navigate(`/alterar-funcionario?cpf=${func.cpf}`)}
+                    >Editar</Button>
                   ) : (
                     <Button
                       size="small"
-                      aria-label="Reativar"
                       startIcon={<Iconify icon="mdi:refresh" width={18} />}
-                      onClick={() => onReativar(funcionario)}
-                    >
-                      Reativar
-                    </Button>
+                      onClick={() => onReativar(func)}
+                    >Reativar</Button>
                   )}
-
                   <Button
                     size="small"
                     color="error"
-                    aria-label="Remover"
                     startIcon={<Iconify icon="mdi:delete" width={18} />}
-                    onClick={() => onRemover(funcionario)}
-                    disabled={!funcionario.ativo}
-                  >
-                    Remover
-                  </Button>
+                    onClick={() => onRemover(func)}
+                    disabled={!func.ativo}
+                  >Remover</Button>
                 </Box>
               </TableCell>
             </TableRow>

@@ -1,8 +1,11 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 // Cria uma instância do axios com a baseURL do Gateway
-const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+const api: AxiosInstance = axios.create({
+  baseURL: 'http://localhost:3000/api',  // <-- Gateway
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Interceptor para adicionar token JWT (se existir) no cabeçalho Authorization,
@@ -20,6 +23,7 @@ api.interceptors.request.use((config) => {
   }
 
   return config;
-});
+})
+
 
 export default api;
