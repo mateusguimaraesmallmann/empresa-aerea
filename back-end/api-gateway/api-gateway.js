@@ -198,7 +198,7 @@ const requireJwt = jwt({
     /^\/api\/aeroportos/,
     /^\/api\/voos\/listar\/?$/,   // <- aceita /api/voos/listar e /api/voos/listar/
     /^\/api\/voos$/,              // <- evita bloquear GET /api/voos com query params
-    /^\/api\/voos\/[^/]+\/cancelar$/
+    /^\/api\/voos\/[^/]+\/cancelar$/,
   ]
 });
 app.use("/api", requireJwt);
@@ -266,46 +266,41 @@ app.get(
 );
 
 // ======================= FUNCIONARIO ===========================
+
+// LISTAR TODOS
 app.get(
   '/api/funcionarios',
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: funcionarioServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/funcionarios', '/ms-funcionario/funcionarios'),
+    pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
   })
 );
 
+// CRIAR
 app.post(
   '/api/funcionarios',
   requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: funcionarioServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/funcionarios', '/ms-funcionario/funcionarios'),
+    pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
   })
 );
 
-app.put(
-  '/api/funcionarios/:codigoFuncionario',
-  requireRole('FUNCIONARIO'),
-  createProxyMiddleware({
-    target: funcionarioServiceUrl,
-    changeOrigin: true,
-    pathRewrite: path => path.replace('/api/funcionarios/', '/ms-funcionario/funcionarios/'),
-  })
-);
-
-app.delete(
-  '/api/funcionarios/:codigoFuncionario',
-  requireRole('FUNCIONARIO'),
-  createProxyMiddleware({
-    target: funcionarioServiceUrl,
-    changeOrigin: true,
-    pathRewrite: path => path.replace('/api/funcionarios/', '/ms-funcionario/funcionarios/'),
-  })
-);
-
+// BUSCAR, ATUALIZAR E REMOVER POR CPF
+['get','put','delete'].forEach(method => {
+  app[method](
+    '/api/funcionarios/:cpf',
+    requireRole('FUNCIONARIO'),
+    createProxyMiddleware({
+      target: funcionarioServiceUrl,
+      changeOrigin: true,
+      pathRewrite: { '^/api/funcionarios': '/ms-funcionario' },
+    })
+  );
+});
 // ======================= RESERVAS ==============================
 app.get(
   '/api/reservas/:codigoReserva',

@@ -9,6 +9,66 @@
             "projectName": "backend",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsAuthApplication<ms-auth>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.com.empresa_area.ms_auth.MsAuthApplication",
+            "projectName": "ms-auth",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsClienteApplication<ms-cliente>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.com.empresa_aerea.ms_cliente.MsClienteApplication",
+            "projectName": "ms-cliente",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsFuncionarioApplication<ms-funcionario>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.com.empresa_aerea.ms_funcionario.MsFuncionarioApplication",
+            "projectName": "ms-funcionario",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsReservaApplication<ms-reserva>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.com.empresa_aerea.ms_reserva.MsReservaApplication",
+            "projectName": "ms-reserva",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsVoosApplication<ms-voos>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.com.empresa_aerea.ms_voos.MsVoosApplication",
+            "projectName": "ms-voos",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-SagaApplication<saga>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.com.empresa_aerea.saga.SagaApplication",
+            "projectName": "saga",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
