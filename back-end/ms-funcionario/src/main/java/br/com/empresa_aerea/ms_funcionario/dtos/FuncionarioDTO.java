@@ -21,8 +21,8 @@ public class FuncionarioDTO {
     private String nome;
 
     @NotBlank
-    @Pattern(regexp = "\\(\\d{2}\\) \\d{5}-\\d{4}", message = "Telefone inválido")
+    @Pattern(regexp = "\\d{10,11}", message = "Telefone inválido")
     private String telefone;
 
-    private boolean ativo; // Novo campo
+    private boolean ativo;
 }

@@ -69,10 +69,10 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
         cpf: dados.cpf.replace(/\D/g, ''),
         telefone: dados.telefone.replace(/\D/g, '')
       };
-
-      const resp = await axios.post<Funcionario>('/api/funcionarios', payload, {
+      
+      const resp = await axios.post<Funcionario>('http://localhost:3000/api/funcionarios', payload, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      });      
 
       onSucesso(resp.data);
       // Limpa formulário e fecha modal

@@ -71,8 +71,8 @@ export function AlteracaoFuncionariosView({
           nome: dados.nome,
           email: dados.email,
           telefone: dados.telefone.replace(/\D/g, '')
-        },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        }
+        // { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
 
       setSucesso(true);
