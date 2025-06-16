@@ -3,11 +3,7 @@ CREATE TABLE cliente (
   cpf VARCHAR(11) NOT NULL UNIQUE,
   email VARCHAR(100) NOT NULL UNIQUE,
   nome VARCHAR(100) NOT NULL,
-  senha VARCHAR(255) NOT NULL,
   saldo_milhas INTEGER DEFAULT 0,
-  tipo VARCHAR(20) NOT NULL DEFAULT 'CLIENTE',
   id_endereco INTEGER NOT NULL,
   CONSTRAINT fk_endereco FOREIGN KEY (id_endereco) REFERENCES endereco(id_endereco)
 );
-
-

@@ -2,6 +2,7 @@ package br.com.empresa_aerea.ms_cliente.consumers;
 
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,8 @@ public class CadastrarClienteQueue  {
     }
 
     @Bean
-    public Binding clienteUsuarioCadastrarBinding(Queue clienteUsuarioCadastrarQueue, TopicExchange exchange) {
+    public Binding clienteUsuarioCadastrarBinding(
+        @Qualifier("clienteUsuarioCadastrarQueue") Queue clienteUsuarioCadastrarQueue, TopicExchange exchange) {
         return BindingBuilder.bind(clienteUsuarioCadastrarQueue).to(exchange).with("ms-cliente-cadastrar-cliente");
     }
     

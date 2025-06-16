@@ -1,7 +1,8 @@
 package br.com.empresa_area.ms_auth.services;
 
 import br.com.empresa_area.ms_auth.dtos.LoginDTO;
-import br.com.empresa_area.ms_auth.dtos.RegisterDTO;
+import br.com.empresa_area.ms_auth.dtos.RegisterRequestDTO;
+import br.com.empresa_area.ms_auth.dtos.RegisterResponseDTO;
 import br.com.empresa_area.ms_auth.models.Usuario;
 import br.com.empresa_area.ms_auth.repositories.UsuarioRepository;
 import br.com.empresa_area.ms_auth.security.TokenService;
@@ -37,17 +38,19 @@ public class AuthorizationService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
     }
 
-    public Usuario cadastrarLogin(RegisterDTO dto) {
+    public RegisterResponseDTO cadastrarLogin(RegisterRequestDTO dto) {
         // Verifica se já existe usuário com o mesmo e-mail (login)
-        if (usuarioRepository.existsByEmail(dto.email())) {
+        if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new RuntimeException("E-mail já cadastrado.");
         }
 
         Usuario novo = new Usuario();
-        novo.setLogin(dto.email());
+        novo.setLogin(dto.getEmail() );
         novo.setSenha(passwordEncoder.encode(gerarSenhaAleatoria()));
-        novo.setRole(dto.tipo());
-        return usuarioRepository.save(novo);
+        novo.setRole(dto.getTipo());
+        usuarioRepository.save(novo);
+        
+        return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), null);
     }
 
     // Método auxiliar local para gerar senha aleatória

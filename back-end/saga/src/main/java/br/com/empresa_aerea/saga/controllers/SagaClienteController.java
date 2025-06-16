@@ -1,6 +1,9 @@
 package br.com.empresa_aerea.saga.controllers;
 
+import br.com.empresa_aerea.saga.dtos.CadastroClienteResponse;
 import br.com.empresa_aerea.saga.dtos.ClienteDTO;
+import br.com.empresa_aerea.saga.dtos.RegisterRequestDTO;
+import br.com.empresa_aerea.saga.enums.TipoUsuario;
 import br.com.empresa_aerea.saga.util.DirectMessageListenerContainerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,6 +38,9 @@ public class SagaClienteController {
     @Autowired
     private ConnectionFactory connectionFactory;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private static final String EXCHANGE_NAME = "saga-exchange";
     private static final long FUTURE_RESPONSE_TIMEOUT = 30;
 
@@ -47,7 +56,13 @@ public class SagaClienteController {
         containerCliente.start();
 
         try {
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "ms-auth-cadastrar-login", clienteDTO);
+
+            RegisterRequestDTO registerRequestDTO = new RegisterRequestDTO();
+            registerRequestDTO.setEmail(clienteDTO.getEmail());
+            registerRequestDTO.setSenha("");
+            registerRequestDTO.setTipo(TipoUsuario.CLIENTE);
+
+            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "ms-auth-cadastrar-login", registerRequestDTO);
             rabbitTemplate.convertAndSend(EXCHANGE_NAME, "ms-cliente-cadastrar-cliente", clienteDTO);
 
             Map<String, Object> executionResponseJsonAuth = responseFutureAuth.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
@@ -63,7 +78,17 @@ public class SagaClienteController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
 
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            ClienteDTO clienteResponse = objectMapper.convertValue(executionResponseJsonCliente, ClienteDTO.class);
+
+            CadastroClienteResponse response = new CadastroClienteResponse(
+                clienteResponse.getIdCliente(),
+                clienteResponse.getCpf(),
+                clienteResponse.getEmail(),
+                clienteResponse.getNome(),
+                clienteResponse.getSaldoMilhas(),
+                clienteResponse.getEndereco());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch(Exception e){
             logger.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SAGA: cadastro de cliente com erro ao iniciar o processo: " + e.getMessage());

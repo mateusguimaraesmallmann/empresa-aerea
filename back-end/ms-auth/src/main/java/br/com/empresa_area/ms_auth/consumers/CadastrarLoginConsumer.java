@@ -5,8 +5,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import br.com.empresa_area.ms_auth.dtos.RegisterDTO;
-import br.com.empresa_area.ms_auth.models.Usuario;
+import br.com.empresa_area.ms_auth.dtos.RegisterRequestDTO;
+import br.com.empresa_area.ms_auth.dtos.RegisterResponseDTO;
 import br.com.empresa_area.ms_auth.services.AuthorizationService;
 
 @Component
@@ -21,12 +21,12 @@ public class CadastrarLoginConsumer {
     private static final String EXCHANGE_NAME = "saga-exchange";
 
     @RabbitListener(queues = "ms-auth-cadastrar-login")
-    public void cadastrarCliente(RegisterDTO registerDTO) {
+    public void cadastrarCliente(RegisterRequestDTO registerRequestCadastrarDTO) {
         try {
-            Usuario usuarioRequestCadastrarDto = authorizationService.cadastrarLogin(registerDTO);
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", usuarioRequestCadastrarDto);
+            RegisterResponseDTO registerResponseDTO = authorizationService.cadastrarLogin(registerRequestCadastrarDTO);
+            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", registerResponseDTO);
         } catch (Exception e) {
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login-erro", e.getMessage());
+            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", new RegisterResponseDTO(null, null, e.getMessage()));
         }
     }
     

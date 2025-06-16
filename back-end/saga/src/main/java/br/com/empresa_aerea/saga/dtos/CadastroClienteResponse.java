@@ -9,13 +9,13 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClienteDTO {
+public class CadastroClienteResponse {
 
-    private Long idCliente = 0L;
+    private Long codigo;
     private String cpf;
     private String email;
     private String nome;
     private Integer saldoMilhas;
     private EnderecoDTO endereco;
-
+    
 }

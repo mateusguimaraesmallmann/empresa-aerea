@@ -19,13 +19,13 @@ public class ViaCepService {
         EnderecoViaCepDTO response = restTemplate.getForObject(url, EnderecoViaCepDTO.class);
         
         return new Endereco(
-            cep,
-            response.getUf(),
-            response.getLocalidade(),
-            "",
-            response.getLogradouro(),
-            "",
-            response.getComplemento()
-        );
+            null, 
+            cep, 
+            response.getUf(), 
+            response.getLocalidade(), 
+            "", 
+            response.getLogradouro(), 
+            "", 
+            response.getComplemento());
     }
 }

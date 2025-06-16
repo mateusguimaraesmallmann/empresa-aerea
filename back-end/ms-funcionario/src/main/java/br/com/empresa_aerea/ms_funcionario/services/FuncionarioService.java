@@ -23,16 +23,13 @@ public class FuncionarioService {
 
     private final FuncionarioRepository funcionarioRepository;
     private final RabbitTemplate rabbitTemplate;
-    private final String filaFuncionario;
+    //private final String filaFuncionario;
 
-    public FuncionarioService(
-        FuncionarioRepository funcionarioRepository,
-        RabbitTemplate rabbitTemplate,
-        @Value("${app.mq.fila-funcionarios}") String filaFuncionario
-    ) {
+//    public FuncionarioService(FuncionarioRepository funcionarioRepository, RabbitTemplate rabbitTemplate, @Value("${app.mq.fila-funcionarios}") String filaFuncionario) {
+    public FuncionarioService(FuncionarioRepository funcionarioRepository, RabbitTemplate rabbitTemplate) {
         this.funcionarioRepository = funcionarioRepository;
         this.rabbitTemplate = rabbitTemplate;
-        this.filaFuncionario = filaFuncionario;
+        //this.filaFuncionario = filaFuncionario;
     }
 
     public Funcionario salvar(@Valid FuncionarioDTO dto) {
@@ -59,8 +56,8 @@ public class FuncionarioService {
 
         // 4) envia evento de envio de e-mail via RabbitMQ
         String msg = String.format("Funcionário %s cadastrado. Senha: %s", salvo.getNome(), senha);
-        rabbitTemplate.convertAndSend(filaFuncionario, msg);
-        logger.debug("Publicado na fila {}: {}", filaFuncionario, msg);
+        //rabbitTemplate.convertAndSend(filaFuncionario, msg);
+        //logger.debug("Publicado na fila {}: {}", filaFuncionario, msg);
 
         return salvo;
     }

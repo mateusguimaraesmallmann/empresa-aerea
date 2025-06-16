@@ -1,11 +1,9 @@
 package br.com.empresa_aerea.ms_cliente.services;
 
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
-import br.com.empresa_aerea.ms_cliente.models.TransacaoMilhas;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
-import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
 import br.com.empresa_aerea.ms_cliente.dtos.ClienteDTO;
-import br.com.empresa_aerea.ms_cliente.dtos.UsuarioRequestCadastrarDTO;
+import br.com.empresa_aerea.ms_cliente.dtos.ClienteResponseCadastrarDTO;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 
 import org.modelmapper.ModelMapper;
@@ -14,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -25,20 +22,10 @@ public class ClienteService {
     @Autowired
     private ModelMapper mapper;
 
-    //private final UsuarioProducer usuarioProducer;
-    private final ClienteRepository clienteRepository;
-    private final TransacaoMilhasRepository transacaoMilhasRepository;
+    @Autowired
+    private ClienteRepository clienteRepository;
 
-    public ClienteService(//UsuarioProducer usuarioProducer,
-        ClienteRepository clienteRepository, TransacaoMilhasRepository transacaoMilhasRepository
-    ) {
-        //this.usuarioProducer = usuarioProducer;
-        this.clienteRepository = clienteRepository;
-        this.transacaoMilhasRepository = transacaoMilhasRepository;
-    }
-
-    // Método usado pelo fluxo da SAGA, onde a senha é gerada previamente e usada em todos os passos.
-    public UsuarioRequestCadastrarDTO cadastrarCliente(ClienteDTO clienteDTO) throws Exception {
+    public ClienteResponseCadastrarDTO cadastrarCliente(ClienteDTO clienteDTO) throws Exception {
         Optional<Cliente> existClienteBD = clienteRepository.findByEmail(clienteDTO.getEmail());
         if (existClienteBD.isPresent()) {
             throw new ClienteJaExisteException("Outro cliente com email ja existente!");
@@ -46,10 +33,9 @@ public class ClienteService {
 
         try{
             Cliente cliente = mapper.map(clienteDTO, Cliente.class);
-            cliente.setIdCliente(0L);
             Cliente clienteCriadoBD = clienteRepository.save(cliente);
-            UsuarioRequestCadastrarDTO usuarioRequestCadastrarDto = mapper.map(clienteCriadoBD, UsuarioRequestCadastrarDTO.class);
-            return usuarioRequestCadastrarDto;
+            ClienteResponseCadastrarDTO clienteResponseCadastrarDTO = mapper.map(clienteCriadoBD, ClienteResponseCadastrarDTO.class);
+            return clienteResponseCadastrarDTO;
         }catch(Exception ex){
             logger.error(ex.getMessage());
             throw new Exception("Internal Server Error");
@@ -82,11 +68,11 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        Integer saldoAtual = cliente.getMilhas() != null ? cliente.getMilhas() : 0;
-        cliente.setMilhas(saldoAtual + quantidade);
+        Integer saldoAtual = cliente.getSaldoMilhas() != null ? cliente.getSaldoMilhas() : 0;
+        cliente.setSaldoMilhas(saldoAtual + quantidade);
         clienteRepository.save(cliente);
 
-        TransacaoMilhas transacao = new TransacaoMilhas();
+        /*TransacaoMilhas transacao = new TransacaoMilhas();
         transacao.setCliente(cliente);
         transacao.setQuantidade(quantidade);
         transacao.setTipo("ENTRADA");
@@ -95,15 +81,15 @@ public class ClienteService {
         transacao.setCodigoReserva(null);
         transacao.setDataHora(LocalDateTime.now());
 
-        transacaoMilhasRepository.save(transacao);
+        transacaoMilhasRepository.save(transacao);*/
 
         Map<String, Object> response = new HashMap<>();
         response.put("codigo", cliente.getIdCliente());
-        response.put("saldo_milhas", cliente.getMilhas());
+        response.put("saldo_milhas", cliente.getSaldoMilhas());
         return response;
     }
 
-    public Map<String, Object> listarExtratoMilhas(Long id) {
+    /*public Map<String, Object> listarExtratoMilhas(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
@@ -120,7 +106,7 @@ public class ClienteService {
         response.put("saldo_milhas", cliente.getMilhas());
         response.put("transacoes", transacoes);
         return response;
-    }
+    }*/
 }
 
 
