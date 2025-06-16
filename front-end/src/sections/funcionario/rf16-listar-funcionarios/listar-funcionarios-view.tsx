@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Box, Typography, Button, Alert } from '@mui/material';
@@ -7,30 +6,29 @@ import api from 'src/api/api';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Funcionario } from '../types/funcionario';
 import { TabelaFuncionarios } from './tabela-funcionarios-view';
+import { AlteracaoFuncionariosView } from '../rf18-alteracao-funcionario/alteracao-funcionarios-view';
 
 export function ListarFuncionariosView() {
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [erroCarregamento, setErroCarregamento] = useState<string>('');
   const [carregando, setCarregando] = useState<boolean>(true);
+  const [modalAberto, setModalAberto] = useState(false);
+  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
   const navigate = useNavigate();
 
+  const carregarFuncionarios = async () => {
+    try {
+      const response = await api.get<Funcionario[]>('/funcionarios');
+      const ordenados = response.data.sort((a, b) => a.nome.localeCompare(b.nome));
+      setFuncionarios(ordenados);
+    } catch (e) {
+      setErroCarregamento('Falha ao carregar funcionários');
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   useEffect(() => {
-    const carregarFuncionarios = async () => {
-      console.log('🔍 carregando funcionários...');
-      try {
-        const response = await api.get<Funcionario[]>('/funcionarios');
-        console.log('✔ resposta:', response.data);
-        const ordenados = response.data.sort((a, b) =>
-          a.nome.localeCompare(b.nome)
-        );
-        setFuncionarios(ordenados);
-      } catch (e) {
-        console.error('Erro ao carregar:', e);
-        setErroCarregamento('Falha ao carregar funcionários');
-      } finally {
-        setCarregando(false);
-      }
-    };
     carregarFuncionarios();
   }, []);
 
@@ -43,7 +41,7 @@ export function ListarFuncionariosView() {
       setErroCarregamento('Falha ao remover funcionário');
     }
   };
-
+  
   const handleReativar = async (func: Funcionario) => {
     try {
       const dto = {
@@ -61,7 +59,7 @@ export function ListarFuncionariosView() {
       setErroCarregamento('Falha ao reativar funcionário');
     }
   };
-
+  
   return (
     <>
       <Helmet><title>Listagem de Funcionários</title></Helmet>
@@ -75,16 +73,26 @@ export function ListarFuncionariosView() {
           >Adicionar +</Button>
         </Box>
 
-        {erroCarregamento && <Alert severity="error" sx={{ mb: 2 }}>{erroCarregamento}</Alert>}
+        {erroCarregamento && <Alert severity="error">{erroCarregamento}</Alert>}
 
-        {carregando
-          ? <Typography>Carregando funcionários...</Typography>
-          : <TabelaFuncionarios
-              funcionarios={funcionarios}
-              onRemover={handleRemover}
-              onReativar={handleReativar}
-            />
-        }
+        {!carregando && (
+          <TabelaFuncionarios
+            funcionarios={funcionarios}
+            onRemover={handleRemover}
+            onReativar={handleReativar}
+            onEditar={(func) => {
+              setFuncionarioSelecionado(func);
+              setModalAberto(true);
+            }}
+          />
+        )}
+
+        <AlteracaoFuncionariosView
+          aberto={modalAberto}
+          funcionario={funcionarioSelecionado}
+          onFechar={() => setModalAberto(false)}
+          onAtualizado={carregarFuncionarios}
+        />
       </DashboardContent>
     </>
   );

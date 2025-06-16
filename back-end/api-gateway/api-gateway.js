@@ -115,6 +115,47 @@ app.get(
   })
 );
 
+// LISTAR TODOS
+app.get(
+  '/api/funcionarios',
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: { '^/api/funcionarios$': '/funcionarios' },
+  })
+);
+
+// CRIAR
+app.post(
+  '/api/funcionarios',
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: { '^/api/funcionarios$': '/funcionarios' },
+    onProxyReq: (proxyReq, req) => {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
+  })
+);
+
+// BUSCAR, ATUALIZAR E REMOVER POR CPF
+['get', 'put', 'delete'].forEach(method => {
+  app[method](
+    '/api/funcionarios/:cpf',
+    createProxyMiddleware({
+      target: funcionarioServiceUrl,
+      changeOrigin: true,
+      pathRewrite: path => path.replace(/^\/api\/funcionarios/, '/funcionarios'),
+    })
+  );
+});
+
+
 // app.get(
 //   '/api/aeroportos',
 //   requireRole('TODOS'),
@@ -199,6 +240,8 @@ const requireJwt = jwt({
     /^\/api\/voos\/listar\/?$/,   // <- aceita /api/voos/listar e /api/voos/listar/
     /^\/api\/voos$/,              // <- evita bloquear GET /api/voos com query params
     /^\/api\/voos\/[^/]+\/cancelar$/,
+    /^\/api\/funcionarios$/,
+    /^\/api\/funcionarios\/[^/]+$/
   ]
 });
 app.use("/api", requireJwt);
@@ -267,40 +310,40 @@ app.get(
 
 // ======================= FUNCIONARIO ===========================
 
-// LISTAR TODOS
-app.get(
-  '/api/funcionarios',
-  requireRole('FUNCIONARIO'),
-  createProxyMiddleware({
-    target: funcionarioServiceUrl,
-    changeOrigin: true,
-    pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
-  })
-);
+// // LISTAR TODOS
+// app.get(
+//   '/api/funcionarios',
+//   // requireRole('FUNCIONARIO'),
+//   createProxyMiddleware({
+//     target: funcionarioServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
+//   })
+// );
 
-// CRIAR
-app.post(
-  '/api/funcionarios',
-  requireRole('FUNCIONARIO'),
-  createProxyMiddleware({
-    target: funcionarioServiceUrl,
-    changeOrigin: true,
-    pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
-  })
-);
+// // CRIAR
+// app.post(
+//   '/api/funcionarios',
+//   // requireRole('FUNCIONARIO'),
+//   createProxyMiddleware({
+//     target: funcionarioServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
+//   })
+// );
 
-// BUSCAR, ATUALIZAR E REMOVER POR CPF
-['get','put','delete'].forEach(method => {
-  app[method](
-    '/api/funcionarios/:cpf',
-    requireRole('FUNCIONARIO'),
-    createProxyMiddleware({
-      target: funcionarioServiceUrl,
-      changeOrigin: true,
-      pathRewrite: { '^/api/funcionarios': '/ms-funcionario' },
-    })
-  );
-});
+// // BUSCAR, ATUALIZAR E REMOVER POR CPF
+// ['get','put','delete'].forEach(method => {
+//   app[method](
+//     '/api/funcionarios/:cpf',
+//     // requireRole('FUNCIONARIO'),
+//     createProxyMiddleware({
+//       target: funcionarioServiceUrl,
+//       changeOrigin: true,
+//       pathRewrite: { '^/api/funcionarios': '/ms-funcionario' },
+//     })
+//   );
+// });
 // ======================= RESERVAS ==============================
 app.get(
   '/api/reservas/:codigoReserva',
