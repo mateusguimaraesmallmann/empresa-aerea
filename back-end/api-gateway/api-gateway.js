@@ -118,11 +118,10 @@ app.get(
 // LISTAR TODOS
 app.get(
   '/api/funcionarios',
-  // requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: funcionarioServiceUrl,
     changeOrigin: true,
-    pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
+    pathRewrite: { '^/api/funcionarios$': '/funcionarios' },
   })
 );
 
@@ -132,7 +131,7 @@ app.post(
   createProxyMiddleware({
     target: funcionarioServiceUrl,
     changeOrigin: true,
-    pathRewrite: { '^/api/funcionarios$': '/ms-funcionario' },
+    pathRewrite: { '^/api/funcionarios$': '/funcionarios' },
     onProxyReq: (proxyReq, req) => {
       if (req.body) {
         const bodyData = JSON.stringify(req.body);
@@ -145,17 +144,17 @@ app.post(
 );
 
 // BUSCAR, ATUALIZAR E REMOVER POR CPF
-['get','put','delete'].forEach(method => {
+['get', 'put', 'delete'].forEach(method => {
   app[method](
     '/api/funcionarios/:cpf',
-    // requireRole('FUNCIONARIO'),
     createProxyMiddleware({
       target: funcionarioServiceUrl,
       changeOrigin: true,
-      pathRewrite: { '^/api/funcionarios': '/ms-funcionario' },
+      pathRewrite: path => path.replace(/^\/api\/funcionarios/, '/funcionarios'),
     })
   );
 });
+
 
 // app.get(
 //   '/api/aeroportos',

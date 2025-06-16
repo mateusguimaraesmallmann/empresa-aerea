@@ -11,13 +11,14 @@ type Props = {
   funcionarios: Funcionario[];
   onRemover: (func: Funcionario) => void;
   onReativar: (func: Funcionario) => void;
+  onEditar: (func: Funcionario) => void;
 };
 
 function formatarCPF(cpf: string): string {
   return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
 }
 
-export function TabelaFuncionarios({ funcionarios, onRemover, onReativar }: Props) {
+export function TabelaFuncionarios({ funcionarios, onRemover, onReativar, onEditar }: Props) {
   const navigate = useNavigate();
 
   return (
@@ -48,7 +49,7 @@ export function TabelaFuncionarios({ funcionarios, onRemover, onReativar }: Prop
                     <Button
                       size="small"
                       startIcon={<Iconify icon="mdi:pencil" width={18} />}
-                      onClick={() => navigate(`/alterar-funcionario?cpf=${func.cpf}`)}
+                      onClick={() => onEditar(func)}
                     >Editar</Button>
                   ) : (
                     <Button
