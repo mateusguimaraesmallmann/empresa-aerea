@@ -9,13 +9,12 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClienteDTO {
+public class ClienteCadastroRequestDTO {
 
-    private Long idCliente;
     private String cpf;
     private String email;
     private String nome;
-    private Integer saldoMilhas;
-    private EnderecoDTO endereco;
-    
+    private Integer saldo_milhas;
+    private EnderecoCadastroRequestDTO endereco;
+
 }

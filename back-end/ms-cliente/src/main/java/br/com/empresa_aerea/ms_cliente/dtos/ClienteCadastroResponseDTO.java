@@ -1,4 +1,4 @@
-package br.com.empresa_aerea.saga.dtos;
+package br.com.empresa_aerea.ms_cliente.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClienteDTO {
+public class ClienteCadastroResponseDTO {
 
     private Long idCliente;
     private String cpf;
@@ -17,5 +17,6 @@ public class ClienteDTO {
     private String nome;
     private Integer saldoMilhas;
     private EnderecoDTO endereco;
+    private String errorMessage;
     
 }

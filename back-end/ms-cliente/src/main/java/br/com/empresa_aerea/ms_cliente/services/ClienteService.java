@@ -2,8 +2,8 @@ package br.com.empresa_aerea.ms_cliente.services;
 
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
+import br.com.empresa_aerea.ms_cliente.dtos.ClienteCadastroResponseDTO;
 import br.com.empresa_aerea.ms_cliente.dtos.ClienteDTO;
-import br.com.empresa_aerea.ms_cliente.dtos.ClienteResponseCadastrarDTO;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 
 import org.modelmapper.ModelMapper;
@@ -25,7 +25,7 @@ public class ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    public ClienteResponseCadastrarDTO cadastrarCliente(ClienteDTO clienteDTO) throws Exception {
+    public ClienteCadastroResponseDTO cadastrarCliente(ClienteDTO clienteDTO) throws Exception {
         Optional<Cliente> existClienteBD = clienteRepository.findByEmail(clienteDTO.getEmail());
         if (existClienteBD.isPresent()) {
             throw new ClienteJaExisteException("Outro cliente com email ja existente!");
@@ -34,7 +34,7 @@ public class ClienteService {
         try{
             Cliente cliente = mapper.map(clienteDTO, Cliente.class);
             Cliente clienteCriadoBD = clienteRepository.save(cliente);
-            ClienteResponseCadastrarDTO clienteResponseCadastrarDTO = mapper.map(clienteCriadoBD, ClienteResponseCadastrarDTO.class);
+            ClienteCadastroResponseDTO clienteResponseCadastrarDTO = mapper.map(clienteCriadoBD, ClienteCadastroResponseDTO.class);
             return clienteResponseCadastrarDTO;
         }catch(Exception ex){
             logger.error(ex.getMessage());

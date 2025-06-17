@@ -11,11 +11,11 @@ echo "🗑️  Limpando imagens não utilizadas, containers parados e redes não
 docker system prune -af --volumes
 
 # 3. Build do front-end Vite (React)
-echo "🎨 Realizando build do front-end..."
-cd ./front-end
-npm install
-npm run build
-cd ..
+#echo "🎨 Realizando build do front-end..."
+#cd ./front-end
+#npm install
+#npm run build
+#cd ..
 
 # 4. Subir containers com build forçado
 echo "🐳 Subindo os containers com Docker Compose..."

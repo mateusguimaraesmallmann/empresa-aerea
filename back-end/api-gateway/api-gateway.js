@@ -75,33 +75,21 @@ app.post(
   })
 );
 
-// ======================= SAGA AUTOCADASTRO ====================== NAO DEVE EXISTIR, POIS O ENDPOINT DE CADASTRO DEVE SER /CLIENTES
-/*app.post(
-  "/api/saga/autocadastro",
-  createProxyMiddleware({
-    target: sagaServiceUrl,
-    changeOrigin: true,
-    selfHandleResponse: false,
-    pathRewrite: (path) =>
-      path.replace("/api/saga/autocadastro", "/saga/ms-cliente/cadastrar-cliente"),
-    onProxyReq: (proxyReq, req, res) => {
-      if (req.body && Object.keys(req.body).length > 0) {
-        const bodyData = JSON.stringify(req.body);
-        proxyReq.setHeader('Content-Type', 'application/json');
-        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-        proxyReq.write(bodyData);
-      }
-    }
-  })
-);*/
-
 // ======================= Cadastro Cliente ======================
 app.post(
   "/api/clientes",
   createProxyMiddleware({
     target: sagaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace("/api/clientes", "/saga/ms-cliente/clientes")
+    pathRewrite: path => path.replace("/api/clientes", "/saga/ms-cliente/clientes"),
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
   })
 );
 
