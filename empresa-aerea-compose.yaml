@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   # ================= DATA BASES =================
   mongo-db:
     image: mongo
@@ -63,8 +62,7 @@ services:
       retries: 5
 
   # =============== MICROSERVIÇOS ===============
-  
-  # =============== AUTH ===============
+  # =============== AUTH ========================
   ms-auth:
     build:
       context: ./back-end/ms-auth
@@ -98,8 +96,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      saga:
-        condition: service_started
     networks:
       - empresa-aerea-net
 
@@ -163,18 +159,6 @@ services:
       mongo-db:
         condition: service_healthy
       postgres-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      ms-auth:
-        condition: service_healthy
-      ms-cliente:
-        condition: service_healthy
-      ms-funcionario:
-        condition: service_healthy
-      ms-reserva:
-        condition: service_healthy
-      ms-voos:
         condition: service_healthy
     networks:
       - empresa-aerea-net
