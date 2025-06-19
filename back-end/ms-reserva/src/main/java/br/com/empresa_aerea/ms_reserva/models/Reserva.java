@@ -25,11 +25,13 @@ public class Reserva {
     @Id
     @Column(length = 8, nullable = false, unique = true)
     private String codigo;
-
     private String codigoVoo;
     private String clienteCpf;
+
     @CreationTimestamp
     private LocalDateTime dataHora;
     private EstadoReservaEnum estado;
-    
+    private int quantidadePassagens;
+    private int milhasUtilizadas;
+    private double valorPagoEmDinheiro;
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/ms-reserva")
+@RequestMapping("/ms-reserva/reservas")
 public class ReservaController {
 
     private final ReservaService reservaService;
@@ -53,7 +53,10 @@ public class ReservaController {
             reserva.getCodigoVoo(),
             reserva.getClienteCpf(),
             reserva.getDataHora(),
-            reserva.getEstado()
+            reserva.getEstado(),
+            reserva.getQuantidadePassagens(),
+            reserva.getMilhasUtilizadas(),
+            reserva.getValorPagoEmDinheiro()
         );
     }
 }

@@ -6,13 +6,19 @@ export interface Reserva {
   codigoVoo: string;
   clienteCpf: string;
   dataHora: string;
-  estado: 'CRIADA' | 'CHECK-IN' | 'EMBARCADA' | 'CANCELADA' | 'REALIZADA';
+  estado: string;
+  quantidadePassagens: number;
+  milhasUtilizadas: number;
+  valorPagoEmDinheiro: number;
 }
 
 // DTO para criar reserva
 export interface CriarReservaDTO {
   codigoVoo: string;
   clienteCpf: string;
+  quantidadePassagens: number;
+  milhasUtilizadas: number;
+  valorPagoEmDinheiro: number;
 }
 
 // POST /api/reservas – criação (CLIENTE)

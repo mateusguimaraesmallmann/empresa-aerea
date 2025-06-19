@@ -11,5 +11,7 @@ public class ReservaDTO {
 
     private String codigoVoo;
     private String clienteCpf;
-    
+    private int quantidadePassagens;
+    private int milhasUtilizadas;
+    private double valorPagoEmDinheiro;
 }
