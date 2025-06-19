@@ -8,7 +8,7 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 
 import { Iconify } from 'src/components/iconify';
-import { Reserva } from 'src/sections/cliente/types/reserva'; 
+import { Reserva } from 'src/api/reserva';
 import { VerReservaDialog } from '../../r04-ver-reserva/ver-reserva';
 
 type TabelaClienteLinhaProps = {
@@ -64,7 +64,7 @@ export function TabelaClienteLinha({ reserva }: TabelaClienteLinhaProps) {
       <VerReservaDialog
         open={dialogOpen}
         onClose={handleDialogClose}
-        reserva={{ ...reserva, id: reserva.id ?? 'sem-id' }}
+        reserva={reserva}
       />
     </>
   );
