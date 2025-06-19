@@ -77,18 +77,20 @@ public class FuncionarioService {
     }
 
     public Funcionario atualizar(String cpf, @Valid FuncionarioDTO dto) {
-        Funcionario existente = funcionarioRepository.findByCpf(cpf)
+        Funcionario existente = funcionarioRepository.findByCpf(cpf.trim())
             .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
-
+    
+        // Atualiza somente os campos permitidos
         existente.setNome(dto.getNome());
         existente.setEmail(dto.getEmail());
         existente.setTelefone(dto.getTelefone());
-
+        existente.setAtivo(dto.isAtivo());
+    
         Funcionario atualizado = funcionarioRepository.save(existente);
         logger.info("Funcionário atualizado: {} (CPF {})", atualizado.getNome(), cpf);
         return atualizado;
     }
-
+    
     public void inativar(String cpf) {
         Funcionario func = funcionarioRepository.findByCpf(cpf)
             .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
