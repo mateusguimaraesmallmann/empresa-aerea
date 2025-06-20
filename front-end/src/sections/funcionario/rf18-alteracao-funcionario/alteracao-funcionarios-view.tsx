@@ -6,6 +6,8 @@ import {
 import InputMask from 'react-input-mask';
 import axios from 'axios';
 import { Funcionario } from '../types/funcionario';
+import { atualizarFuncionario } from '../../../api/funcionario/funcionario';
+
 
 type Props = {
   aberto: boolean;
@@ -65,16 +67,13 @@ export function AlteracaoFuncionariosView({
 
     setCarregando(true);
     try {
-      await axios.put(
-        `/api/funcionarios/${funcionario.cpf}`,
-        {
-          nome: dados.nome,
-          email: dados.email,
-          telefone: dados.telefone.replace(/\D/g, '')
-        }
-        // { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-
+      await atualizarFuncionario(funcionario.cpf, {
+        nome: dados.nome,
+        email: dados.email,
+        telefone: dados.telefone.replace(/\D/g, ''),
+        ativo: funcionario.ativo ?? true
+      });      
+      
       setSucesso(true);
       
       setTimeout(() => {

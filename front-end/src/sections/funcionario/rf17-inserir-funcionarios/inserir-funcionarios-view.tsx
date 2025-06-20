@@ -14,7 +14,7 @@ type Props = {
 };
 
 export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) {
- 
+
   const [dados, setDados] = useState<Omit<Funcionario, 'id' | 'senha'>>({
     nome: '',
     cpf: '',
@@ -23,12 +23,10 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
     ativo: true,
   });
 
- 
   const [erros, setErros] = useState<Partial<Record<keyof typeof dados, string>>>({});
-  
   const [erroGeral, setErroGeral] = useState('');
- 
   const [carregando, setCarregando] = useState(false);
+  const [senhaGerada, setSenhaGerada] = useState('');
 
   const limparErros = () => {
     setErros({});
@@ -63,21 +61,18 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
 
     setCarregando(true);
     try {
-      // Prepara payload: limpa máscaras
       const payload = {
         ...dados,
         cpf: dados.cpf.replace(/\D/g, ''),
         telefone: dados.telefone.replace(/\D/g, '')
       };
-      
+
       const resp = await axios.post<Funcionario>('http://localhost:3000/api/funcionarios', payload, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });      
+      });
 
+      setSenhaGerada(resp.data.senha || '');
       onSucesso(resp.data);
-      // Limpa formulário e fecha modal
-      setDados({ nome: '', cpf: '', email: '', telefone: '', ativo: true });
-      onFechar();
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setErroGeral(err.response?.data?.message || 'Erro ao cadastrar');
@@ -91,6 +86,7 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
 
   const handleFechar = () => {
     limparErros();
+    setSenhaGerada('');
     setDados({ nome: '', cpf: '', email: '', telefone: '', ativo: true });
     onFechar();
   };
@@ -108,68 +104,81 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
         <Stack spacing={2} sx={{ mt: 1 }}>
           {erroGeral && <Alert severity="error">{erroGeral}</Alert>}
 
-          <TextField
-            label="Nome"
-            {...commonFieldProps}
-            value={dados.nome}
-            onChange={e => setDados({ ...dados, nome: e.target.value })}
-            error={!!erros.nome}
-            helperText={erros.nome}
-          />
-
-          <InputMask
-            mask="999.999.999-99"
-            value={dados.cpf}
-            onChange={e => setDados({ ...dados, cpf: e.target.value })}
-          >
-            {(inputProps: any) => (
+          {senhaGerada ? (
+            <Alert severity="success">
+              Funcionário cadastrado com sucesso!<br />
+              <strong>Senha gerada: {senhaGerada}</strong>
+            </Alert>
+          ) : (
+            <>
               <TextField
-                {...inputProps}
-                label="CPF"
+                label="Nome"
                 {...commonFieldProps}
-                error={!!erros.cpf}
-                helperText={erros.cpf}
+                value={dados.nome}
+                onChange={e => setDados({ ...dados, nome: e.target.value })}
+                error={!!erros.nome}
+                helperText={erros.nome}
               />
-            )}
-          </InputMask>
 
-          <TextField
-            label="E‑mail"
-            type="email"
-            {...commonFieldProps}
-            value={dados.email}
-            onChange={e => setDados({ ...dados, email: e.target.value })}
-            error={!!erros.email}
-            helperText={erros.email}
-          />
+              <InputMask
+                mask="999.999.999-99"
+                value={dados.cpf}
+                onChange={e => setDados({ ...dados, cpf: e.target.value })}
+              >
+                {(inputProps: any) => (
+                  <TextField
+                    {...inputProps}
+                    label="CPF"
+                    {...commonFieldProps}
+                    error={!!erros.cpf}
+                    helperText={erros.cpf}
+                  />
+                )}
+              </InputMask>
 
-          <InputMask
-            mask="(99) 99999-9999"
-            value={dados.telefone}
-            onChange={e => setDados({ ...dados, telefone: e.target.value })}
-          >
-            {(inputProps: any) => (
               <TextField
-                {...inputProps}
-                label="Telefone"
+                label="E‑mail"
+                type="email"
                 {...commonFieldProps}
-                error={!!erros.telefone}
-                helperText={erros.telefone}
+                value={dados.email}
+                onChange={e => setDados({ ...dados, email: e.target.value })}
+                error={!!erros.email}
+                helperText={erros.email}
               />
-            )}
-          </InputMask>
+
+              <InputMask
+                mask="(99) 99999-9999"
+                value={dados.telefone}
+                onChange={e => setDados({ ...dados, telefone: e.target.value })}
+              >
+                {(inputProps: any) => (
+                  <TextField
+                    {...inputProps}
+                    label="Telefone"
+                    {...commonFieldProps}
+                    error={!!erros.telefone}
+                    helperText={erros.telefone}
+                  />
+                )}
+              </InputMask>
+            </>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleFechar} disabled={carregando}>Cancelar</Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={carregando}
-          startIcon={carregando ? <CircularProgress size={20}/> : null}
-        >
-          {carregando ? 'Enviando...' : 'Cadastrar'}
+        <Button onClick={handleFechar} disabled={carregando}>
+          {senhaGerada ? 'Fechar' : 'Cancelar'}
         </Button>
+        {!senhaGerada && (
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={carregando}
+            startIcon={carregando ? <CircularProgress size={20}/> : null}
+          >
+            {carregando ? 'Enviando...' : 'Cadastrar'}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

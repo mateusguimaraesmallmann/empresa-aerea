@@ -9,8 +9,7 @@ import lombok.*;
 public class FuncionarioDTO {
     private Long idFuncionario;
 
-    @NotBlank
-    @Pattern(regexp = "\\d{11}", message = "CPF inválido")
+    // Remova as anotações de validação do CPF
     private String cpf;
 
     @NotBlank

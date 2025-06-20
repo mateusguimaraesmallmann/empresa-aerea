@@ -149,7 +149,15 @@ app.post(
     createProxyMiddleware({
       target: funcionarioServiceUrl,
       changeOrigin: true,
-      pathRewrite: path => path.replace(/^\/api\/funcionarios/, '/funcionarios'),
+      pathRewrite: (path, req) => `/funcionarios/${req.params.cpf}`,
+      onProxyReq: (proxyReq, req) => {
+        if (['PUT', 'DELETE'].includes(req.method) && req.body) {
+          const bodyData = JSON.stringify(req.body);
+          proxyReq.setHeader('Content-Type', 'application/json');
+          proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+          proxyReq.write(bodyData);
+        }
+      }
     })
   );
 });
