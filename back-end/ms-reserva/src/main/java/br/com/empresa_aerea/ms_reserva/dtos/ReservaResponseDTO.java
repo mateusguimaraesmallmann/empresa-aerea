@@ -17,5 +17,8 @@ public class ReservaResponseDTO {
     private String clienteCpf;
     private LocalDateTime dataHora;
     private EstadoReservaEnum estado;
-
+    private int quantidadePassagens;
+    private int milhasUtilizadas;
+    private double valorPagoEmDinheiro;
 }
+

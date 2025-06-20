@@ -1,18 +1,24 @@
 import api from 'src/api/api';
 
-// Modelo da reserva 
+// Modelo da reserva
 export interface Reserva {
   codigo: string;
   codigoVoo: string;
   clienteCpf: string;
   dataHora: string;
-  estado: 'CRIADA' | 'CHECK-IN' | 'EMBARCADA' | 'CANCELADA' | 'REALIZADA';
+  estado: string;
+  quantidadePassagens: number;
+  milhasUtilizadas: number;
+  valorPagoEmDinheiro: number;
 }
 
 // DTO para criar reserva
 export interface CriarReservaDTO {
   codigoVoo: string;
   clienteCpf: string;
+  quantidadePassagens: number;
+  milhasUtilizadas: number;
+  valorPagoEmDinheiro: number;
 }
 
 // POST /api/reservas – criação (CLIENTE)
@@ -24,6 +30,12 @@ export async function criarReserva(dados: CriarReservaDTO): Promise<Reserva> {
 // GET /api/reservas/:codigoReserva – detalhes (TODOS)
 export async function buscarReservaPorCodigo(codigo: string): Promise<Reserva> {
   const response = await api.get<Reserva>(`/reservas/${codigo}`);
+  return response.data;
+}
+
+// GET /api/clientes/:cpf/reservas – listar reservas do cliente
+export async function listarReservasPorCliente(clienteCpf: string): Promise<Reserva[]> {
+  const response = await api.get<Reserva[]>(`/clientes/${clienteCpf}/reservas`);
   return response.data;
 }
 

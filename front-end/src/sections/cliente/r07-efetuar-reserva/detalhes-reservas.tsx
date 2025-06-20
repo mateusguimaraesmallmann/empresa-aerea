@@ -14,20 +14,8 @@ import {
   Divider,
   Grid,
 } from '@mui/material';
+import { criarReserva } from 'src/api/reserva';
 import { Voo } from './tabela-voos';
-
-function gerarCodigoReservaExistente(codigosExistentes: string[]): string {
-  const gerarLetras = () =>
-    Array.from({ length: 3 }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('');
-  const gerarNumeros = () => String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-
-  let novoCodigo = '';
-  do {
-    novoCodigo = gerarLetras() + gerarNumeros();
-  } while (codigosExistentes.includes(novoCodigo));
-
-  return novoCodigo;
-}
 
 type Props = {
   voo: Voo;
@@ -44,16 +32,13 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [reservaCriada, setReservaCriada] = useState(false);
 
+  // Simulação de busca de milhas do cliente
+  useEffect(() => {
+    setMilhasDisponiveis(1000); 
+  }, []);
+
   const milhasNecessarias = Math.ceil((voo.preco * quantidade) / 5);
   const restanteEmDinheiro = Math.max(voo.preco * quantidade - milhasUsadas, 0);
-
-  useEffect(() => {
-    const compras = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
-    const totalComprado = compras.reduce((acc: number, item: any) => acc + Number(item.milhas), 0);
-    const milhasUsadasEmReservas = JSON.parse(localStorage.getItem('reservas') || '[]')
-      .reduce((acc: number, r: any) => acc + (r.milhasUsadas || 0), 0);
-    setMilhasDisponiveis(totalComprado - milhasUsadasEmReservas);
-  }, []);
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -61,9 +46,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
     onReservaFinalizada();
   };
 
-  const handleDialogClose = () => {
-    setOpenDialog(false);
-  };
+  const handleDialogClose = () => setOpenDialog(false);
 
   const confirmarReserva = () => {
     if (voo.estado !== 'CONFIRMADO') {
@@ -75,29 +58,27 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
     setOpenDialog(true);
   };
 
-  const handleConfirmDialog = () => {
-    const reservasSalvas = JSON.parse(localStorage.getItem('reservas') || '[]');
-    const codigosExistentes = reservasSalvas.map((r: any) => r.codigo);
-    const codigo = gerarCodigoReservaExistente(codigosExistentes);
-
-    const novaReserva = {
-      codigo,
-      voo,
-      quantidade,
-      milhasUsadas,
-      restanteEmDinheiro,
-      estado: 'CRIADA',
-      dataHoraCriacao: new Date().toISOString()
-    };
-
-    reservasSalvas.push(novaReserva);
-    localStorage.setItem('reservas', JSON.stringify(reservasSalvas));
-
-    setSnackbarMessage(`Reserva criada com sucesso! Código: ${codigo}`);
-    setSnackbarTipo('success');
-    setSnackbarOpen(true);
-    setOpenDialog(false);
-    setReservaCriada(true);
+  const handleConfirmDialog = async () => {
+    try {
+      const clienteCpf = '12345678901';
+      await criarReserva({
+        codigoVoo: voo.codigo,
+        clienteCpf,
+        quantidadePassagens: quantidade,
+        milhasUtilizadas: milhasUsadas,
+        valorPagoEmDinheiro: restanteEmDinheiro,
+      });
+      setSnackbarMessage('Reserva criada com sucesso!');
+      setSnackbarTipo('success');
+      setOpenDialog(false);
+      setReservaCriada(true);
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage('Erro ao criar reserva.');
+      setSnackbarTipo('error');
+      setSnackbarOpen(true);
+      setOpenDialog(false);
+    }
   };
 
   return (
@@ -110,8 +91,8 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={6}><Typography><strong>Código Voo:</strong> {voo.codigo}</Typography></Grid>
-        <Grid item xs={12} sm={6}><Typography><strong>Origem:</strong> {voo.origem}</Typography></Grid>
-        <Grid item xs={12} sm={6}><Typography><strong>Destino:</strong> {voo.destino}</Typography></Grid>
+        <Grid item xs={12} sm={6}><Typography><strong>Origem:</strong> {typeof voo.origem === 'string' ? voo.origem : voo.origem.nome || voo.origem.codigoAeroporto}</Typography></Grid>
+        <Grid item xs={12} sm={6}><Typography><strong>Destino:</strong> {typeof voo.destino === 'string' ? voo.destino : voo.destino.nome || voo.destino.codigoAeroporto}</Typography></Grid>
         <Grid item xs={12} sm={6}><Typography><strong>Data/Hora:</strong> {new Date(voo.dataHora).toLocaleString('pt-BR')}</Typography></Grid>
         <Grid item xs={12} sm={6}><Typography><strong>Preço unitário:</strong> R$ {voo.preco.toFixed(2)}</Typography></Grid>
         <Grid item xs={12} sm={6}><Typography><strong>Saldo de Milhas:</strong> {milhasDisponiveis}</Typography></Grid>

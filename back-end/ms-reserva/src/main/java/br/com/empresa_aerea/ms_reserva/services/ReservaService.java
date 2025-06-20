@@ -27,7 +27,16 @@ public class ReservaService {
     @Transactional
     public Reserva criar(ReservaDTO dto) {
         String codigo = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        Reserva reserva = new Reserva(codigo, dto.getCodigoVoo(), dto.getClienteCpf(), null, EstadoReservaEnum.CRIADA);
+        Reserva reserva = new Reserva(
+            codigo,
+            dto.getCodigoVoo(),
+            dto.getClienteCpf(),
+            null,
+            EstadoReservaEnum.CRIADA,
+            dto.getQuantidadePassagens(),
+            dto.getMilhasUtilizadas(),
+            dto.getValorPagoEmDinheiro()
+        );
         reserva = reservaRepository.save(reserva);
         return reserva;
     }
@@ -51,12 +60,11 @@ public class ReservaService {
     public void cancelar(String codigo) {
         Reserva reserva = buscar(codigo);
         if (reserva.getEstado() == EstadoReservaEnum.CRIADA || reserva.getEstado() == EstadoReservaEnum.CHECK_IN) {
-            // EstadoReservaEnum origem = reserva.getEstado();
             reserva.setEstado(EstadoReservaEnum.CANCELADA);
             reservaRepository.save(reserva);
         } else {
             throw new IllegalStateException("Não é possível cancelar esta reserva no estado " + reserva.getEstado());
         }
     }
-
 }
+

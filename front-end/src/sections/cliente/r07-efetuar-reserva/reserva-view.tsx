@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -11,17 +11,12 @@ import {
 import { Helmet } from 'react-helmet-async';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import { buscarTodosVoos } from 'src/api/voo'; 
 import { TabelaVoos, Voo } from './tabela-voos';
 import { DetalhesReserva } from './detalhes-reservas';
 
 export function ReservaView() {
-  const voosSalvos: Voo[] = JSON.parse(localStorage.getItem('voos') || '[]');
-
-  const todosAeroportos = voosSalvos
-    .map((v) => [v.origem, v.destino])
-    .flat()
-    .filter((valor, indice, self) => self.indexOf(valor) === indice);
-
+  const [voosSalvos, setVoosSalvos] = useState<Voo[]>([]);
   const [origem, setOrigem] = useState('');
   const [destino, setDestino] = useState('');
   const [voosFiltrados, setVoosFiltrados] = useState<Voo[]>([]);
@@ -30,6 +25,32 @@ export function ReservaView() {
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  // Busca voos do backend
+  useEffect(() => {
+    buscarTodosVoos().then(setVoosSalvos).catch(() => {
+      setVoosSalvos([]);
+      setSnackbarMessage('Erro ao buscar voos do sistema.');
+      setSnackbarOpen(true);
+    });
+  }, []);
+
+  // Preenche a lista de aeroportos
+  const todosAeroportos = [
+    ...new Set(
+      voosSalvos
+        .map((v) => [
+          typeof v.origem === 'string'
+            ? v.origem
+            : v.origem.nome || v.origem.codigoAeroporto,
+          typeof v.destino === 'string'
+            ? v.destino
+            : v.destino.nome || v.destino.codigoAeroporto,
+        ])
+        .flat()
+        .filter(Boolean)
+    ),
+  ];
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -45,10 +66,22 @@ export function ReservaView() {
 
       const dataValida = dataVoo >= hoje;
       const origemMatch = origem
-        ? voo.origem.toLowerCase().includes(origem.trim().toLowerCase())
+        ? (
+            typeof voo.origem === 'string'
+              ? voo.origem
+              : voo.origem.nome || voo.origem.codigoAeroporto
+          )
+            .toLowerCase()
+            .includes(origem.trim().toLowerCase())
         : true;
       const destinoMatch = destino
-        ? voo.destino.toLowerCase().includes(destino.trim().toLowerCase())
+        ? (
+            typeof voo.destino === 'string'
+              ? voo.destino
+              : voo.destino.nome || voo.destino.codigoAeroporto
+          )
+            .toLowerCase()
+            .includes(destino.trim().toLowerCase())
         : true;
 
       return dataValida && origemMatch && destinoMatch;
@@ -84,7 +117,9 @@ export function ReservaView() {
             options={todosAeroportos}
             value={origem}
             onChange={(_, value) => setOrigem(value || '')}
-            renderInput={(params) => <TextField {...params} label="Aeroporto Origem" fullWidth />}
+            renderInput={(params) => (
+              <TextField {...params} label="Aeroporto Origem" fullWidth />
+            )}
           />
 
           <Autocomplete
@@ -92,7 +127,9 @@ export function ReservaView() {
             options={todosAeroportos}
             value={destino}
             onChange={(_, value) => setDestino(value || '')}
-            renderInput={(params) => <TextField {...params} label="Aeroporto Destino" fullWidth />}
+            renderInput={(params) => (
+              <TextField {...params} label="Aeroporto Destino" fullWidth />
+            )}
           />
 
           <Button

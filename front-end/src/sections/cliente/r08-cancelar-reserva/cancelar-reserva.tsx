@@ -9,9 +9,8 @@ import {
   Grid,
   Alert,
 } from '@mui/material';
-
 import { useState } from 'react';
-import { Reserva } from 'src/sections/cliente/types/reserva';
+import { Reserva, cancelarReserva } from 'src/api/reserva';
 
 type CancelarReservaDialogProps = {
   open: boolean;
@@ -27,54 +26,34 @@ export function CancelarReservaDialog({
   onReservaCancelada,
 }: CancelarReservaDialogProps) {
   const [sucesso, setSucesso] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   if (!reserva) return null;
 
-  const podeCancelar = ['CRIADA', 'CHECK-IN'].includes(reserva.estado);
+  const podeCancelar = ['CRIADA', 'CHECK_IN'].includes(reserva.estado);
 
-  const cancelarReserva = () => {
-    const reservasLocal = JSON.parse(localStorage.getItem('reservas') || '[]');
+  const handleCancelarReserva = async () => {
+    setLoading(true);
+    setErro(null);
 
-    const reservasAtualizadas = reservasLocal.map((r: any) =>
-      r.codigo === reserva.codigo
-        ? {
-            ...r,
-            estado: 'CANCELADA',
-            dataHoraCancelamento: new Date().toISOString(),
-          }
-        : r
-    );
+    try {
+      await cancelarReserva(reserva.codigo);
+      setSucesso(true);
+      onReservaCancelada();
 
-    localStorage.setItem('reservas', JSON.stringify(reservasAtualizadas));
-
-    const milhasAtuais = Number(localStorage.getItem('milhas')) || 0;
-    const milhasParaReembolso = Number(reserva.milhasGastas) || 0;
-    const novoSaldoMilhas = milhasAtuais + milhasParaReembolso;
-
-    localStorage.setItem('milhas', JSON.stringify(novoSaldoMilhas));
-
-    const transacoes = JSON.parse(localStorage.getItem('transacoes') || '[]');
-
-    const novaTransacao = {
-      id: crypto.randomUUID(),
-      dataHora: new Date().toISOString(),
-      descricao: 'Milhas devolvidas por cancelamento',
-      tipo: 'ENTRADA',
-      quantidadeMilhas: milhasParaReembolso,
-      codigoReserva: reserva.codigo,
-      valorReais: null,
-    };
-
-    transacoes.push(novaTransacao);
-    localStorage.setItem('transacoes', JSON.stringify(transacoes));
-
-    setSucesso(true);
-    onReservaCancelada();
-
-    setTimeout(() => {
-      setSucesso(false);
-      onClose();
-    }, 3000);
+      setTimeout(() => {
+        setSucesso(false);
+        onClose();
+      }, 2000);
+    } catch (e: any) {
+      setErro(
+        e?.response?.data?.message ||
+          'Erro ao cancelar reserva. Tente novamente mais tarde.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -88,6 +67,11 @@ export function CancelarReservaDialog({
               Reserva cancelada com sucesso! As milhas utilizadas serão devolvidas.
             </Alert>
           )}
+          {erro && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {erro}
+            </Alert>
+          )}
 
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -96,37 +80,31 @@ export function CancelarReservaDialog({
                 {new Date(reserva.dataHora).toLocaleString('pt-BR')}
               </Typography>
             </Grid>
-
             <Grid item xs={6}>
               <Typography><strong>Código:</strong></Typography>
               <Typography color="text.secondary">{reserva.codigo}</Typography>
             </Grid>
-
             <Grid item xs={6}>
-              <Typography><strong>Origem:</strong></Typography>
-              <Typography color="text.secondary">{reserva.origem}</Typography>
+              <Typography><strong>Código do Voo:</strong></Typography>
+              <Typography color="text.secondary">{reserva.codigoVoo}</Typography>
             </Grid>
-
             <Grid item xs={6}>
-              <Typography><strong>Destino:</strong></Typography>
-              <Typography color="text.secondary">{reserva.destino}</Typography>
+              <Typography><strong>Qtd. Passagens:</strong></Typography>
+              <Typography color="text.secondary">{reserva.quantidadePassagens}</Typography>
             </Grid>
-
             <Grid item xs={6}>
               <Typography><strong>Valor Gasto:</strong></Typography>
               <Typography color="text.secondary">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL',
-                }).format(reserva.valorReais)}
+                }).format(reserva.valorPagoEmDinheiro)}
               </Typography>
             </Grid>
-
             <Grid item xs={6}>
-              <Typography><strong>Milhas Gastas:</strong></Typography>
-              <Typography color="text.secondary">{reserva.milhasGastas}</Typography>
+              <Typography><strong>Milhas Utilizadas:</strong></Typography>
+              <Typography color="text.secondary">{reserva.milhasUtilizadas}</Typography>
             </Grid>
-
             <Grid item xs={12}>
               <Typography><strong>Estado da Reserva:</strong></Typography>
               <Typography color="text.secondary">{reserva.estado}</Typography>
@@ -144,16 +122,17 @@ export function CancelarReservaDialog({
       <DialogActions>
         <Button onClick={onClose}>Fechar</Button>
         <Button
-          onClick={cancelarReserva}
+          onClick={handleCancelarReserva}
           color="error"
           variant="contained"
-          disabled={!podeCancelar || sucesso}
+          disabled={!podeCancelar || sucesso || loading}
         >
-          Cancelar Reserva
+          {loading ? 'Cancelando...' : 'Cancelar Reserva'}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
+
 
 
