@@ -2,6 +2,7 @@
 if (!process.env.MS_AUTH_URL) {
   require('dotenv-safe').config();
 }
+
 const express = require('express');
 const { expressjwt: jwt } = require('express-jwt');
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -9,6 +10,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,8 +19,9 @@ const port = process.env.PORT || 3000;
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+//app.use(express.json());
+//app.use(express.urlencoded({ extended: false }));
+
 app.use(cors({
   origin: ['http://localhost:3039', 'http://localhost:3040', 'http://localhost:4200'],
   credentials: true,
@@ -56,34 +59,13 @@ function requireRole(role) {
 // ======================= ROTAS PÚBLICAS ========================
 // ======================= LOGIN =================================
 app.post("/api/login",
+  bodyParser.json(),
   createProxyMiddleware({
     target: authServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace("/api/login", "/auth/login")
-  })
-);
-
-// ======================= REGISTRO =================================
-app.post(
-  "/api/register",
-  createProxyMiddleware({
-    target: authServiceUrl,
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/register", "/auth/register")
-  })
-);
-
-// ======================= SAGA AUTOCADASTRO ======================
-app.post(
-  "/api/saga/autocadastro",
-  createProxyMiddleware({
-    target: sagaServiceUrl,
-    changeOrigin: true,
-    selfHandleResponse: false,
-    pathRewrite: (path) =>
-      path.replace("/api/saga/autocadastro", "/saga/ms-cliente/cadastrar-cliente"),
+    pathRewrite: path => path.replace("/api/login", "/auth/login"),
     onProxyReq: (proxyReq, req, res) => {
-      if (req.body && Object.keys(req.body).length > 0) {
+      if (req.body) {
         const bodyData = JSON.stringify(req.body);
         proxyReq.setHeader('Content-Type', 'application/json');
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
@@ -93,13 +75,21 @@ app.post(
   })
 );
 
-// ======================= Cadastro Cliente ======================
+// ======================= AUTOCADASTRO ======================
 app.post(
   "/api/clientes",
   createProxyMiddleware({
-    target: clienteServiceUrl,
+    target: sagaServiceUrl,
     changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/clientes", "/ms-cliente/clientes")
+    pathRewrite: path => path.replace("/api/clientes", "/saga/ms-cliente/clientes"),
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
   })
 );
 

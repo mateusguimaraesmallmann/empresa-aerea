@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   # ================= DATA BASES =================
   mongo-db:
     image: mongo
@@ -64,14 +63,14 @@ services:
       retries: 5
 
   # =============== MICROSERVIÇOS ===============
-
+  # =============== AUTH ========================
   ms-auth:
     build:
       context: ./back-end/ms-auth
       dockerfile: Dockerfile
     container_name: ms-auth
     ports:
-      - "9090:9090"
+      - "8080:8080"
     environment:
       SPRING_DATA_MONGODB_HOST: mongo-db
       SPRING_DATA_MONGODB_PORT: 27017
@@ -83,30 +82,30 @@ services:
     networks:
       - empresa-aerea-net
 
+  # =============== CLIENTE ===============
   ms-cliente:
     build:
       context: ./back-end/ms-cliente
       dockerfile: Dockerfile
     container_name: ms-cliente
     ports:
-      - "9091:9091"
+      - "8081:8081"
     depends_on:
       postgres-db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      saga:
-        condition: service_started
     networks:
       - empresa-aerea-net
 
+  # =============== FUNCIONARIO ===============
   ms-funcionario:
     build:
       context: ./back-end/ms-funcionario
       dockerfile: Dockerfile
     container_name: ms-funcionario
     ports:
-      - "9092:9092"
+      - "8082:8082"
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -129,13 +128,14 @@ services:
       
       APP_MQ_FILA_FUNCIONARIOS: fila-funcionarios
 
+  # =============== RESERVA ===============
   ms-reserva:
     build:
       context: ./back-end/ms-reserva
       dockerfile: Dockerfile
     container_name: ms-reserva
     ports:
-      - "9093:9093"
+      - "8083:8083"
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -144,13 +144,14 @@ services:
     networks:
       - empresa-aerea-net
 
+  # =============== VOOS ===============
   ms-voos:
     build:
       context: ./back-end/ms-voos
       dockerfile: Dockerfile
     container_name: ms-voos
     ports:
-      - "9094:9094"
+      - "8084:8084"
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -166,11 +167,11 @@ services:
       dockerfile: Dockerfile
     container_name: saga
     ports:
-      - "9095:9095"
+      - "8085:8085"
     depends_on:
-      postgres-db:
+      mongo-db:
         condition: service_healthy
-      rabbitmq:
+      postgres-db:
         condition: service_healthy
     networks:
       - empresa-aerea-net
@@ -192,15 +193,6 @@ services:
       - saga
     env_file:
       - ./back-end/api-gateway/.env
-    environment:
-      PORT: 3000
-      MS_AUTH_URL: http://ms-auth:9090
-      MS_CLIENTE_URL: http://ms-cliente:9091
-      MS_FUNCIONARIO_URL: http://ms-funcionario:9092
-      MS_RESERVA_URL: http://ms-reserva:9093
-      MS_VOOS_URL: http://ms-voos:9094
-      MS_SAGA_URL: http://saga:9095
-      JWT_SECRET: GV0ZXguc2hhcmVwb2025TADSDACRAZER2025GV0ZXguc2hhcmVwb
     networks:
       - empresa-aerea-net
 

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClienteDTO {
+public class ClienteCadastroResponseDTO {
 
     private Long idCliente;
     private String cpf;
@@ -17,5 +17,6 @@ public class ClienteDTO {
     private String nome;
     private Integer saldoMilhas;
     private EnderecoDTO endereco;
+    private String errorMessage;
     
 }

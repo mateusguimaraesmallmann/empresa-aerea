@@ -1,4 +1,4 @@
-package br.com.empresa_aerea.ms_cliente.dtos;
+package br.com.empresa_aerea.saga.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

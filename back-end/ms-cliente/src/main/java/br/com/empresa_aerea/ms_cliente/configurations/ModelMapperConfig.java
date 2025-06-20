@@ -1,4 +1,4 @@
-package br.com.empresa_aerea.ms_cliente.config;
+package br.com.empresa_aerea.ms_cliente.configurations;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;

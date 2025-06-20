@@ -1,6 +1,6 @@
 package br.com.empresa_area.ms_auth.dtos;
 
-import jakarta.validation.constraints.NotBlank;
+import br.com.empresa_area.ms_auth.enums.TipoUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,10 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginDTO {
-    @NotBlank String login;
-    @NotBlank String senha;
+public class RegisterRequestDTO {
+
+    private String email;
+    private String senha;
+    private TipoUsuario tipo;
+    
 }

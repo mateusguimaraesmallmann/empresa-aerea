@@ -1,8 +1,8 @@
 import api from 'src/api/api';
 
 export type LoginPayload = {
-  email: string;
-  password: string;
+  login: string;
+  senha: string;
 };
 
 export type TokenResponse = {

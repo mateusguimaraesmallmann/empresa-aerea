@@ -1,20 +1,22 @@
-package br.com.empresa_aerea.saga.events;
+package br.com.empresa_area.ms_auth.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
-@AllArgsConstructor
+@Getter
 @NoArgsConstructor
-public class UserRegisteredEvent {
+@AllArgsConstructor
+public class ClienteDTO {
 
-    private String userId;
+    private Long idCliente;
     private String cpf;
-    private String nome;
     private String email;
-    private String cep;
+    private String nome;
+    private Integer saldoMilhas;
+    private String tipo;
     private String senha;
+    
 }
