@@ -13,11 +13,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfiguration {
 
-    private static final String EXCHANGE_NAME = "saga-exchange";
-
     @Bean
     public TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE_NAME);
+        return new TopicExchange(SagaMessaging.EXCHANGE);
     }
 
     @Bean
