@@ -14,28 +14,19 @@ public class Funcionario {
     @Column(name = "id_funcionario")
     private Long idFuncionario;
 
-    @Column(nullable = false)
-    private String senha;
-
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
+
+    @Column(nullable = false)
+    private String nome;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
-    private String nome;
-
-    @Column(nullable = false)
     private String telefone;
 
     @Column(nullable = false)
-    private boolean ativo = true; // Novo campo
+    private boolean ativo = true;
 
-    public Funcionario(String cpf, String email, String nome, String telefone) {
-        this.cpf = cpf;
-        this.email = email;
-        this.nome = nome;
-        this.telefone = telefone;
-    }
 }

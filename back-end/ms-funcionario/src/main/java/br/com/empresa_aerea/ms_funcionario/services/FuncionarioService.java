@@ -7,7 +7,6 @@ import br.com.empresa_aerea.ms_funcionario.repositories.FuncionarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,13 +41,14 @@ public class FuncionarioService {
         // 2) gera senha e instancia o modelo (ID gerado pelo JPA)
         String senha = String.format("%04d", new Random().nextInt(10000));
         Funcionario funcionario = new Funcionario(
+            null,
             dto.getCpf(),
-            dto.getEmail(),
             dto.getNome(),
-            dto.getTelefone()
+            dto.getEmail(),
+            dto.getTelefone(),
+            dto.isAtivo()
         );
         funcionario.setAtivo(true);
-        funcionario.setSenha(senha);
 
         // 3) salva no banco
         Funcionario salvo = funcionarioRepository.save(funcionario);

@@ -10,6 +10,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -18,8 +19,9 @@ const port = process.env.PORT || 3000;
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+//app.use(express.json());
+//app.use(express.urlencoded({ extended: false }));
+
 app.use(cors({
   origin: ['http://localhost:3039', 'http://localhost:3040', 'http://localhost:4200'],
   credentials: true,
@@ -58,24 +60,23 @@ function requireRole(role) {
 
 // ======================= LOGIN =================================
 app.post("/api/login",
+  bodyParser.json(),
   createProxyMiddleware({
     target: authServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace("/api/login", "/auth/login")
+    pathRewrite: path => path.replace("/api/login", "/auth/login"),
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
   })
 );
 
-// ======================= REGISTRO =================================
-app.post(
-  "/api/register",
-  createProxyMiddleware({
-    target: authServiceUrl,
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/register", "/auth/register")
-  })
-);
-
-// ======================= Cadastro Cliente ======================
+// ======================= AUTOCADASTRO ======================
 app.post(
   "/api/clientes",
   createProxyMiddleware({

@@ -1,1 +1,0 @@
--- DELETE FROM funcionario where nome in ('Funcionario Teste Professor', 'Funcionario Teste 01', 'Funcionario Teste 02');
