@@ -74,20 +74,30 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
       setSenhaGerada(resp.data.senha || '');
       setTimeout(() => {
         onSucesso(resp.data);
-        handleFechar(); // fecha e limpa o modal
-      }, 5000);
+        handleFechar();
+        setCarregando(false); 
+      }, 5000);      
 
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setErroGeral(err.response?.data?.message || 'Erro ao cadastrar');
+        const responseData = err.response?.data;
+    
+        if (typeof responseData === 'string') {
+          setErroGeral(responseData);
+        }
+
+        else if (typeof responseData === 'object' && responseData?.message) {
+          setErroGeral(responseData.message);
+        } else {
+          setErroGeral('Erro ao cadastrar');
+        }
       } else {
         setErroGeral('Erro inesperado');
       }
-    } finally {
-      setCarregando(false);
-    }
+      setCarregando(false); 
+    }    
   };
-
+    
   const handleFechar = () => {
     limparErros();
     setSenhaGerada('');

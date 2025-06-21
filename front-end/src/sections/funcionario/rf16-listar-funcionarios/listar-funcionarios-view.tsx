@@ -34,11 +34,13 @@ export function ListarFuncionariosView() {
 
   const handleRemover = async (func: Funcionario) => {
     try {
-      await api.delete(`/funcionarios/${func.cpf}`);
-      setFuncionarios(prev => prev.filter(f => f.cpf !== func.cpf));
+      await api.patch(`/funcionarios/${func.cpf}/inativar`);
+      setFuncionarios(prev =>
+        prev.map(f => f.cpf === func.cpf ? { ...f, ativo: false } : f)
+      );
     } catch (e) {
-      console.error('Erro ao remover:', e);
-      setErroCarregamento('Falha ao remover funcionário');
+      console.error('Erro ao inativar:', e);
+      setErroCarregamento('Falha ao inativar funcionário');
     }
   };
   
@@ -48,7 +50,8 @@ export function ListarFuncionariosView() {
         cpf: func.cpf,
         nome: func.nome,
         email: func.email,
-        telefone: func.telefone
+        telefone: func.telefone,
+        ativo: true,
       };
       await api.put(`/funcionarios/${func.cpf}`, dto);
       setFuncionarios(prev =>
@@ -58,7 +61,7 @@ export function ListarFuncionariosView() {
       console.error('Erro ao reativar:', e);
       setErroCarregamento('Falha ao reativar funcionário');
     }
-  };
+  };  
   
   return (
     <>
