@@ -52,6 +52,10 @@ public class ReservaService {
     public Reserva atualizarEstado(String codigo, EstadoReservaEnum destino) {
         Reserva reserva = buscar(codigo);
         EstadoReservaEnum origem = reserva.getEstado();
+        // Só permite mudar para CHECK_IN se o estado atual for CRIADA
+        if (destino == EstadoReservaEnum.CHECK_IN && origem != EstadoReservaEnum.CRIADA) {
+            throw new IllegalStateException("Check-in só pode ser feito se a reserva está CRIADA.");
+        }
         reserva.setEstado(destino);
         reserva = reservaRepository.save(reserva);
         historicoRepository.save(new HistoricoEstadoReserva(null, codigo, LocalDateTime.now(), origem, destino));
