@@ -72,7 +72,11 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
       });
 
       setSenhaGerada(resp.data.senha || '');
-      onSucesso(resp.data);
+      setTimeout(() => {
+        onSucesso(resp.data);
+        handleFechar(); // fecha e limpa o modal
+      }, 5000);
+
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setErroGeral(err.response?.data?.message || 'Erro ao cadastrar');
@@ -101,70 +105,68 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
     <Dialog open={aberto} onClose={handleFechar} fullWidth maxWidth="sm">
       <DialogTitle>Cadastrar Funcionário</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
+        <Stack spacing={2} mt={1}>
           {erroGeral && <Alert severity="error">{erroGeral}</Alert>}
-
-          {senhaGerada ? (
-            <Alert severity="success">
+          {senhaGerada && (
+            <Alert severity="success" sx={{ mb: 1 }}>
               Funcionário cadastrado com sucesso!<br />
               <strong>Senha gerada: {senhaGerada}</strong>
             </Alert>
-          ) : (
-            <>
-              <TextField
-                label="Nome"
-                {...commonFieldProps}
-                value={dados.nome}
-                onChange={e => setDados({ ...dados, nome: e.target.value })}
-                error={!!erros.nome}
-                helperText={erros.nome}
-              />
-
-              <InputMask
-                mask="999.999.999-99"
-                value={dados.cpf}
-                onChange={e => setDados({ ...dados, cpf: e.target.value })}
-              >
-                {(inputProps: any) => (
-                  <TextField
-                    {...inputProps}
-                    label="CPF"
-                    {...commonFieldProps}
-                    error={!!erros.cpf}
-                    helperText={erros.cpf}
-                  />
-                )}
-              </InputMask>
-
-              <TextField
-                label="E‑mail"
-                type="email"
-                {...commonFieldProps}
-                value={dados.email}
-                onChange={e => setDados({ ...dados, email: e.target.value })}
-                error={!!erros.email}
-                helperText={erros.email}
-              />
-
-              <InputMask
-                mask="(99) 99999-9999"
-                value={dados.telefone}
-                onChange={e => setDados({ ...dados, telefone: e.target.value })}
-              >
-                {(inputProps: any) => (
-                  <TextField
-                    {...inputProps}
-                    label="Telefone"
-                    {...commonFieldProps}
-                    error={!!erros.telefone}
-                    helperText={erros.telefone}
-                  />
-                )}
-              </InputMask>
-            </>
           )}
+
+          <TextField
+            label="Nome"
+            {...commonFieldProps}
+            value={dados.nome}
+            onChange={e => setDados({ ...dados, nome: e.target.value })}
+            error={!!erros.nome}
+            helperText={erros.nome}
+          />
+
+          <InputMask
+            mask="999.999.999-99"
+            value={dados.cpf}
+            onChange={e => setDados({ ...dados, cpf: e.target.value })}
+          >
+            {(inputProps: any) => (
+              <TextField
+                {...inputProps}
+                label="CPF"
+                {...commonFieldProps}
+                error={!!erros.cpf}
+                helperText={erros.cpf}
+              />
+            )}
+          </InputMask>
+
+          <TextField
+            label="E‑mail"
+            type="email"
+            {...commonFieldProps}
+            value={dados.email}
+            onChange={e => setDados({ ...dados, email: e.target.value })}
+            error={!!erros.email}
+            helperText={erros.email}
+          />
+
+          <InputMask
+            mask="(99) 99999-9999"
+            value={dados.telefone}
+            onChange={e => setDados({ ...dados, telefone: e.target.value })}
+          >
+            {(inputProps: any) => (
+              <TextField
+                {...inputProps}
+                label="Telefone"
+                {...commonFieldProps}
+                error={!!erros.telefone}
+                helperText={erros.telefone}
+              />
+            )}
+          </InputMask>
         </Stack>
       </DialogContent>
+
       <DialogActions>
         <Button onClick={handleFechar} disabled={carregando}>
           {senhaGerada ? 'Fechar' : 'Cancelar'}

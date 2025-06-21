@@ -105,4 +105,11 @@ public class FuncionarioService {
         funcionarioRepository.delete(func);
         logger.info("Funcionário removido fisicamente: {} (CPF {})", func.getNome(), cpf);
     }
+
+    public Funcionario alterarStatus(String cpf, boolean ativo) {
+        Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
+            .orElseThrow(() -> new FuncionarioNotFoundException("Funcionário não encontrado"));
+        funcionario.setAtivo(ativo);
+        return funcionarioRepository.save(funcionario);
+    }
 }
