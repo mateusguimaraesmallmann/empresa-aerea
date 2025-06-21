@@ -1,6 +1,7 @@
 package br.com.empresa_aerea.ms_reserva.services;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -67,5 +68,10 @@ public class ReservaService {
             throw new IllegalStateException("Não é possível cancelar esta reserva no estado " + reserva.getEstado());
         }
     }
+
+    public List<Reserva> listarPorCliente(Long idCliente) {
+        return reservaRepository.findByIdCliente(idCliente);
+    }
 }
+
 

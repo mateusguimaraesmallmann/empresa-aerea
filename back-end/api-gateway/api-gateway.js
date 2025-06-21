@@ -288,13 +288,25 @@ app.get(
   })
 );
 
+// app.get(
+//   '/api/clientes/:codigoCliente/reservas',
+//   // requireRole('CLIENTE'),
+//   createProxyMiddleware({
+//     target: clienteServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/clientes/', '/ms-cliente/clientes/'),
+//   })
+// );
+
 app.get(
   '/api/clientes/:codigoCliente/reservas',
-  requireRole('CLIENTE'),
+  // requireRole('CLIENTE'), 
   createProxyMiddleware({
-    target: clienteServiceUrl,
+    target: reservaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/clientes/', '/ms-cliente/clientes/'),
+    pathRewrite: (path, req) => {
+      return `/ms-reserva/reservas?clienteId=${req.params.codigoCliente}`;
+    },
   })
 );
 

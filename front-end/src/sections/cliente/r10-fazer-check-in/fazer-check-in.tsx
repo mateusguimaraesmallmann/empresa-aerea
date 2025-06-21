@@ -36,7 +36,7 @@ export function FazerCheckIn() {
         
         // 1. Buscar reservas do cliente nas próximas 48h
         const response = await axios.get(
-          `/api/clientes/${usuario?.idCliente}/reservas?estado=CRIADA`,
+          `/api/clientes/${usuario?.id}/reservas?estado=CRIADA`,
           {
             headers: {
               Authorization: `Bearer ${usuario?.token}`,
@@ -63,7 +63,7 @@ export function FazerCheckIn() {
       }
     };
 
-    if (usuario?.idCliente) {
+    if (usuario?.id) {
       carregarReservasParaCheckIn();
     }
   }, [usuario]);

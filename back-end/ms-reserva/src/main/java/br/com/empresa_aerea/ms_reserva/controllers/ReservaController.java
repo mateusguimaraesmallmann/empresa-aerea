@@ -7,7 +7,10 @@ import br.com.empresa_aerea.ms_reserva.models.Reserva;
 import br.com.empresa_aerea.ms_reserva.services.ReservaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ms-reserva/reservas")
@@ -19,8 +22,19 @@ public class ReservaController {
         this.reservaService = reservaService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<ReservaResponseDTO>> listarPorCliente(@RequestParam(name = "clienteId", required = false) Long clienteId) {
+        if (clienteId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Reserva> reservas = reservaService.listarPorCliente(clienteId);
+        List<ReservaResponseDTO> response = reservas.stream().map(this::toResponseDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<ReservaResponseDTO> criar(@RequestBody ReservaDTO dto) {
+        System.out.println("DTO recebido: " + dto);
         Reserva reserva = reservaService.criar(dto);
         ReservaResponseDTO response = toResponseDTO(reserva);
         return ResponseEntity.status(201).body(response);
@@ -61,3 +75,4 @@ public class ReservaController {
         );
     }
 }
+

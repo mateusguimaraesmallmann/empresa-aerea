@@ -11,10 +11,9 @@ export function TelaInicialView() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [milhas, setMilhas] = useState(0);
 
-  // Recupera o cliente logado do localStorage
-  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  // Recupera o cliente logado do localStorage (TEMPORÁRIO, PRECISA AJUSTAR PRA VIR DO BACK)
+  const usuario = JSON.parse(sessionStorage.getItem('usuarioLogado') || '{}');
   const idCliente = usuario.id;
-  const clienteCpf = usuario.cpf;
 
   useEffect(() => {
     async function carregar() {

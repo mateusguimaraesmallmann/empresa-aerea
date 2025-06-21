@@ -33,7 +33,7 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   const [reservaCriada, setReservaCriada] = useState(false);
 
   // Recupera o cliente logado (PRECISA AJUSTAR PARA PEGAR O LOGIN REAL)
-  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const usuario = JSON.parse(sessionStorage.getItem('usuarioLogado') || '{}');
   const clienteCpf = usuario.cpf;
   const idCliente = usuario.id;
 
