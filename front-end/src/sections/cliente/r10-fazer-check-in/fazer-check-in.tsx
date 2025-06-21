@@ -1,76 +1,76 @@
 import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  Button,
-  Divider,
-  Snackbar,
-  Alert,
-  CircularProgress,
+  Box, Grid, Paper, Typography, Button, Divider, Snackbar, Alert, CircularProgress,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Label } from 'src/components/label';
-import { format, addHours } from 'date-fns';
 import { useAuth } from 'src/context/AuthContext';
-import { listarReservasPorCliente, fazerCheckinReserva } from 'src/api/reserva';
+import { format, addHours } from 'date-fns';
+import { listarReservasPorCliente, atualizarEstadoReserva, Reserva } from 'src/api/reserva';
+import { buscarVooPorCodigo, Voo } from 'src/api/voo';
+
+type ReservaComVoo = Reserva & { voo?: Voo };
 
 export function FazerCheckIn() {
   const { usuario } = useAuth();
-  const [reservas, setReservas] = useState<any[]>([]);
+  const [reservas, setReservas] = useState<ReservaComVoo[]>([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const carregarReservasParaCheckIn = async () => {
+    async function carregarReservasComVoos() {
       if (!usuario?.id) return;
       setLoading(true);
       setError('');
       try {
-        // Buscar todas as reservas do cliente com estado CRIADA
-        const todasReservas = await listarReservasPorCliente(usuario.id);
+        const reservasCliente = await listarReservasPorCliente(usuario.id);
+
+        // Busca os detalhes do voo para cada reserva
+        const reservasComVoos: ReservaComVoo[] = await Promise.all(
+          reservasCliente.map(async (reserva) => {
+            try {
+              const voo = await buscarVooPorCodigo(reserva.codigoVoo);
+              return { ...reserva, voo };
+            } catch (e) {
+              return { ...reserva };
+            }
+          })
+        );
 
         const agora = new Date();
         const daqui48h = addHours(agora, 48);
 
-        // Filtrar reservas com voo nas próximas 48h e voo CONFIRMADO
-        const reservasValidas = todasReservas.filter((reserva: any) => {
-          
-          const dataVoo = new Date(reserva.voo?.dataHora || reserva.dataHoraVoo || reserva.dataHora);
+        const reservasValidas = reservasComVoos.filter((reserva) => {
+          if (!reserva.voo) return false;
+          const dataVoo = new Date(reserva.voo.dataHora);
           return (
             reserva.estado === 'CRIADA' &&
+            reserva.voo.estado === 'CONFIRMADO' &&
             dataVoo >= agora &&
-            dataVoo <= daqui48h &&
-            (reserva.voo?.estado || reserva.estadoVoo) === 'CONFIRMADO'
+            dataVoo <= daqui48h
           );
         });
 
         setReservas(reservasValidas);
       } catch (err) {
-        setError('Erro ao carregar reservas para check-in.');
+        setError('Erro ao carregar reservas.');
       } finally {
         setLoading(false);
       }
-    };
-
-    carregarReservasParaCheckIn();
+    }
+    carregarReservasComVoos();
   }, [usuario]);
 
-  // PATCH correto para check-in!
-  const handleCheckIn = async (codigoReserva: string) => {
+  const fazerCheckIn = async (codigoReserva: string) => {
+    setError('');
     try {
-      await fazerCheckinReserva(codigoReserva);
-
+      await atualizarEstadoReserva(codigoReserva, 'CHECK-IN');
       setReservas(reservas.map(reserva =>
-        reserva.codigo === codigoReserva
-          ? { ...reserva, estado: 'CHECK-IN' }
-          : reserva
+        reserva.codigo === codigoReserva ? { ...reserva, estado: 'CHECK-IN' } : reserva
       ));
-
       setSnackbarMsg(`Check-in realizado com sucesso para a reserva ${codigoReserva}`);
       setSnackbarOpen(true);
     } catch (err) {
@@ -80,46 +80,42 @@ export function FazerCheckIn() {
 
   const handleSnackbarClose = () => setSnackbarOpen(false);
 
-  const renderCard = (reserva: any) => {
-    const voo = reserva.voo || {};
+  const renderCard = (reserva: ReservaComVoo) => {
+    const voo = reserva.voo;
     return (
-      <Grid item xs={12} md={6} key={`${voo.codigo}-${reserva.codigo}`}>
+      <Grid item xs={12} md={6} key={reserva.codigo}>
         <Paper sx={{ p: 3, height: '100%', border: '1px solid #ccc', boxShadow: 2 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
             <Typography variant="subtitle1">
-              <strong>Voo {voo.codigo}</strong>
+              <strong>Voo {voo?.codigo ?? reserva.codigoVoo}</strong>
             </Typography>
             <Label color="primary">Reserva: {reserva.codigo}</Label>
           </Box>
-
           <Divider sx={{ mb: 2 }} />
-
           <Typography variant="body2" color="text.secondary">
-            <strong>Origem:</strong> {voo.aeroportoOrigem?.codigo || '-'} - {voo.aeroportoOrigem?.cidade || '-'}
+            <strong>Origem:</strong> {voo?.origem?.codigoAeroporto} - {voo?.origem?.cidade}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>Destino:</strong> {voo.aeroportoDestino?.codigo || '-'} - {voo.aeroportoDestino?.cidade || '-'}
+            <strong>Destino:</strong> {voo?.destino?.codigoAeroporto} - {voo?.destino?.cidade}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            <strong>Data/Hora:</strong> {format(new Date(voo.dataHora || reserva.dataHoraVoo || reserva.dataHora), 'dd/MM/yyyy HH:mm')}
+            <strong>Data/Hora:</strong> {voo ? format(new Date(voo.dataHora), 'dd/MM/yyyy HH:mm') : '--'}
           </Typography>
-
           <Divider sx={{ my: 2 }} />
-
           <Grid container spacing={1}>
             <Grid item xs={6}>
               <Typography variant="body2">
-                <strong>Preço:</strong> R$ {voo.valorPassagem ? voo.valorPassagem.toFixed(2) : '-'}
+                <strong>Preço:</strong> R$ {voo?.preco?.toFixed(2) ?? reserva.valorPagoEmDinheiro}
               </Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography variant="body2">
-                <strong>Milhas:</strong> {voo.milhasNecessarias || '-'}
+                <strong>Poltronas:</strong> {voo?.poltronas}
               </Typography>
             </Grid>
             <Grid item xs={12}>
               <Typography variant="body2">
-                <strong>Status Voo:</strong> {voo.estado || '-'}
+                <strong>Status Voo:</strong> {voo?.estado}
               </Typography>
             </Grid>
             <Grid item xs={12}>
@@ -131,12 +127,11 @@ export function FazerCheckIn() {
               </Typography>
             </Grid>
           </Grid>
-
           <Box mt={2} display="flex" justifyContent="flex-end">
             <Button
               variant="contained"
               disabled={reserva.estado !== 'CRIADA'}
-              onClick={() => handleCheckIn(reserva.codigo)}
+              onClick={() => fazerCheckIn(reserva.codigo)}
             >
               {reserva.estado === 'CRIADA' ? 'Fazer Check-in' : 'Check-in Realizado'}
             </Button>
@@ -157,13 +152,7 @@ export function FazerCheckIn() {
           <Typography variant="body2" color="text.secondary" mt={1} mb={2}>
             Voos nas próximas 48h com reservas ativas
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           {loading ? (
             <Box display="flex" justifyContent="center" py={4}>
               <CircularProgress />
@@ -174,12 +163,11 @@ export function FazerCheckIn() {
             </Typography>
           ) : (
             <Grid container spacing={3}>
-              {reservas.map((reserva) => renderCard(reserva))}
+              {reservas.map(renderCard)}
             </Grid>
           )}
         </Paper>
       </DashboardContent>
-
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={snackbarOpen}
@@ -197,3 +185,4 @@ export function FazerCheckIn() {
     </>
   );
 }
+
