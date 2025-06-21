@@ -1,6 +1,7 @@
 package br.com.empresa_aerea.ms_reserva.services;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class ReservaService {
             codigo,
             dto.getCodigoVoo(),
             dto.getClienteCpf(),
+            dto.getIdCliente(),
             null,
             EstadoReservaEnum.CRIADA,
             dto.getQuantidadePassagens(),
@@ -50,6 +52,10 @@ public class ReservaService {
     public Reserva atualizarEstado(String codigo, EstadoReservaEnum destino) {
         Reserva reserva = buscar(codigo);
         EstadoReservaEnum origem = reserva.getEstado();
+        // Só permite mudar para CHECK_IN se o estado atual for CRIADA
+        if (destino == EstadoReservaEnum.CHECK_IN && origem != EstadoReservaEnum.CRIADA) {
+            throw new IllegalStateException("Check-in só pode ser feito se a reserva está CRIADA.");
+        }
         reserva.setEstado(destino);
         reserva = reservaRepository.save(reserva);
         historicoRepository.save(new HistoricoEstadoReserva(null, codigo, LocalDateTime.now(), origem, destino));
@@ -66,5 +72,10 @@ public class ReservaService {
             throw new IllegalStateException("Não é possível cancelar esta reserva no estado " + reserva.getEstado());
         }
     }
+
+    public List<Reserva> listarPorCliente(Long idCliente) {
+        return reservaRepository.findByIdCliente(idCliente);
+    }
 }
+
 
