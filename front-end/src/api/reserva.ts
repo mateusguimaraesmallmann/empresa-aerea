@@ -5,6 +5,7 @@ export interface Reserva {
   codigo: string;
   codigoVoo: string;
   clienteCpf: string;
+  idCliente: number;
   dataHora: string;
   estado: string;
   quantidadePassagens: number;
@@ -16,6 +17,7 @@ export interface Reserva {
 export interface CriarReservaDTO {
   codigoVoo: string;
   clienteCpf: string;
+  idCliente: number;
   quantidadePassagens: number;
   milhasUtilizadas: number;
   valorPagoEmDinheiro: number;
@@ -33,9 +35,9 @@ export async function buscarReservaPorCodigo(codigo: string): Promise<Reserva> {
   return response.data;
 }
 
-// GET /api/clientes/:cpf/reservas – listar reservas do cliente
-export async function listarReservasPorCliente(clienteCpf: string): Promise<Reserva[]> {
-  const response = await api.get<Reserva[]>(`/clientes/${clienteCpf}/reservas`);
+// GET /api/clientes/:idCliente/reservas – listar reservas do cliente
+export async function listarReservasPorCliente(idCliente: number): Promise<Reserva[]> {
+  const response = await api.get<Reserva[]>(`/clientes/${idCliente}/reservas`);
   return response.data;
 }
 

@@ -52,6 +52,7 @@ public class ReservaController {
             reserva.getCodigo(),
             reserva.getCodigoVoo(),
             reserva.getClienteCpf(),
+            reserva.getIdCliente(),
             reserva.getDataHora(),
             reserva.getEstado(),
             reserva.getQuantidadePassagens(),

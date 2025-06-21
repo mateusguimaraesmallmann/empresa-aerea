@@ -32,9 +32,14 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [reservaCriada, setReservaCriada] = useState(false);
 
+  // Recupera o cliente logado (PRECISA AJUSTAR PARA PEGAR O LOGIN REAL)
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const clienteCpf = usuario.cpf;
+  const idCliente = usuario.id;
+
   // Simulação de busca de milhas do cliente
   useEffect(() => {
-    setMilhasDisponiveis(1000); 
+    setMilhasDisponiveis(1000);
   }, []);
 
   const milhasNecessarias = Math.ceil((voo.preco * quantidade) / 5);
@@ -60,15 +65,15 @@ export function DetalhesReserva({ voo, onReservaFinalizada }: Props) {
 
   const handleConfirmDialog = async () => {
     try {
-      const clienteCpf = '12345678901';
-      await criarReserva({
+      const reserva = await criarReserva({
         codigoVoo: voo.codigo,
         clienteCpf,
+        idCliente,
         quantidadePassagens: quantidade,
         milhasUtilizadas: milhasUsadas,
         valorPagoEmDinheiro: restanteEmDinheiro,
       });
-      setSnackbarMessage('Reserva criada com sucesso!');
+      setSnackbarMessage(`Reserva criada com sucesso! Código: ${reserva.codigo}`);
       setSnackbarTipo('success');
       setOpenDialog(false);
       setReservaCriada(true);

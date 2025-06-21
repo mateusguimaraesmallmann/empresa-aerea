@@ -31,6 +31,7 @@ public class ReservaService {
             codigo,
             dto.getCodigoVoo(),
             dto.getClienteCpf(),
+            dto.getIdCliente(),
             null,
             EstadoReservaEnum.CRIADA,
             dto.getQuantidadePassagens(),

@@ -4,32 +4,32 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { Reserva, listarReservasPorCliente } from 'src/api/reserva'; // <- ajuste aqui!
+import { Reserva, listarReservasPorCliente } from 'src/api/reserva';
 import { TabelaReservasCliente } from '../tabela-reservas-cliente';
 
 export function TelaInicialView() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [milhas, setMilhas] = useState(0);
 
-  // Recupera CPF do localStorage (ou do contexto de auth se usar)
-  const cpf = localStorage.getItem('cpf') || '';
+  // Recupera o cliente logado do localStorage
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const idCliente = usuario.id;
+  const clienteCpf = usuario.cpf;
 
   useEffect(() => {
     async function carregar() {
-      if (!cpf) return;
+      if (!idCliente) return;
       try {
-        const reservasApi = await listarReservasPorCliente(cpf);
+        const reservasApi = await listarReservasPorCliente(idCliente);
         setReservas(reservasApi);
       } catch {
         setReservas([]);
       }
     }
     carregar();
-  }, [cpf]);
+  }, [idCliente]);
 
-  // Calcular milhas usando os dados já do backend
   useEffect(() => {
-    // Exemplo simples: some as milhas das reservas
     const totalMilhas = reservas.reduce((acc, r) => acc - (r.milhasUtilizadas || 0), 0);
     setMilhas(totalMilhas);
   }, [reservas]);
@@ -51,8 +51,8 @@ export function TelaInicialView() {
           reservas={reservas}
           milhas={milhas}
           onAtualizarReservas={async () => {
-            if (!cpf) return;
-            const reservasApi = await listarReservasPorCliente(cpf);
+            if (!idCliente) return;
+            const reservasApi = await listarReservasPorCliente(idCliente);
             setReservas(reservasApi);
           }}
         />
@@ -60,4 +60,5 @@ export function TelaInicialView() {
     </>
   );
 }
+
 

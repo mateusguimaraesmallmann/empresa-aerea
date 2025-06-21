@@ -27,6 +27,7 @@ public class Reserva {
     private String codigo;
     private String codigoVoo;
     private String clienteCpf;
+    private Integer idCliente;
 
     @CreationTimestamp
     private LocalDateTime dataHora;
