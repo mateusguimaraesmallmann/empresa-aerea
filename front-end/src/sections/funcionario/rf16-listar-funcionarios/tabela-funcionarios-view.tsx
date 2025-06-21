@@ -64,7 +64,7 @@ export function TabelaFuncionarios({ funcionarios, onRemover, onReativar, onEdit
                     startIcon={<Iconify icon="mdi:delete" width={18} />}
                     onClick={() => onRemover(func)}
                     disabled={!func.ativo}
-                  >Remover</Button>
+                  >Desativar</Button>
                 </Box>
               </TableCell>
             </TableRow>
