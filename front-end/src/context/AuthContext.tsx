@@ -14,7 +14,8 @@ import { usuariosMock } from '../_mock/usuarios-mock';
 type Usuario = {
   email: string;
   tipo: 'CLIENTE' | 'FUNCIONARIO';
-  idCliente?: number; 
+  id?: number;
+  cpf?: string;
   token?: string;
 };
 
@@ -63,10 +64,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const user = usuariosMock.find(
       (u) => u.email === email && u.senha === password
     );
-
+  
     if (user) {
-      setUsuario({ email: user.email, tipo: user.tipo});
-
+      setUsuario({ 
+        email: user.email, 
+        tipo: user.tipo, 
+        id: user.id, 
+        cpf: user.cpf 
+      });
+  
       if (user.tipo === 'FUNCIONARIO') {
         navigate('/tela-inicial-funcionario');
       } else {

@@ -248,7 +248,7 @@ app.patch(
       proxyReq.setHeader('Content-Length', Buffer.byteLength(body));
       proxyReq.write(body);
       proxyReq.end();
-    },    
+    },
   })
 );
 
@@ -309,13 +309,25 @@ app.get(
   })
 );
 
+// app.get(
+//   '/api/clientes/:codigoCliente/reservas',
+//   // requireRole('CLIENTE'),
+//   createProxyMiddleware({
+//     target: clienteServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/clientes/', '/ms-cliente/clientes/'),
+//   })
+// );
+
 app.get(
   '/api/clientes/:codigoCliente/reservas',
-  requireRole('CLIENTE'),
+  // requireRole('CLIENTE'), 
   createProxyMiddleware({
-    target: clienteServiceUrl,
+    target: reservaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/clientes/', '/ms-cliente/clientes/'),
+    pathRewrite: (path, req) => {
+      return `/ms-reserva/reservas?clienteId=${req.params.codigoCliente}`;
+    },
   })
 );
 
@@ -430,7 +442,10 @@ app.patch(
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/reservas/:codigoReserva/checkin', '/ms-reserva/reservas/:codigoReserva/estado'),
+    pathRewrite: (path, req) => path.replace(
+      '/api/reservas/' + req.params.codigoReserva + '/checkin',
+      '/ms-reserva/reservas/' + req.params.codigoReserva + '/estado'
+    ),
     onProxyReq: (proxyReq) => {
       proxyReq.setHeader('Content-Type', 'application/json');
       proxyReq.write(JSON.stringify({ estado: 'CHECK-IN' }));
