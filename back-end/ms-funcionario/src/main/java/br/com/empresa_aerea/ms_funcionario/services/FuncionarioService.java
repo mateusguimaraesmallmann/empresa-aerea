@@ -42,6 +42,10 @@ public class FuncionarioService {
             throw new IllegalArgumentException("CPF já cadastrado: " + dto.getCpf());
         }
 
+        if (funcionarioRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("E-mail já cadastrado: " + dto.getEmail());
+        }        
+
         // 2) gera senha e instancia o modelo (ID gerado pelo JPA)
         String senha = String.format("%04d", new Random().nextInt(10000));
         Funcionario funcionario = new Funcionario(
@@ -77,18 +81,20 @@ public class FuncionarioService {
     }
 
     public Funcionario atualizar(String cpf, @Valid FuncionarioDTO dto) {
-        Funcionario existente = funcionarioRepository.findByCpf(cpf)
+        Funcionario existente = funcionarioRepository.findByCpf(cpf.trim())
             .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
-
+    
+        // Atualiza somente os campos permitidos
         existente.setNome(dto.getNome());
         existente.setEmail(dto.getEmail());
         existente.setTelefone(dto.getTelefone());
-
+        existente.setAtivo(dto.isAtivo());
+    
         Funcionario atualizado = funcionarioRepository.save(existente);
         logger.info("Funcionário atualizado: {} (CPF {})", atualizado.getNome(), cpf);
         return atualizado;
     }
-
+    
     public void inativar(String cpf) {
         Funcionario func = funcionarioRepository.findByCpf(cpf)
             .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
@@ -103,4 +109,12 @@ public class FuncionarioService {
         funcionarioRepository.delete(func);
         logger.info("Funcionário removido fisicamente: {} (CPF {})", func.getNome(), cpf);
     }
+
+    public Funcionario alterarStatus(String cpf, boolean ativo) {
+        Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
+            .orElseThrow(() -> new FuncionarioNotFoundException("Funcionário não encontrado"));
+        funcionario.setAtivo(ativo);
+        return funcionarioRepository.save(funcionario);
+    }
+
 }

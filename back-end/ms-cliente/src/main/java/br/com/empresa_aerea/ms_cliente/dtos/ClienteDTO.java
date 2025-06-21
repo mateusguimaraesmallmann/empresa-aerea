@@ -17,6 +17,5 @@ public class ClienteDTO {
     private String nome;
     private Integer saldoMilhas;
     private EnderecoDTO endereco;
-    private String tipo;
-    private String senha;
+    
 }

@@ -4,11 +4,14 @@ import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.models.TransacaoMilhas;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
 import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
-import br.com.empresa_aerea.ms_cliente.dtos.UsuarioCriadoEvent;
+import br.com.empresa_aerea.ms_cliente.dtos.ClienteCadastroResponseDTO;
+import br.com.empresa_aerea.ms_cliente.dtos.ClienteDTO;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
-import br.com.empresa_aerea.ms_cliente.messaging.UsuarioProducer;
+
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,58 +22,37 @@ public class ClienteService {
 
     private static final Logger logger = LoggerFactory.getLogger(ClienteService.class);
 
-    private final UsuarioProducer usuarioProducer;
-    private final ClienteRepository clienteRepository;
-    private final TransacaoMilhasRepository transacaoMilhasRepository;
+    @Autowired
+    private ModelMapper mapper;
 
-    public ClienteService(
-        UsuarioProducer usuarioProducer,
-        ClienteRepository clienteRepository,
-        TransacaoMilhasRepository transacaoMilhasRepository
-    ) {
-        this.usuarioProducer = usuarioProducer;
-        this.clienteRepository = clienteRepository;
-        this.transacaoMilhasRepository = transacaoMilhasRepository;
-    }
+    @Autowired
+    private ClienteRepository clienteRepository;
 
-    // Método usado pelo fluxo da SAGA, onde a senha é gerada previamente e usada em todos os passos.
-    public Cliente salvar(Cliente cliente, String senha) throws ClienteJaExisteException {
-        logger.info("Verificando existência de cliente: cpf={}, email={}", cliente.getCpf(), cliente.getEmail());
+    @Autowired
+    private TransacaoMilhasRepository transacaoMilhasRepository;
 
-        boolean existeCpf = clienteRepository.findByCpf(cliente.getCpf()).isPresent();
-        boolean existeEmail = clienteRepository.findByEmail(cliente.getEmail()).isPresent();
-
-        logger.info("Resultado - existeCpf: {}, existeEmail: {}", existeCpf, existeEmail);
-
-        if (existeCpf || existeEmail) {
-            throw new ClienteJaExisteException("CPF ou e-mail já cadastrado.");
+    public ClienteCadastroResponseDTO cadastrarCliente(ClienteDTO clienteDTO) throws Exception {
+        Optional<Cliente> existClienteBD = clienteRepository.findByEmail(clienteDTO.getEmail());
+        if (existClienteBD.isPresent()) {
+            throw new ClienteJaExisteException("Outro cliente com email ja existente!");
         }
 
-        // Garante que a senha nunca será nula ou vazia
-        if (senha == null || senha.trim().isEmpty()) {
-            logger.error("Tentativa de salvar cliente com senha nula/vazia! Email: {}", cliente.getEmail());
-            throw new IllegalArgumentException("Senha não pode ser nula ou vazia!");
-        }
-
-        cliente.setSenha(senha);
-        cliente.setMilhas(0);
-        Cliente salvo = clienteRepository.save(cliente);
-
-        UsuarioCriadoEvent evento = new UsuarioCriadoEvent(
-            salvo.getEmail(),
-            senha,
-            "CLIENTE"
-        );
-        usuarioProducer.enviarUsuarioCriado(evento);
-
-        return salvo;
+        try{
+            Cliente cliente = mapper.map(clienteDTO, Cliente.class);
+            Cliente clienteCriadoBD = clienteRepository.save(cliente);
+            ClienteCadastroResponseDTO clienteResponseCadastrarDTO = mapper.map(clienteCriadoBD, ClienteCadastroResponseDTO.class);
+            return clienteResponseCadastrarDTO;
+        }catch(Exception ex){
+            logger.error(ex.getMessage());
+            throw new Exception("Internal Server Error");
+        }       
     }
 
     // Método usado pelo endpoint direto (sem saga), com geração interna de senha.
-    public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
+    /*public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
         String senhaGerada = gerarSenhaAleatoria();
         return salvar(cliente, senhaGerada);
-    }
+    }*/
 
     private String gerarSenhaAleatoria() {
         return UUID.randomUUID().toString().substring(0, 8);
@@ -92,8 +74,8 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        Integer saldoAtual = cliente.getMilhas() != null ? cliente.getMilhas() : 0;
-        cliente.setMilhas(saldoAtual + quantidade);
+        Integer saldoAtual = cliente.getSaldoMilhas() != null ? cliente.getSaldoMilhas() : 0;
+        cliente.setSaldoMilhas(saldoAtual + quantidade);
         clienteRepository.save(cliente);
 
         TransacaoMilhas transacao = new TransacaoMilhas();
@@ -109,7 +91,7 @@ public class ClienteService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("codigo", cliente.getIdCliente());
-        response.put("saldo_milhas", cliente.getMilhas());
+        response.put("saldo_milhas", cliente.getSaldoMilhas());
         return response;
     }
 
@@ -127,11 +109,9 @@ public class ClienteService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("codigo", cliente.getIdCliente());
-        response.put("saldo_milhas", cliente.getMilhas());
+        response.put("saldo_milhas", cliente.getSaldoMilhas());
         response.put("transacoes", transacoes);
         return response;
     }
+
 }
-
-
-

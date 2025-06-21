@@ -14,7 +14,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import br.com.empresa_aerea.ms_reserva.enums.EstadoReservaEnum;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,11 +24,16 @@ public class Reserva {
     @Id
     @Column(length = 8, nullable = false, unique = true)
     private String codigo;
-
     private String codigoVoo;
     private String clienteCpf;
+
+    @Column(name = "id_cliente")
+    private Integer idCliente;
+
     @CreationTimestamp
     private LocalDateTime dataHora;
     private EstadoReservaEnum estado;
-    
+    private int quantidadePassagens;
+    private int milhasUtilizadas;
+    private double valorPagoEmDinheiro;
 }

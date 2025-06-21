@@ -1,14 +1,6 @@
 import api from 'src/api/api';
+import { Funcionario } from '../../sections/funcionario/types/funcionario';
 
-// Modelo baseado Funcionario
-export interface Funcionario {
-  nome: string;
-  cpf: string;
-  email: string;
-  telefone: string;
-  ativo: boolean;
-  senha?: string; // apenas para uso na criação
-}
 
 // R16: Listar todos os funcionários
 export async function listarFuncionarios(): Promise<Funcionario[]> {
@@ -42,4 +34,16 @@ export async function buscarFuncionarioPorCpf(cpf: string): Promise<Funcionario>
 // R19: Inativar funcionário (remoção via DELETE)
 export async function deletarFuncionario(codigoFuncionario: string): Promise<void> {
   await api.delete(`/funcionarios/${codigoFuncionario}`);
+}
+
+// método para inativar
+export async function inativarFuncionario(cpf: string): Promise<Funcionario> {
+  const response = await api.patch<Funcionario>(`/funcionarios/${cpf}/inativar`, {});
+  return response.data;
+}
+
+// método para reativar
+export async function reativarFuncionario(cpf: string): Promise<Funcionario> {
+  const response = await api.patch<Funcionario>(`/funcionarios/${cpf}/reativar`, {});
+  return response.data;
 }

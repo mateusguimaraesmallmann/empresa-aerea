@@ -1,18 +1,26 @@
 import api from 'src/api/api';
 
-// Modelo da reserva 
+// Modelo da reserva
 export interface Reserva {
   codigo: string;
   codigoVoo: string;
   clienteCpf: string;
+  idCliente: number;
   dataHora: string;
-  estado: 'CRIADA' | 'CHECK-IN' | 'EMBARCADA' | 'CANCELADA' | 'REALIZADA';
+  estado: string;
+  quantidadePassagens: number;
+  milhasUtilizadas: number;
+  valorPagoEmDinheiro: number;
 }
 
 // DTO para criar reserva
 export interface CriarReservaDTO {
   codigoVoo: string;
   clienteCpf: string;
+  idCliente: number;
+  quantidadePassagens: number;
+  milhasUtilizadas: number;
+  valorPagoEmDinheiro: number;
 }
 
 // POST /api/reservas – criação (CLIENTE)
@@ -27,24 +35,29 @@ export async function buscarReservaPorCodigo(codigo: string): Promise<Reserva> {
   return response.data;
 }
 
-// PATCH /api/reservas/:codigoReserva/estado – avançar estado (CLIENTE)
+// GET /api/clientes/:idCliente/reservas – listar reservas do cliente
+export async function listarReservasPorCliente(idCliente: number): Promise<Reserva[]> {
+  const response = await api.get<Reserva[]>(`/clientes/${idCliente}/reservas`);
+  return response.data;
+}
+
+// PATCH /api/reservas/:codigoReserva/estado – avançar estado
 export async function atualizarEstadoReserva(
   codigo: string,
-  estado: 'CRIADA' | 'CHECK_IN' | 'EMBARCADA' | 'CANCELADA' | 'REALIZADA' | 'CANCELADA_VOO' | 'NAO_REALIZADA'
+  estado: 'CRIADA' | 'CHECK-IN' | 'EMBARCADA' | 'CANCELADA' | 'REALIZADA' | 'CANCELADA_VOO' | 'NAO_REALIZADA'
 ): Promise<Reserva> {
   const response = await api.patch<Reserva>(`/reservas/${codigo}/estado`, { estado });
   return response.data;
 }
 
+// CHECK-IN: PATCH /api/reservas/:codigoReserva/estado
+export async function fazerCheckinReserva(codigo: string): Promise<Reserva> {
+  return atualizarEstadoReserva(codigo, 'CHECK-IN');
+}
+
 // DELETE /api/reservas/:codigoReserva – cancelar (CLIENTE)
 export async function cancelarReserva(codigo: string): Promise<void> {
   await api.delete(`/reservas/${codigo}`);
-}
-
-// PATCH /api/reservas/:codigoReserva/checkin – check-in (CLIENTE)
-export async function fazerCheckinReserva(codigo: string): Promise<Reserva> {
-  const response = await api.patch<Reserva>(`/reservas/${codigo}/checkin`);
-  return response.data;
 }
 
 // PATCH /api/reservas/:codigoReserva/embarque – embarcar (FUNCIONARIO)

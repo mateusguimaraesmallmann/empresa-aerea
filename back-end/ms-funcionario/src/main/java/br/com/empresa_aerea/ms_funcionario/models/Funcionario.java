@@ -9,6 +9,7 @@ import lombok.*;
 @Entity
 @Table(name = "funcionario")
 public class Funcionario {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_funcionario")
@@ -38,4 +39,5 @@ public class Funcionario {
         this.nome = nome;
         this.telefone = telefone;
     }
+
 }

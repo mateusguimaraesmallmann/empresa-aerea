@@ -14,7 +14,7 @@ type Props = {
 };
 
 export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) {
- 
+
   const [dados, setDados] = useState<Omit<Funcionario, 'id' | 'senha'>>({
     nome: '',
     cpf: '',
@@ -23,12 +23,10 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
     ativo: true,
   });
 
- 
   const [erros, setErros] = useState<Partial<Record<keyof typeof dados, string>>>({});
-  
   const [erroGeral, setErroGeral] = useState('');
- 
   const [carregando, setCarregando] = useState(false);
+  const [senhaGerada, setSenhaGerada] = useState('');
 
   const limparErros = () => {
     setErros({});
@@ -63,34 +61,46 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
 
     setCarregando(true);
     try {
-      // Prepara payload: limpa máscaras
       const payload = {
         ...dados,
         cpf: dados.cpf.replace(/\D/g, ''),
         telefone: dados.telefone.replace(/\D/g, '')
       };
-      
+
       const resp = await axios.post<Funcionario>('http://localhost:3000/api/funcionarios', payload, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });      
+      });
 
-      onSucesso(resp.data);
-      // Limpa formulário e fecha modal
-      setDados({ nome: '', cpf: '', email: '', telefone: '', ativo: true });
-      onFechar();
+      setSenhaGerada(resp.data.senha || '');
+      setTimeout(() => {
+        onSucesso(resp.data);
+        handleFechar();
+        setCarregando(false); 
+      }, 5000);      
+
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setErroGeral(err.response?.data?.message || 'Erro ao cadastrar');
+        const responseData = err.response?.data;
+    
+        if (typeof responseData === 'string') {
+          setErroGeral(responseData);
+        }
+
+        else if (typeof responseData === 'object' && responseData?.message) {
+          setErroGeral(responseData.message);
+        } else {
+          setErroGeral('Erro ao cadastrar');
+        }
       } else {
         setErroGeral('Erro inesperado');
       }
-    } finally {
-      setCarregando(false);
-    }
+      setCarregando(false); 
+    }    
   };
-
+    
   const handleFechar = () => {
     limparErros();
+    setSenhaGerada('');
     setDados({ nome: '', cpf: '', email: '', telefone: '', ativo: true });
     onFechar();
   };
@@ -105,8 +115,14 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
     <Dialog open={aberto} onClose={handleFechar} fullWidth maxWidth="sm">
       <DialogTitle>Cadastrar Funcionário</DialogTitle>
       <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
+        <Stack spacing={2} mt={1}>
           {erroGeral && <Alert severity="error">{erroGeral}</Alert>}
+          {senhaGerada && (
+            <Alert severity="success" sx={{ mb: 1 }}>
+              Funcionário cadastrado com sucesso!<br />
+              <strong>Senha gerada: {senhaGerada}</strong>
+            </Alert>
+          )}
 
           <TextField
             label="Nome"
@@ -160,16 +176,21 @@ export function InserirFuncionariosView({ aberto, onFechar, onSucesso }: Props) 
           </InputMask>
         </Stack>
       </DialogContent>
+
       <DialogActions>
-        <Button onClick={handleFechar} disabled={carregando}>Cancelar</Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={carregando}
-          startIcon={carregando ? <CircularProgress size={20}/> : null}
-        >
-          {carregando ? 'Enviando...' : 'Cadastrar'}
+        <Button onClick={handleFechar} disabled={carregando}>
+          {senhaGerada ? 'Fechar' : 'Cancelar'}
         </Button>
+        {!senhaGerada && (
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={carregando}
+            startIcon={carregando ? <CircularProgress size={20}/> : null}
+          >
+            {carregando ? 'Enviando...' : 'Cadastrar'}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

@@ -2,6 +2,7 @@
 if (!process.env.MS_AUTH_URL) {
   require('dotenv-safe').config();
 }
+
 const express = require('express');
 const { expressjwt: jwt } = require('express-jwt');
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -9,6 +10,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,8 +19,9 @@ const port = process.env.PORT || 3000;
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+//app.use(express.json());
+//app.use(express.urlencoded({ extended: false }));
+
 app.use(cors({
   origin: ['http://localhost:3039', 'http://localhost:3040', 'http://localhost:4200'],
   credentials: true,
@@ -54,37 +57,15 @@ function requireRole(role) {
 }
 
 // ======================= ROTAS PÚBLICAS ========================
-
 // ======================= LOGIN =================================
 app.post("/api/login",
+  bodyParser.json(),
   createProxyMiddleware({
     target: authServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace("/api/login", "/auth/login")
-  })
-);
-
-// ======================= REGISTRO =================================
-app.post(
-  "/api/register",
-  createProxyMiddleware({
-    target: authServiceUrl,
-    changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/register", "/auth/register")
-  })
-);
-
-// ======================= SAGA AUTOCADASTRO ======================
-app.post(
-  "/api/saga/autocadastro",
-  createProxyMiddleware({
-    target: sagaServiceUrl,
-    changeOrigin: true,
-    selfHandleResponse: false,
-    pathRewrite: (path) =>
-      path.replace("/api/saga/autocadastro", "/saga/ms-cliente/cadastrar-cliente"),
+    pathRewrite: path => path.replace("/api/login", "/auth/login"),
     onProxyReq: (proxyReq, req, res) => {
-      if (req.body && Object.keys(req.body).length > 0) {
+      if (req.body) {
         const bodyData = JSON.stringify(req.body);
         proxyReq.setHeader('Content-Type', 'application/json');
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
@@ -94,13 +75,21 @@ app.post(
   })
 );
 
-// ======================= Cadastro Cliente ======================
+// ======================= AUTOCADASTRO ======================
 app.post(
   "/api/clientes",
   createProxyMiddleware({
-    target: clienteServiceUrl,
+    target: sagaServiceUrl,
     changeOrigin: true,
-    pathRewrite: (path) => path.replace("/api/clientes", "/ms-cliente/clientes")
+    pathRewrite: path => path.replace("/api/clientes", "/saga/ms-cliente/clientes"),
+    onProxyReq: (proxyReq, req, res) => {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
   })
 );
 
@@ -150,10 +139,37 @@ app.post(
     createProxyMiddleware({
       target: funcionarioServiceUrl,
       changeOrigin: true,
-      pathRewrite: path => path.replace(/^\/api\/funcionarios/, '/funcionarios'),
+      pathRewrite: (path, req) => `/funcionarios/${req.params.cpf}`,
+      onProxyReq: (proxyReq, req) => {
+        if (['PUT', 'DELETE'].includes(req.method) && req.body) {
+          const bodyData = JSON.stringify(req.body);
+          proxyReq.setHeader('Content-Type', 'application/json');
+          proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+          proxyReq.write(bodyData);
+        }
+      }
     })
   );
 });
+
+app.patch(
+  '/api/funcionarios/:cpf/inativar',
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/funcionarios', '/funcionarios'),
+  })
+);
+
+app.patch(
+  '/api/funcionarios/:cpf/reativar',
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/funcionarios', '/funcionarios'),
+  })
+);
+
 
 
 // app.get(
@@ -222,7 +238,7 @@ app.patch(
       proxyReq.setHeader('Content-Length', Buffer.byteLength(body));
       proxyReq.write(body);
       proxyReq.end();
-    },    
+    },
   })
 );
 
@@ -241,7 +257,12 @@ const requireJwt = jwt({
     /^\/api\/voos$/,              // <- evita bloquear GET /api/voos com query params
     /^\/api\/voos\/[^/]+\/cancelar$/,
     /^\/api\/funcionarios$/,
-    /^\/api\/funcionarios\/[^/]+$/
+    /^\/api\/funcionarios\/[^/]+$/,
+    /^\/api\/reservas\/?$/,                // Para testes
+    /^\/api\/reservas\/[^/]+\/?$/,         // GET, DELETE, com/sem barra no final
+    /^\/api\/reservas\/[^/]+\/estado\/?$/,
+    /^\/api\/funcionarios\/[^/]+\/inativar$/,
+    /^\/api\/funcionarios\/[^/]+\/reativar$/
   ]
 });
 app.use("/api", requireJwt);
@@ -278,13 +299,25 @@ app.get(
   })
 );
 
+// app.get(
+//   '/api/clientes/:codigoCliente/reservas',
+//   // requireRole('CLIENTE'),
+//   createProxyMiddleware({
+//     target: clienteServiceUrl,
+//     changeOrigin: true,
+//     pathRewrite: path => path.replace('/api/clientes/', '/ms-cliente/clientes/'),
+//   })
+// );
+
 app.get(
   '/api/clientes/:codigoCliente/reservas',
-  requireRole('CLIENTE'),
+  // requireRole('CLIENTE'), 
   createProxyMiddleware({
-    target: clienteServiceUrl,
+    target: reservaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/clientes/', '/ms-cliente/clientes/'),
+    pathRewrite: (path, req) => {
+      return `/ms-reserva/reservas?clienteId=${req.params.codigoCliente}`;
+    },
   })
 );
 
@@ -347,7 +380,7 @@ app.get(
 // ======================= RESERVAS ==============================
 app.get(
   '/api/reservas/:codigoReserva',
-  requireRole('TODOS'),
+  // requireRole('TODOS'),
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
@@ -357,17 +390,24 @@ app.get(
 
 app.post(
   '/api/reservas',
-  requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
     pathRewrite: path => path.replace('/api/reservas', '/ms-reserva/reservas'),
+    onProxyReq: (proxyReq, req) => {
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    }
   })
 );
 
 app.delete(
   '/api/reservas/:codigoReserva',
-  requireRole('CLIENTE'),
+  // requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
@@ -377,7 +417,7 @@ app.delete(
 
 app.patch(
   '/api/reservas/:codigoReserva/estado',
-  requireRole('CLIENTE'),
+  // requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
@@ -388,11 +428,14 @@ app.patch(
 // ======================= CHECK-IN ==============================
 app.patch(
   '/api/reservas/:codigoReserva/checkin',
-  requireRole('CLIENTE'),
+  // requireRole('CLIENTE'),
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace('/api/reservas/:codigoReserva/checkin', '/ms-reserva/reservas/:codigoReserva/estado'),
+    pathRewrite: (path, req) => path.replace(
+      '/api/reservas/' + req.params.codigoReserva + '/checkin',
+      '/ms-reserva/reservas/' + req.params.codigoReserva + '/estado'
+    ),
     onProxyReq: (proxyReq) => {
       proxyReq.setHeader('Content-Type', 'application/json');
       proxyReq.write(JSON.stringify({ estado: 'CHECK-IN' }));
@@ -404,7 +447,7 @@ app.patch(
 // ======================= EMBARQUE =============================
 app.patch(
   '/api/reservas/:codigoReserva/embarque',
-  requireRole('FUNCIONARIO'),
+  // requireRole('FUNCIONARIO'),
   createProxyMiddleware({
     target: reservaServiceUrl,
     changeOrigin: true,

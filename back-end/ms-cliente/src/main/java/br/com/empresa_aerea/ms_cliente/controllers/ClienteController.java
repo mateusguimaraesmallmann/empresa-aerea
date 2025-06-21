@@ -2,7 +2,7 @@ package br.com.empresa_aerea.ms_cliente.controllers;
 
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
 import br.com.empresa_aerea.ms_cliente.services.ClienteService;
-import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
+//import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,20 +19,6 @@ public class ClienteController {
 
     public ClienteController(ClienteService clienteService) {
         this.clienteService = clienteService;
-    }
-
-    @PostMapping("/clientes")
-    public ResponseEntity<?> criar(@RequestBody Cliente cliente) {
-        try {
-            Cliente clienteEntity = clienteService.salvar(cliente);
-            return ResponseEntity.status(HttpStatus.CREATED).body(clienteEntity);
-        } catch (ClienteJaExisteException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("erro", ex.getMessage()));
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("erro", "Erro inesperado ao criar cliente. " + ex.getMessage()));
-        }
     }
 
     @GetMapping

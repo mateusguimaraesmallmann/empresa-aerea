@@ -11,8 +11,8 @@ import {
 
 export type Voo = {
   codigo: string;
-  origem: string;
-  destino: string;
+  origem: any;
+  destino: any;
   dataHora: string;
   preco: number;
   estado: string;
@@ -27,6 +27,17 @@ export function TabelaVoos({ voos, onSelecionar }: Props) {
   if (voos.length === 0) {
     return <Typography>Nenhum voo encontrado.</Typography>;
   }
+
+  // Função para mostrar nome/código do aeroporto
+  const renderAeroporto = (aeroporto: any) => {
+    if (!aeroporto) return '-';
+    if (typeof aeroporto === 'string') return aeroporto;
+    if (typeof aeroporto === 'object') {
+      // Mostra nome, se não existir mostra códigoAeroporto
+      return aeroporto.nome || aeroporto.codigoAeroporto || '-';
+    }
+    return '-';
+  };
 
   return (
     <Paper>
@@ -45,8 +56,8 @@ export function TabelaVoos({ voos, onSelecionar }: Props) {
           {voos.map((voo) => (
             <TableRow key={voo.codigo}>
               <TableCell>{voo.codigo}</TableCell>
-              <TableCell>{voo.origem}</TableCell>
-              <TableCell>{voo.destino}</TableCell>
+              <TableCell>{renderAeroporto(voo.origem)}</TableCell>
+              <TableCell>{renderAeroporto(voo.destino)}</TableCell>
               <TableCell>{new Date(voo.dataHora).toLocaleString('pt-BR')}</TableCell>
               <TableCell>
                 {typeof voo.preco === 'number'

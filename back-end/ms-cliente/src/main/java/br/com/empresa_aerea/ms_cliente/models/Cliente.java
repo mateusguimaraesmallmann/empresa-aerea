@@ -17,8 +17,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Setter
@@ -38,20 +38,14 @@ public class Cliente implements Serializable {
     @Column(name = "cpf", nullable = false, unique = true)
     private String cpf;
 
-    @Column(name = "nome", nullable = false)
-    private String nome;
-
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "senha", nullable = false)
-    private String senha;
+    @Column(name = "nome", nullable = false)
+    private String nome;
 
     @Column(name = "saldo_milhas", insertable = false, nullable = false)
-    private Integer milhas;
-
-    @Column(name = "tipo", nullable = false)
-    private String tipo;
+    private Integer saldoMilhas;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_endereco", nullable = false)
@@ -59,5 +53,5 @@ public class Cliente implements Serializable {
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransacaoMilhas> transacoesMilhas = new ArrayList<>();
-}
 
+}

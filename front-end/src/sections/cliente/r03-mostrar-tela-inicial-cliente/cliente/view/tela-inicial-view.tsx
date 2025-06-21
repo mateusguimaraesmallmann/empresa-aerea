@@ -4,31 +4,34 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { Reserva, getReservasDoLocalStorageAdaptadas } from 'src/sections/cliente/types/reserva';
+import { Reserva, listarReservasPorCliente } from 'src/api/reserva';
 import { TabelaReservasCliente } from '../tabela-reservas-cliente';
 
 export function TelaInicialView() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [milhas, setMilhas] = useState(0);
 
-  const carregarReservas = () => {
-    setReservas(getReservasDoLocalStorageAdaptadas());
-  };
-
-  const calcularMilhas = () => {
-    const compras = JSON.parse(localStorage.getItem('comprasMilhas') || '[]');
-    const totalComprado = compras.reduce((acc: number, item: any) => acc + Number(item.milhas), 0);
-
-    const reservasSalvas = JSON.parse(localStorage.getItem('reservas') || '[]');
-    const totalUsado = reservasSalvas.reduce((acc: number, r: any) => acc + (r.milhasUsadas || 0), 0);
-
-    setMilhas(totalComprado - totalUsado);
-  };
+  // Recupera o cliente logado do localStorage (TEMPORÁRIO, PRECISA AJUSTAR PRA VIR DO BACK)
+  const usuario = JSON.parse(sessionStorage.getItem('usuarioLogado') || '{}');
+  const idCliente = usuario.id;
 
   useEffect(() => {
-    carregarReservas();
-    calcularMilhas();
-  }, []);
+    async function carregar() {
+      if (!idCliente) return;
+      try {
+        const reservasApi = await listarReservasPorCliente(idCliente);
+        setReservas(reservasApi);
+      } catch {
+        setReservas([]);
+      }
+    }
+    carregar();
+  }, [idCliente]);
+
+  useEffect(() => {
+    const totalMilhas = reservas.reduce((acc, r) => acc - (r.milhasUtilizadas || 0), 0);
+    setMilhas(totalMilhas);
+  }, [reservas]);
 
   return (
     <>
@@ -46,12 +49,15 @@ export function TelaInicialView() {
         <TabelaReservasCliente
           reservas={reservas}
           milhas={milhas}
-          onAtualizarReservas={() => {
-            carregarReservas();
-            calcularMilhas();
+          onAtualizarReservas={async () => {
+            if (!idCliente) return;
+            const reservasApi = await listarReservasPorCliente(idCliente);
+            setReservas(reservasApi);
           }}
         />
       </DashboardContent>
     </>
   );
 }
+
+

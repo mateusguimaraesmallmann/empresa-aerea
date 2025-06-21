@@ -1,6 +1,7 @@
 package br.com.empresa_aerea.ms_reserva.services;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -27,7 +28,17 @@ public class ReservaService {
     @Transactional
     public Reserva criar(ReservaDTO dto) {
         String codigo = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        Reserva reserva = new Reserva(codigo, dto.getCodigoVoo(), dto.getClienteCpf(), null, EstadoReservaEnum.CRIADA);
+        Reserva reserva = new Reserva(
+            codigo,
+            dto.getCodigoVoo(),
+            dto.getClienteCpf(),
+            dto.getIdCliente(),
+            null,
+            EstadoReservaEnum.CRIADA,
+            dto.getQuantidadePassagens(),
+            dto.getMilhasUtilizadas(),
+            dto.getValorPagoEmDinheiro()
+        );
         reserva = reservaRepository.save(reserva);
         return reserva;
     }
@@ -41,6 +52,10 @@ public class ReservaService {
     public Reserva atualizarEstado(String codigo, EstadoReservaEnum destino) {
         Reserva reserva = buscar(codigo);
         EstadoReservaEnum origem = reserva.getEstado();
+        // Só permite mudar para CHECK_IN se o estado atual for CRIADA
+        if (destino == EstadoReservaEnum.CHECK_IN && origem != EstadoReservaEnum.CRIADA) {
+            throw new IllegalStateException("Check-in só pode ser feito se a reserva está CRIADA.");
+        }
         reserva.setEstado(destino);
         reserva = reservaRepository.save(reserva);
         historicoRepository.save(new HistoricoEstadoReserva(null, codigo, LocalDateTime.now(), origem, destino));
@@ -51,7 +66,6 @@ public class ReservaService {
     public void cancelar(String codigo) {
         Reserva reserva = buscar(codigo);
         if (reserva.getEstado() == EstadoReservaEnum.CRIADA || reserva.getEstado() == EstadoReservaEnum.CHECK_IN) {
-            // EstadoReservaEnum origem = reserva.getEstado();
             reserva.setEstado(EstadoReservaEnum.CANCELADA);
             reservaRepository.save(reserva);
         } else {
@@ -59,4 +73,9 @@ public class ReservaService {
         }
     }
 
+    public List<Reserva> listarPorCliente(Long idCliente) {
+        return reservaRepository.findByIdCliente(idCliente);
+    }
 }
+
+

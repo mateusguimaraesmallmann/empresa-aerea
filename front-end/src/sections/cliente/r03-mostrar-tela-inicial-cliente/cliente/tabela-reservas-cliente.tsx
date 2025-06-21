@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -21,7 +21,7 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Label } from 'src/components/label';
 import { useRouter } from 'src/routes/hooks';
-import { Reserva, getReservasDoLocalStorageAdaptadas } from 'src/sections/cliente/types/reserva';
+import { Reserva } from 'src/api/reserva';
 import { VerReservaDialog } from '../../r04-ver-reserva/ver-reserva';
 import { CancelarReservaDialog } from '../../r08-cancelar-reserva/cancelar-reserva';
 
@@ -31,10 +31,26 @@ type Props = {
   onAtualizarReservas: () => void;
 };
 
-type VooLocalStorage = {
-  id: string;
-  estado: string;
-};
+function getLabelInfo(estado: string): { color: 'success' | 'error' | 'info' | 'warning'; texto: string } {
+  switch (estado) {
+    case 'CRIADA':
+      return { color: 'success', texto: 'Criada' };
+    case 'CHECK_IN':
+      return { color: 'info', texto: 'Check-in' };
+    case 'CANCELADA':
+      return { color: 'error', texto: 'Cancelada' };
+    case 'CANCELADA_VOO':
+      return { color: 'error', texto: 'Cancelada pelo Voo' };
+    case 'EMBARCADA':
+      return { color: 'info', texto: 'Embarcada' };
+    case 'REALIZADA':
+      return { color: 'success', texto: 'Realizada' };
+    case 'NAO_REALIZADA':
+      return { color: 'error', texto: 'Não Realizada' };
+    default:
+      return { color: 'info', texto: estado };
+  }
+}
 
 function podeFazerCheckIn(reserva: Reserva): boolean {
   const agora = new Date();
@@ -42,7 +58,7 @@ function podeFazerCheckIn(reserva: Reserva): boolean {
   const dataVoo = new Date(reserva.dataHora);
 
   return (
-    (reserva.estado === 'CRIADA' || reserva.estado === 'CHECK-IN') &&
+    (reserva.estado === 'CRIADA' || reserva.estado === 'CHECK_IN') &&
     dataVoo >= agora &&
     dataVoo <= em48h
   );
@@ -58,51 +74,20 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogCancelarOpen, setDialogCancelarOpen] = useState(false);
-  const [reservasAtualizadas, setReservasAtualizadas] = useState<Reserva[]>([]);
 
   const rowsPerPage = 5;
   const router = useRouter();
 
-  const getEstadoVoo = (vooId: string): string => {
-    const voos = JSON.parse(localStorage.getItem('voos') || '[]') as VooLocalStorage[];
-    const voo = voos.find((v) => v.id === vooId);
-    return voo?.estado || 'DESCONHECIDO';
-  };
-
-  useEffect(() => {
-    const atualizarReservas = () => {
-      const adaptadas = getReservasDoLocalStorageAdaptadas().map((reserva) => ({
-        ...reserva,
-        estadoVoo: getEstadoVoo(reserva.id),
-      }));
-      setReservasAtualizadas(adaptadas);
-    };
-
-    atualizarReservas();
-    window.addEventListener('storage', atualizarReservas);
-    return () => window.removeEventListener('storage', atualizarReservas);
-  }, [reservas]);
-
-  const handleBuscarReserva = () => {
-    setFilter(codigoBusca.trim());
-    setBuscaAtiva(true);
-    setPage(0);
-  };
-
-  const handleLimparBusca = () => {
-    setFilter('');
-    setCodigoBusca('');
-    setBuscaAtiva(false);
-    setPage(0);
-  };
-
-  const filteredData = reservasAtualizadas
-    .filter((r) => !buscaAtiva || r.codigo.toLowerCase().includes(filter.toLowerCase()))
-    .sort((a, b) =>
-      orderBy === 'asc'
-        ? new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
-        : new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
-    );
+  const filteredData = useMemo(() => {
+    const data = reservas
+      .filter((r) => !buscaAtiva || r.codigo.toLowerCase().includes(filter.toLowerCase()))
+      .sort((a, b) =>
+        orderBy === 'asc'
+          ? new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
+          : new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
+      );
+    return data;
+  }, [reservas, filter, buscaAtiva, orderBy]);
 
   const handleOpenPopover = (event: React.MouseEvent<HTMLElement>, reserva: Reserva) => {
     setAnchorEl(event.currentTarget);
@@ -132,7 +117,6 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
   };
 
   const handleReservaCancelada = () => {
-    setReservasAtualizadas(getReservasDoLocalStorageAdaptadas());
     onAtualizarReservas();
   };
 
@@ -140,32 +124,18 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
     setPage(newPage);
   };
 
-  function getLabelInfo(estado: string): { color: 'success' | 'error' | 'info' | 'warning'; texto: string } {
-    switch (estado) {
-      case 'CRIADA':
-        return { color: 'success', texto: 'CRIADA' };
-      case 'CHECK-IN':
-        return { color: 'info', texto: 'CHECK-IN' };
-      case 'CANCELADA':
-        return { color: 'error', texto: 'CANCELADA' };
-      case 'CANCELADO':
-        return { color: 'error', texto: 'CANCELADO' };
-      case 'CANCELADA VOO':
-        return { color: 'error', texto: 'CANCELADA PELO VOO' };
-      case 'EMBARCADA':
-        return { color: 'info', texto: 'EMBARCADA' };
-      case 'EMBARCADO':
-        return { color: 'info', texto: 'EMBARCADO' };
-      case 'REALIZADA':
-        return { color: 'success', texto: 'REALIZADA' };
-      case 'NÃO REALIZADA':
-        return { color: 'error', texto: 'NÃO REALIZADA' };
-      case 'CONFIRMADO':
-        return { color: 'info', texto: 'CONFIRMADO' };
-      default:
-        return { color: 'info', texto: estado };
-    }
-  }
+  const handleBuscarReserva = () => {
+    setFilter(codigoBusca.trim());
+    setBuscaAtiva(true);
+    setPage(0);
+  };
+
+  const handleLimparBusca = () => {
+    setFilter('');
+    setCodigoBusca('');
+    setBuscaAtiva(false);
+    setPage(0);
+  };
 
   return (
     <Card>
@@ -201,12 +171,13 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Data e Hora do Voo</TableCell>
-                <TableCell>Aeroporto Origem</TableCell>
-                <TableCell>Aeroporto Destino</TableCell>
+                <TableCell>Data e Hora</TableCell>
                 <TableCell align="center">Código da Reserva</TableCell>
-                <TableCell>Status da Reserva</TableCell>
-                <TableCell>Status do Voo</TableCell>
+                <TableCell align="center">Código do Voo</TableCell>
+                <TableCell align="center">Qtd. Passagens</TableCell>
+                <TableCell align="center">Milhas Utilizadas</TableCell>
+                <TableCell align="center">Valor Pago</TableCell>
+                <TableCell>Status</TableCell>
                 <TableCell align="right">Ações</TableCell>
               </TableRow>
             </TableHead>
@@ -215,18 +186,21 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((reserva) => {
                   const labelReserva = getLabelInfo(reserva.estado);
-                  const labelVoo = getLabelInfo(getEstadoVoo(reserva.id));
                   return (
                     <TableRow key={`${reserva.codigo}-${reserva.dataHora}`}>
                       <TableCell>{new Date(reserva.dataHora).toLocaleString('pt-BR')}</TableCell>
-                      <TableCell>{reserva.origem}</TableCell>
-                      <TableCell>{reserva.destino}</TableCell>
                       <TableCell align="center">{reserva.codigo}</TableCell>
-                      <TableCell>
-                        <Label color={labelReserva.color}>{labelReserva.texto}</Label>
+                      <TableCell align="center">{reserva.codigoVoo}</TableCell>
+                      <TableCell align="center">{reserva.quantidadePassagens}</TableCell>
+                      <TableCell align="center">{reserva.milhasUtilizadas}</TableCell>
+                      <TableCell align="center">
+                        {reserva.valorPagoEmDinheiro?.toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
                       </TableCell>
                       <TableCell>
-                        <Label color={labelVoo.color}>{labelVoo.texto}</Label>
+                        <Label color={labelReserva.color}>{labelReserva.texto}</Label>
                       </TableCell>
                       <TableCell align="right">
                         <IconButton onClick={(e) => handleOpenPopover(e, reserva)}>
@@ -239,7 +213,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
 
               {filteredData.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 10 }}>
+                  <TableCell colSpan={8} align="center" sx={{ py: 10 }}>
                     <Typography>Nenhuma reserva encontrada</Typography>
                   </TableCell>
                 </TableRow>
@@ -301,6 +275,7 @@ export function TabelaReservasCliente({ reservas, milhas, onAtualizarReservas }:
     </Card>
   );
 }
+
 
 
 

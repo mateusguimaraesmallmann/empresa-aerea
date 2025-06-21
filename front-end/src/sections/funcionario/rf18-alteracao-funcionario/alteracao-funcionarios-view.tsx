@@ -1,12 +1,13 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, TextField, Alert, Stack, CircularProgress
 } from '@mui/material';
 import InputMask from 'react-input-mask';
-import api from 'src/api/api';
+import axios from 'axios';
 import { Funcionario } from '../types/funcionario';
+import { atualizarFuncionario } from '../../../api/funcionario/funcionario';
+
 
 type Props = {
   aberto: boolean;
@@ -18,19 +19,16 @@ type Props = {
 export function AlteracaoFuncionariosView({
   aberto, funcionario, onFechar, onAtualizado
 }: Props) {
-  // estado só com os campos editáveis
-  const [dados, setDados] = useState<{
-    nome: string;
-    email: string;
-    telefone: string;
-  }>({ nome: '', email: '', telefone: '' });
-
+  const [dados, setDados] = useState<Omit<Funcionario, 'id' | 'senha' | 'cpf' | 'ativo'>>({
+    nome: '',
+    email: '',
+    telefone: '',
+  });
   const [erros, setErros] = useState<Partial<Record<keyof typeof dados, string>>>({});
   const [erroGeral, setErroGeral] = useState('');
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
 
-  // sempre que mudar o `funcionario` abrindo o modal, preenche o form
   useEffect(() => {
     if (funcionario) {
       setDados({
@@ -44,15 +42,22 @@ export function AlteracaoFuncionariosView({
     }
   }, [funcionario]);
 
-  // validação simples
   const validarCampos = (): boolean => {
-    const ne: typeof erros = {};
-    if (!dados.nome.trim()) ne.nome = 'Nome obrigatório';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) ne.email = 'E‑mail inválido';
-    if (dados.telefone.replace(/\D/g, '').length < 10)
-      ne.telefone = 'Telefone incompleto';
-    setErros(ne);
-    return Object.keys(ne).length === 0;
+    const novosErros: typeof erros = {};
+    const telLimpo = dados.telefone.replace(/\D/g, '');
+
+    if (!dados.nome.trim()) {
+      novosErros.nome = 'Nome obrigatório';
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) {
+      novosErros.email = 'E‑mail inválido';
+    }
+    if (telLimpo.length < 10) {
+      novosErros.telefone = 'Telefone incompleto';
+    }
+
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
   };
 
   const handleAtualizar = async () => {
@@ -62,27 +67,24 @@ export function AlteracaoFuncionariosView({
 
     setCarregando(true);
     try {
-      await api.put(
-        `/funcionarios/${funcionario.cpf}`,
-        {
-          nome: dados.nome,
-          email: dados.email,
-          telefone: dados.telefone.replace(/\D/g, '')
-        }
-      );
-
+      await atualizarFuncionario(funcionario.cpf, {
+        nome: dados.nome,
+        email: dados.email,
+        telefone: dados.telefone.replace(/\D/g, ''),
+        ativo: funcionario.ativo ?? true
+      });      
+      
       setSucesso(true);
-      // espera 1.5s para mostrar o alerta de sucesso
+      
       setTimeout(() => {
         onAtualizado();
         onFechar();
       }, 1500);
-
-    } catch (err: any) {
+    } catch (err) {
       setErroGeral(
-        err.response?.data?.message
-          ? String(err.response.data.message)
-          : 'Erro ao atualizar'
+        axios.isAxiosError(err)
+          ? err.response?.data?.message || 'Erro ao atualizar'
+          : 'Erro inesperado'
       );
     } finally {
       setCarregando(false);
@@ -91,7 +93,8 @@ export function AlteracaoFuncionariosView({
 
   const commonProps = {
     fullWidth: true,
-    InputLabelProps: { required: false },
+    required: true,
+    InputLabelProps: { required: false }
   };
 
   return (
@@ -104,28 +107,28 @@ export function AlteracaoFuncionariosView({
 
           <TextField
             label="Nome"
-            {...commonProps}
             value={dados.nome}
             onChange={e => setDados({ ...dados, nome: e.target.value })}
             error={!!erros.nome}
             helperText={erros.nome}
+            {...commonProps}
           />
 
           <TextField
             label="CPF"
-            {...commonProps}
             value={funcionario?.cpf ?? ''}
             disabled
+            fullWidth
           />
 
           <TextField
             label="E‑mail"
             type="email"
-            {...commonProps}
             value={dados.email}
             onChange={e => setDados({ ...dados, email: e.target.value })}
             error={!!erros.email}
             helperText={erros.email}
+            {...commonProps}
           />
 
           <InputMask
@@ -137,24 +140,25 @@ export function AlteracaoFuncionariosView({
               <TextField
                 {...inputProps}
                 label="Telefone"
-                {...commonProps}
                 error={!!erros.telefone}
                 helperText={erros.telefone}
+                {...commonProps}
               />
             )}
           </InputMask>
         </Stack>
       </DialogContent>
-
       <DialogActions>
-        <Button onClick={onFechar} disabled={carregando}>Cancelar</Button>
+        <Button onClick={onFechar} disabled={carregando}>
+          Cancelar
+        </Button>
         <Button
           variant="contained"
           onClick={handleAtualizar}
           disabled={carregando}
-          startIcon={carregando ? <CircularProgress size={20}/> : null}
+          startIcon={carregando ? <CircularProgress size={20} /> : null}
         >
-          {carregando ? 'Salvando…' : 'Salvar'}
+          {carregando ? 'Salvando...' : 'Salvar'}
         </Button>
       </DialogActions>
     </Dialog>
