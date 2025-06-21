@@ -59,7 +59,7 @@ public class ClienteController {
         }
     }
 
-    /*@GetMapping("/clientes/{id}/milhas")
+    @GetMapping("/clientes/{id}/milhas")
     public ResponseEntity<?> extratoMilhas(@PathVariable Long id) {
         try {
             Map<String, Object> response = clienteService.listarExtratoMilhas(id);
@@ -68,6 +68,6 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("erro", ex.getMessage()));
         }
-    }*/
+    }
 }
 

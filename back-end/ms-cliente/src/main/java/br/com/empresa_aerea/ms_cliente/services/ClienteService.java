@@ -1,7 +1,9 @@
 package br.com.empresa_aerea.ms_cliente.services;
 
 import br.com.empresa_aerea.ms_cliente.models.Cliente;
+import br.com.empresa_aerea.ms_cliente.models.TransacaoMilhas;
 import br.com.empresa_aerea.ms_cliente.repositories.ClienteRepository;
+import br.com.empresa_aerea.ms_cliente.repositories.TransacaoMilhasRepository;
 import br.com.empresa_aerea.ms_cliente.dtos.ClienteCadastroResponseDTO;
 import br.com.empresa_aerea.ms_cliente.dtos.ClienteDTO;
 import br.com.empresa_aerea.ms_cliente.exceptions.ClienteJaExisteException;
@@ -12,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -24,6 +27,9 @@ public class ClienteService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private TransacaoMilhasRepository transacaoMilhasRepository;
 
     public ClienteCadastroResponseDTO cadastrarCliente(ClienteDTO clienteDTO) throws Exception {
         Optional<Cliente> existClienteBD = clienteRepository.findByEmail(clienteDTO.getEmail());
@@ -48,9 +54,9 @@ public class ClienteService {
         return salvar(cliente, senhaGerada);
     }*/
 
-    /*private String gerarSenhaAleatoria() {
+    private String gerarSenhaAleatoria() {
         return UUID.randomUUID().toString().substring(0, 8);
-    }*/
+    }
 
     public List<Cliente> listarTodos() {
         return clienteRepository.findAll();
@@ -72,7 +78,7 @@ public class ClienteService {
         cliente.setSaldoMilhas(saldoAtual + quantidade);
         clienteRepository.save(cliente);
 
-        /*TransacaoMilhas transacao = new TransacaoMilhas();
+        TransacaoMilhas transacao = new TransacaoMilhas();
         transacao.setCliente(cliente);
         transacao.setQuantidade(quantidade);
         transacao.setTipo("ENTRADA");
@@ -81,7 +87,7 @@ public class ClienteService {
         transacao.setCodigoReserva(null);
         transacao.setDataHora(LocalDateTime.now());
 
-        transacaoMilhasRepository.save(transacao);*/
+        transacaoMilhasRepository.save(transacao);
 
         Map<String, Object> response = new HashMap<>();
         response.put("codigo", cliente.getIdCliente());
@@ -89,7 +95,7 @@ public class ClienteService {
         return response;
     }
 
-    /*public Map<String, Object> listarExtratoMilhas(Long id) {
+    public Map<String, Object> listarExtratoMilhas(Long id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
@@ -103,11 +109,9 @@ public class ClienteService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("codigo", cliente.getIdCliente());
-        response.put("saldo_milhas", cliente.getMilhas());
+        response.put("saldo_milhas", cliente.getSaldoMilhas());
         response.put("transacoes", transacoes);
         return response;
-    }*/
+    }
+
 }
-
-
-

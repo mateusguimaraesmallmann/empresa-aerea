@@ -7,6 +7,7 @@ import br.com.empresa_aerea.ms_funcionario.repositories.FuncionarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +23,16 @@ public class FuncionarioService {
 
     private final FuncionarioRepository funcionarioRepository;
     private final RabbitTemplate rabbitTemplate;
-    //private final String filaFuncionario;
+    private final String filaFuncionario;
 
-//    public FuncionarioService(FuncionarioRepository funcionarioRepository, RabbitTemplate rabbitTemplate, @Value("${app.mq.fila-funcionarios}") String filaFuncionario) {
-    public FuncionarioService(FuncionarioRepository funcionarioRepository, RabbitTemplate rabbitTemplate) {
+    public FuncionarioService(
+        FuncionarioRepository funcionarioRepository,
+        RabbitTemplate rabbitTemplate,
+        @Value("${app.mq.fila-funcionarios}") String filaFuncionario
+    ) {
         this.funcionarioRepository = funcionarioRepository;
         this.rabbitTemplate = rabbitTemplate;
-        //this.filaFuncionario = filaFuncionario;
+        this.filaFuncionario = filaFuncionario;
     }
 
     public Funcionario salvar(@Valid FuncionarioDTO dto) {
@@ -38,17 +42,20 @@ public class FuncionarioService {
             throw new IllegalArgumentException("CPF já cadastrado: " + dto.getCpf());
         }
 
+        if (funcionarioRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("E-mail já cadastrado: " + dto.getEmail());
+        }        
+
         // 2) gera senha e instancia o modelo (ID gerado pelo JPA)
         String senha = String.format("%04d", new Random().nextInt(10000));
         Funcionario funcionario = new Funcionario(
-            null,
             dto.getCpf(),
-            dto.getNome(),
             dto.getEmail(),
-            dto.getTelefone(),
-            dto.isAtivo()
+            dto.getNome(),
+            dto.getTelefone()
         );
         funcionario.setAtivo(true);
+        funcionario.setSenha(senha);
 
         // 3) salva no banco
         Funcionario salvo = funcionarioRepository.save(funcionario);
@@ -56,8 +63,8 @@ public class FuncionarioService {
 
         // 4) envia evento de envio de e-mail via RabbitMQ
         String msg = String.format("Funcionário %s cadastrado. Senha: %s", salvo.getNome(), senha);
-        //rabbitTemplate.convertAndSend(filaFuncionario, msg);
-        //logger.debug("Publicado na fila {}: {}", filaFuncionario, msg);
+        rabbitTemplate.convertAndSend(filaFuncionario, msg);
+        logger.debug("Publicado na fila {}: {}", filaFuncionario, msg);
 
         return salvo;
     }
@@ -102,4 +109,12 @@ public class FuncionarioService {
         funcionarioRepository.delete(func);
         logger.info("Funcionário removido fisicamente: {} (CPF {})", func.getNome(), cpf);
     }
+
+    public Funcionario alterarStatus(String cpf, boolean ativo) {
+        Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
+            .orElseThrow(() -> new FuncionarioNotFoundException("Funcionário não encontrado"));
+        funcionario.setAtivo(ativo);
+        return funcionarioRepository.save(funcionario);
+    }
+
 }
