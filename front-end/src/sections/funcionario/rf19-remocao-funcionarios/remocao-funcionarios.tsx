@@ -39,7 +39,7 @@ export function RemoverFuncionariosView({
     try {
       
       const resp = await axios.patch<Funcionario>(
-        `/api/funcionarios/${funcionario.id}/inativar`,
+        `/api/funcionarios/${funcionario.cpf}/inativar`,
         {},
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -90,7 +90,7 @@ export function RemoverFuncionariosView({
           disabled={carregando || sucesso}
           startIcon={carregando ? <CircularProgress size={20} /> : null}
         >
-          {carregando ? 'Inativando...' : 'Remover'}
+          {carregando ? 'Inativando...' : 'Inativar'}
         </Button>
       </DialogActions>
     </Dialog>

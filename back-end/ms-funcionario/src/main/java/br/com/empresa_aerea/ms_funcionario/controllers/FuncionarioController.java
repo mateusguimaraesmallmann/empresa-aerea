@@ -61,4 +61,26 @@ public class FuncionarioController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PatchMapping("/{cpf}/inativar")
+    public ResponseEntity<Funcionario> inativarFuncionario(@PathVariable String cpf) {
+        try {
+            Funcionario funcionario = funcionarioService.alterarStatus(cpf, false);
+            return ResponseEntity.ok(funcionario);
+        } catch (FuncionarioNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PatchMapping("/{cpf}/reativar")
+    public ResponseEntity<Funcionario> reativarFuncionario(@PathVariable String cpf) {
+        try {
+            Funcionario funcionario = funcionarioService.alterarStatus(cpf, true);
+            return ResponseEntity.ok(funcionario);
+        } catch (FuncionarioNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    
 }
