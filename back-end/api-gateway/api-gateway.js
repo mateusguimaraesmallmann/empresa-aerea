@@ -162,6 +162,25 @@ app.post(
   );
 });
 
+app.patch(
+  '/api/funcionarios/:cpf/inativar',
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/funcionarios', '/funcionarios'),
+  })
+);
+
+app.patch(
+  '/api/funcionarios/:cpf/reativar',
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/funcionarios', '/funcionarios'),
+  })
+);
+
+
 
 // app.get(
 //   '/api/aeroportos',
@@ -251,7 +270,9 @@ const requireJwt = jwt({
     /^\/api\/funcionarios\/[^/]+$/,
     /^\/api\/reservas\/?$/,                // Para testes
     /^\/api\/reservas\/[^/]+\/?$/,         // GET, DELETE, com/sem barra no final
-    /^\/api\/reservas\/[^/]+\/estado\/?$/
+    /^\/api\/reservas\/[^/]+\/estado\/?$/,
+    /^\/api\/funcionarios\/[^/]+\/inativar$/,
+    /^\/api\/funcionarios\/[^/]+\/reativar$/
   ]
 });
 app.use("/api", requireJwt);

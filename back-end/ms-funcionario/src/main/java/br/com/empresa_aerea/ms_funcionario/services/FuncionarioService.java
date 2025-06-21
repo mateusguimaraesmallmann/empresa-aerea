@@ -42,6 +42,10 @@ public class FuncionarioService {
             throw new IllegalArgumentException("CPF já cadastrado: " + dto.getCpf());
         }
 
+        if (funcionarioRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("E-mail já cadastrado: " + dto.getEmail());
+        }        
+
         // 2) gera senha e instancia o modelo (ID gerado pelo JPA)
         String senha = String.format("%04d", new Random().nextInt(10000));
         Funcionario funcionario = new Funcionario(
@@ -104,5 +108,12 @@ public class FuncionarioService {
             .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
         funcionarioRepository.delete(func);
         logger.info("Funcionário removido fisicamente: {} (CPF {})", func.getNome(), cpf);
+    }
+
+    public Funcionario alterarStatus(String cpf, boolean ativo) {
+        Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
+            .orElseThrow(() -> new FuncionarioNotFoundException("Funcionário não encontrado"));
+        funcionario.setAtivo(ativo);
+        return funcionarioRepository.save(funcionario);
     }
 }
