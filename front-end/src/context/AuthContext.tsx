@@ -14,8 +14,7 @@ import { loginUsuario, TokenResponse } from 'src/api/cliente/auth.api';
 type Usuario = {
   email: string;
   tipo: 'CLIENTE' | 'FUNCIONARIO';
-  id?: number;
-  cpf?: string;
+  id?: number | string;
   token?: string;
 };
 
@@ -43,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem('usuarioLogado', JSON.stringify(usuario));
     } else {
       sessionStorage.removeItem('usuarioLogado');
+      localStorage.removeItem('token'); // limpa o token ao sair
     }
   }, [usuario]);
 
@@ -55,12 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           senha: password,
         });
 
-        // Ajuste para compatibilizar os campos do backend com o frontend
+        // Salva o token no localStorage para o interceptor do Axios pegar
+        localStorage.setItem('token', response.access_token);
+
         const usuarioLogado: Usuario = {
-          email: response.login,
+          email: response.usuario.email,
           tipo: response.tipo as 'CLIENTE' | 'FUNCIONARIO',
-          id: response.id,
-          token: response.token,
+          id: response.usuario.id,
+          token: response.access_token,
         };
 
         setUsuario(usuarioLogado);
@@ -73,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error: any) {
         alert('Usuário ou senha inválidos');
         setUsuario(undefined);
+        localStorage.removeItem('token');
       }
     },
     [navigate]
@@ -81,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUsuario(undefined);
     sessionStorage.removeItem('usuarioLogado');
+    localStorage.removeItem('token');
     navigate('/login');
   }, [navigate]);
 
