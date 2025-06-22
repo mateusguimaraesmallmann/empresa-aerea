@@ -71,9 +71,10 @@ export function AutoCadastroView() {
 
     setLoading(true);
     setErroCadastro('');
+    setSenhaGerada(''); // Limpa senha ao tentar novamente
 
     try {
-      const response = await api.post<{ senha: string }>('/clientes', {
+      const response = await api.post('/clientes', {
         cpf: cpf.replace(/\D/g, ''),
         nome,
         email,
@@ -88,13 +89,20 @@ export function AutoCadastroView() {
           cidade,
           estado: uf,
         },
-      },
-        {
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
 
-      setSenhaGerada(response.data.senha);
+      // Resposta para debug:
+      console.log('Resposta do backend:', response.data);
+
+      // Busca a senha do campo correto
+      const senhaDaResposta =
+        response.data.senhaGerada ||
+        (response.data.cliente && response.data.cliente.senha) ||
+        '';
+
+      setSenhaGerada(senhaDaResposta);
       setAutocadastroSucesso(true);
 
       setCpf('');
