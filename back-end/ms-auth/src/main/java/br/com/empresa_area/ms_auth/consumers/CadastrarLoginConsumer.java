@@ -26,7 +26,11 @@ public class CadastrarLoginConsumer {
             RegisterResponseDTO registerResponseDTO = authorizationService.cadastrarLogin(registerRequestCadastrarDTO);
             rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", registerResponseDTO);
         } catch (Exception e) {
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", new RegisterResponseDTO(null, null, e.getMessage()));
+            rabbitTemplate.convertAndSend(
+                EXCHANGE_NAME, 
+                "saga-ms-auth-cadastrar-login", 
+                new RegisterResponseDTO(null, null, null, e.getMessage())
+            );
         }
     }
     

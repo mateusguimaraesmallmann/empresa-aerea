@@ -23,6 +23,7 @@ import br.com.empresa_aerea.saga.dtos.ClienteResponseDTO;
 import br.com.empresa_aerea.saga.dtos.EnderecoCadastroRequestDTO;
 import br.com.empresa_aerea.saga.dtos.EnderecoDTO;
 import br.com.empresa_aerea.saga.dtos.RegisterRequestDTO;
+import br.com.empresa_aerea.saga.dtos.RegisterResponseDTO;
 import br.com.empresa_aerea.saga.enums.TipoUsuario;
 import br.com.empresa_aerea.saga.producers.CadastrarClienteProducer;
 import br.com.empresa_aerea.saga.util.DirectMessageListenerContainerBuilder;
@@ -57,12 +58,11 @@ public class SagaClienteService {
         containerCliente.start();
 
         try {
-
             RegisterRequestDTO registerRequestDTO = new RegisterRequestDTO(body.getEmail(), "", TipoUsuario.CLIENTE);
 
             EnderecoDTO enderecoDTO = new EnderecoDTO(
                     body.getEndereco().getCep(),
-                    body.getEndereco().getUf(),
+                    body.getEndereco().getEstado(),
                     body.getEndereco().getCidade(),
                     body.getEndereco().getBairro(),
                     body.getEndereco().getRua(),
@@ -71,9 +71,11 @@ public class SagaClienteService {
 
             ClienteDTO clienteDTO = new ClienteDTO(null, body.getCpf(), body.getEmail(), body.getNome(), body.getSaldo_milhas(), enderecoDTO);
 
+            // ENVIA para ms-auth e ms-cliente
             cadastrarClienteProducer.sendCadastrarLogin(registerRequestDTO);
             cadastrarClienteProducer.sendCadastrarCliente(clienteDTO);
 
+            // Recebe respostas dos dois microsserviços
             Map<String, Object> responseAuth = responseFutureAuth.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
             containerAuth.stop();
 
@@ -87,7 +89,14 @@ public class SagaClienteService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mensagem de erro de teste...");
             }
 
+            // Converte o response do ms-auth para RegisterResponseDTO (para pegar a senha)
+            RegisterResponseDTO registerResponseDTO = objectMapper.convertValue(responseAuth, RegisterResponseDTO.class);
+
+            // Converte o response do ms-cliente
             ClienteCadastroResponseDTO clienteResponse = objectMapper.convertValue(responseCliente, ClienteCadastroResponseDTO.class);
+
+            // Propague a senha gerada para o response final!
+            clienteResponse.setSenha(registerResponseDTO.getSenha());
 
             EnderecoCadastroRequestDTO endereco = new EnderecoCadastroRequestDTO(
                     clienteResponse.getEndereco().getCep(),
@@ -104,14 +113,20 @@ public class SagaClienteService {
                     clienteResponse.getEmail(),
                     clienteResponse.getNome(),
                     clienteResponse.getSaldoMilhas(),
-                    endereco
+                    endereco,
+                    registerResponseDTO.getSenha()
             );
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            // Cria um Map para devolver também a senha
+            Map<String, Object> respostaFinal = new java.util.HashMap<>();
+            respostaFinal.put("cliente", response);
+            respostaFinal.put("senhaGerada", registerResponseDTO.getSenha());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(respostaFinal);
+
         } catch (Exception e) {
             logger.error("Erro no SagaClienteService: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro no processamento SAGA: " + e.getMessage());
         }
     }
-    
 }

@@ -34,9 +34,8 @@ export function SignInView() {
     resolver: yupResolver(schemaLogin),
   });
 
-  const onSubmit = (data: LoginFormInputs) => {
-    console.log('Login válido:', data);
-    login(data.email, data.password);
+  const onSubmit = async (data: LoginFormInputs) => {
+    await login(data.email, data.password);
   };
 
   return (

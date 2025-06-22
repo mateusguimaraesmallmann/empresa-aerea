@@ -26,7 +26,11 @@ public class CadastrarClienteConsumer {
             ClienteCadastroResponseDTO clienteCadastroResponseDTO = clienteService.cadastrarCliente(clienteDto);
             rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-cliente-cadastrar-cliente", clienteCadastroResponseDTO);
         } catch (Exception e) {
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-cliente-cadastrar-cliente", new ClienteCadastroResponseDTO(null, null,null,null,null,null,e.getMessage()));
+            rabbitTemplate.convertAndSend(
+                EXCHANGE_NAME,
+                "saga-ms-cliente-cadastrar-cliente",
+                new ClienteCadastroResponseDTO(null, null, null, null, null, null, e.getMessage(), null)
+            );
         }
     }
     

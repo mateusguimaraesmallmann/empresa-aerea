@@ -377,7 +377,10 @@ app.get(
 //     })
 //   );
 // });
+
 // ======================= RESERVAS ==============================
+
+// CONSULTA RESERVA POR CÓDIGO (GET)
 app.get(
   '/api/reservas/:codigoReserva',
   // requireRole('TODOS'),
@@ -388,6 +391,7 @@ app.get(
   })
 );
 
+// CRIAR RESERVA (POST)
 app.post(
   '/api/reservas',
   createProxyMiddleware({
@@ -395,6 +399,7 @@ app.post(
     changeOrigin: true,
     pathRewrite: path => path.replace('/api/reservas', '/ms-reserva/reservas'),
     onProxyReq: (proxyReq, req) => {
+      // Este trecho já garante que o body está indo para o backend
       if (req.body) {
         const bodyData = JSON.stringify(req.body);
         proxyReq.setHeader('Content-Type', 'application/json');
@@ -405,6 +410,7 @@ app.post(
   })
 );
 
+// REMOVER RESERVA (DELETE)
 app.delete(
   '/api/reservas/:codigoReserva',
   // requireRole('CLIENTE'),
@@ -412,6 +418,16 @@ app.delete(
     target: reservaServiceUrl,
     changeOrigin: true,
     pathRewrite: path => path.replace('/api/reservas/', '/ms-reserva/reservas/'),
+  })
+);
+
+// LISTAGEM DE RESERVAS (GET) - para trazer todas ou usar filtro por clienteId (exemplo com query param)
+app.get(
+  '/api/reservas',
+  createProxyMiddleware({
+    target: reservaServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace('/api/reservas', '/ms-reserva/reservas'),
   })
 );
 
@@ -438,7 +454,7 @@ app.patch(
     ),
     onProxyReq: (proxyReq) => {
       proxyReq.setHeader('Content-Type', 'application/json');
-      proxyReq.write(JSON.stringify({ estado: 'CHECK-IN' }));
+      proxyReq.write(JSON.stringify({ estado: 'CHECK_IN' }));
       proxyReq.end();
     },
   })
