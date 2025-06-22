@@ -47,6 +47,6 @@ export async function verificarEmailExiste(email: string): Promise<boolean> {
 // Autocadastro: envia cliente com campo senha vazio, obrigatório para o ms-auth
 export async function autocadastrarCliente(cliente: Cliente): Promise<{ senha: string }> {
   const payload = { ...cliente, senha: '' }; // garante campo obrigatório para backend
-  const response = await api.post('/saga/autocadastro', payload);
+  const response = await api.post('/clientes', payload);
   return response.data;
 }

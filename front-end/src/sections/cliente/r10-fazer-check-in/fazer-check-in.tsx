@@ -67,9 +67,9 @@ export function FazerCheckIn() {
   const fazerCheckIn = async (codigoReserva: string) => {
     setError('');
     try {
-      await atualizarEstadoReserva(codigoReserva, 'CHECK-IN');
+      await atualizarEstadoReserva(codigoReserva, 'CHECK_IN');
       setReservas(reservas.map(reserva =>
-        reserva.codigo === codigoReserva ? { ...reserva, estado: 'CHECK-IN' } : reserva
+        reserva.codigo === codigoReserva ? { ...reserva, estado: 'CHECK_IN' } : reserva
       ));
       setSnackbarMsg(`Check-in realizado com sucesso para a reserva ${codigoReserva}`);
       setSnackbarOpen(true);

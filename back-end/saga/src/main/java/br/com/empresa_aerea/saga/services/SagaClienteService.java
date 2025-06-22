@@ -62,7 +62,7 @@ public class SagaClienteService {
 
             EnderecoDTO enderecoDTO = new EnderecoDTO(
                     body.getEndereco().getCep(),
-                    body.getEndereco().getUf(),
+                    body.getEndereco().getEstado(),
                     body.getEndereco().getCidade(),
                     body.getEndereco().getBairro(),
                     body.getEndereco().getRua(),

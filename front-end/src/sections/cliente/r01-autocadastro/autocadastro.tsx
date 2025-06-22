@@ -44,7 +44,7 @@ export function AutoCadastroView() {
     try {
       const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
       setRua(response.data.logradouro || '');
-      setBairro(response.data.bairro || '');        // <--- NOVO
+      setBairro(response.data.bairro || '');      
       setCidade(response.data.localidade || '');
       setUf(response.data.uf || '');
     } catch (error) {
@@ -60,6 +60,7 @@ export function AutoCadastroView() {
       nome: nome.trim() === '',
       email: !/^\S+@\S+\.\S+$/.test(email),
       cep: cep.replace(/\D/g, '').length !== 8,
+      uf: uf.trim().length < 2,
     };
     setErros(novosErros);
     return !Object.values(novosErros).some(Boolean);
@@ -72,7 +73,7 @@ export function AutoCadastroView() {
     setErroCadastro('');
 
     try {
-      const response = await api.post<{ senha: string }>('/saga/autocadastro', {
+      const response = await api.post<{ senha: string }>('/clientes', {
         cpf: cpf.replace(/\D/g, ''),
         nome,
         email,
@@ -260,6 +261,8 @@ export function AutoCadastroView() {
             fullWidth
             value={uf}
             onChange={(e) => setUf(e.target.value)}
+            error={erros.uf}
+            helperText={erros.uf && 'Estado é obrigatório'}
             {...propsObrigatorios}
           />
         </Grid>
