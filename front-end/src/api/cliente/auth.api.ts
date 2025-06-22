@@ -7,9 +7,9 @@ export type LoginPayload = {
 
 export type TokenResponse = {
   token: string;
-  auth: boolean;
-  userId: number;
+  login: string;
   tipo: string;
+  id: number;
 };
 
 // Realiza login no sistema via API Gateway
