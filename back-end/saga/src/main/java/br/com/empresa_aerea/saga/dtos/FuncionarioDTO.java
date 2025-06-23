@@ -5,18 +5,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
-@NoArgsConstructor
+@Setter
 @AllArgsConstructor
-public class ClienteCadastroResponseDTO {
+@NoArgsConstructor
+public class FuncionarioDTO {
 
-    private Long idCliente;
+    private Long idFuncionario;
     private String cpf;
     private String email;
     private String nome;
-    private Integer saldoMilhas;
-    private EnderecoDTO endereco;
-    private String errorMessage;
-
+    private String telefone;
+    private boolean ativo;
+    
 }

@@ -48,6 +48,17 @@ public class ClienteService {
         }       
     }
 
+    public ClienteCadastroResponseDTO loginCliente(ClienteDTO clienteDTO) throws Exception{
+        try {
+            Optional<Cliente> clienteDB = clienteRepository.findByEmail(clienteDTO.getEmail());
+            ClienteCadastroResponseDTO cliente = mapper.map(clienteDB, ClienteCadastroResponseDTO.class);
+            return cliente;
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
+            throw new Exception();
+        }
+    }
+
     public List<Cliente> listarTodos() {
         return clienteRepository.findAll();
     }

@@ -1,22 +1,22 @@
-// package br.com.empresa_aerea.ms_funcionario.dtos;
+package br.com.empresa_aerea.ms_funcionario.dtos;
 
-// import br.com.empresa_aerea.ms_funcionario.models.Funcionario;
-// import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-// @Getter
-// public class FuncionarioResponseDTO {
-//     private final String cpf;
-//     private final String nome;
-//     private final String email;
-//     private final String telefone;
-//     private final boolean ativo;
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class FuncionarioResponseDTO {
+    
+    private Long idFuncionario;
+    private String cpf;
+    private String nome;
+    private String email;
+    private String telefone;
+    private boolean ativo;
+    private String errorMessage;
 
-//     public FuncionarioResponseDTO(Funcionario funcionario) {
-//         this.cpf = funcionario.getCpf();
-//         this.nome = funcionario.getNome();
-//         this.email = funcionario.getEmail();
-//         this.telefone = funcionario.getTelefone();
-//         this.ativo = funcionario.isAtivo();
-//     }
-// }
-
+}

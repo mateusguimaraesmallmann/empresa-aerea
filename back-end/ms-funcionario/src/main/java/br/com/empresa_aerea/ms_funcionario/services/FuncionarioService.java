@@ -1,41 +1,51 @@
 package br.com.empresa_aerea.ms_funcionario.services;
 
 import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioDTO;
+import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioResponseDTO;
 import br.com.empresa_aerea.ms_funcionario.exceptions.FuncionarioNotFoundException;
 import br.com.empresa_aerea.ms_funcionario.models.Funcionario;
 import br.com.empresa_aerea.ms_funcionario.repositories.FuncionarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.modelmapper.ModelMapper;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
-@Transactional
 public class FuncionarioService {
 
     private static final Logger logger = LoggerFactory.getLogger(FuncionarioService.class);
 
-    private final FuncionarioRepository funcionarioRepository;
-    private final RabbitTemplate rabbitTemplate;
-    private final String filaFuncionario;
+    @Autowired
+    private ModelMapper mapper;
 
-    public FuncionarioService(
-        FuncionarioRepository funcionarioRepository,
-        RabbitTemplate rabbitTemplate,
-        @Value("${app.mq.fila-funcionarios}") String filaFuncionario
-    ) {
-        this.funcionarioRepository = funcionarioRepository;
-        this.rabbitTemplate = rabbitTemplate;
-        this.filaFuncionario = filaFuncionario;
+    @Autowired
+    private FuncionarioRepository funcionarioRepository;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    public FuncionarioResponseDTO loginFuncionario(FuncionarioDTO funcionarioDTO) throws Exception {
+        
+        try {
+            Optional<Funcionario> funcionarioDB = funcionarioRepository.findByEmail(funcionarioDTO.getEmail());
+            FuncionarioResponseDTO funcionario = mapper.map(funcionarioDB, FuncionarioResponseDTO.class);
+            return funcionario;
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
+            throw new Exception();
+        }
     }
 
-    public Funcionario salvar(@Valid FuncionarioDTO dto) {
+    /*public Funcionario salvar(@Valid FuncionarioDTO dto) {
         // 1) verifica duplicidade de CPF
         if (funcionarioRepository.existsByCpf(dto.getCpf())) {
             logger.warn("Tentativa de cadastro com CPF já existente: {}", dto.getCpf());
@@ -115,6 +125,6 @@ public class FuncionarioService {
             .orElseThrow(() -> new FuncionarioNotFoundException("Funcionário não encontrado"));
         funcionario.setAtivo(ativo);
         return funcionarioRepository.save(funcionario);
-    }
+    }*/
 
 }

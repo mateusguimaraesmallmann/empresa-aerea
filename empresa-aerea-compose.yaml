@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   # ================= DATA BASES =================
+  # ================= MONGO DB =================
   mongo-db:
     image: mongo
     container_name: mongo-db
@@ -21,6 +22,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # ================= POSTGRESQL =================
   postgres-db:
     image: postgres
     container_name: postgres-db
@@ -198,20 +200,20 @@ services:
       - empresa-aerea-net
 
  # =============== FRONTEND ===============
-  angular-frontend:
-    container_name: frontend
-    build:
-      context: ./front-end/
-      dockerfile: Dockerfile
-    ports:
-      - "4200:80"
-    volumes:
-      - ./front-end:/app
-      - /app/node_modules
-    depends_on:
-      - api-gateway
-    networks:
-      - empresa-aerea-net
+#  angular-frontend:
+#    container_name: frontend
+#    build:
+#      context: ./front-end/
+#      dockerfile: Dockerfile
+#    ports:
+#      - "4200:80"
+#    volumes:
+#      - ./front-end:/app
+#      - /app/node_modules
+#    depends_on:
+#      - api-gateway
+#    networks:
+#      - empresa-aerea-net
 
 # =============== NETWORK ===============
 networks:

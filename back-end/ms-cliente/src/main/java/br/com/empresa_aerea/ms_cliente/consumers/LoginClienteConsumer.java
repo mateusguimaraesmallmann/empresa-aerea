@@ -10,23 +10,23 @@ import br.com.empresa_aerea.ms_cliente.dtos.ClienteDTO;
 import br.com.empresa_aerea.ms_cliente.services.ClienteService;
 
 @Component
-public class CadastrarClienteConsumer {
+public class LoginClienteConsumer {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
-    ClienteService clienteService;
+    ClienteService service;
 
     private static final String EXCHANGE_NAME = "saga-exchange";
 
-    @RabbitListener(queues = "ms-cliente-cadastrar-cliente")
-    public void cadastrarCliente(ClienteDTO clienteDto) {
+    @RabbitListener(queues = "ms-cliente-auth")
+    public void cadastrarCliente(ClienteDTO clienteDTO) {
         try {
-            ClienteCadastroResponseDTO clienteCadastroResponseDTO = clienteService.cadastrarCliente(clienteDto);
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-cliente-cadastrar-cliente", clienteCadastroResponseDTO);
+            ClienteCadastroResponseDTO clienteResponseDTO = service.loginCliente(clienteDTO);
+            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-cliente-auth", clienteResponseDTO);
         } catch (Exception e) {
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-cliente-cadastrar-cliente", new ClienteCadastroResponseDTO(null, null, null, null, null, null, e.getMessage())
+            rabbitTemplate.convertAndSend(EXCHANGE_NAME,  "saga-ms-cliente-auth", new ClienteCadastroResponseDTO(null, null, null, null, null, null, e.getMessage())
             );
         }
     }

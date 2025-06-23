@@ -6,6 +6,7 @@ import br.com.empresa_aerea.ms_funcionario.models.Funcionario;
 import br.com.empresa_aerea.ms_funcionario.services.FuncionarioService;
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,13 +16,10 @@ import java.util.List;
 @RequestMapping("/funcionarios")
 public class FuncionarioController {
 
-    private final FuncionarioService funcionarioService;
+    @Autowired
+    private FuncionarioService funcionarioService;
 
-    public FuncionarioController(FuncionarioService funcionarioService) {
-        this.funcionarioService = funcionarioService;
-    }
-
-    @PostMapping
+    /*@PostMapping
     public ResponseEntity<Funcionario> criar(@Valid @RequestBody FuncionarioDTO dto) {
         Funcionario criado = funcionarioService.salvar(dto);
         return ResponseEntity.status(201).body(criado);
@@ -80,6 +78,6 @@ public class FuncionarioController {
         } catch (FuncionarioNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
-    }
+    }*/
     
 }

@@ -46,8 +46,6 @@ public class SagaClienteService {
 
     public ResponseEntity<Object> processarCadastroCliente(ClienteCadastroRequestDTO body) {
 
-        logger.info("Recebido para processamento SAGA: {}", body);
-
         CompletableFuture<Map<String, Object>> responseFutureAuth = new CompletableFuture<>();
         CompletableFuture<Map<String, Object>> responseFutureCliente = new CompletableFuture<>();
 
@@ -62,7 +60,7 @@ public class SagaClienteService {
 
             EnderecoDTO enderecoDTO = new EnderecoDTO(
                     body.getEndereco().getCep(),
-                    body.getEndereco().getEstado(),
+                    body.getEndereco().getUf(),
                     body.getEndereco().getCidade(),
                     body.getEndereco().getBairro(),
                     body.getEndereco().getRua(),
@@ -90,13 +88,13 @@ public class SagaClienteService {
             }
 
             // Converte o response do ms-auth para RegisterResponseDTO (para pegar a senha)
-            RegisterResponseDTO registerResponseDTO = objectMapper.convertValue(responseAuth, RegisterResponseDTO.class);
+            //RegisterResponseDTO registerResponseDTO = objectMapper.convertValue(responseAuth, RegisterResponseDTO.class);
 
             // Converte o response do ms-cliente
             ClienteCadastroResponseDTO clienteResponse = objectMapper.convertValue(responseCliente, ClienteCadastroResponseDTO.class);
 
             // Propague a senha gerada para o response final!
-            clienteResponse.setSenha(registerResponseDTO.getSenha());
+            //clienteResponse.setSenha(registerResponseDTO.getSenha());
 
             EnderecoCadastroRequestDTO endereco = new EnderecoCadastroRequestDTO(
                     clienteResponse.getEndereco().getCep(),
@@ -113,14 +111,13 @@ public class SagaClienteService {
                     clienteResponse.getEmail(),
                     clienteResponse.getNome(),
                     clienteResponse.getSaldoMilhas(),
-                    endereco,
-                    registerResponseDTO.getSenha()
+                    endereco
+                    //registerResponseDTO.getSenha()
             );
 
             // Cria um Map para devolver também a senha
             Map<String, Object> respostaFinal = new java.util.HashMap<>();
             respostaFinal.put("cliente", response);
-            respostaFinal.put("senhaGerada", registerResponseDTO.getSenha());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(respostaFinal);
 

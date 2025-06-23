@@ -1,19 +1,19 @@
-package br.com.empresa_aerea.saga.dtos;
+package br.com.empresa_area.ms_auth.dtos;
 
-import br.com.empresa_aerea.saga.enums.TipoUsuario;
+import br.com.empresa_area.ms_auth.enums.TipoUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
-@NoArgsConstructor
+@Setter
 @AllArgsConstructor
-public class RegisterResponseDTO {
+@NoArgsConstructor
+public class AuthResponseDTO {
 
-    private String email;
     private TipoUsuario tipo;
+    private String access_token;
     private String errorMessage;
-
+    
 }
