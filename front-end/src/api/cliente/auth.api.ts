@@ -6,10 +6,13 @@ export type LoginPayload = {
 };
 
 export type TokenResponse = {
-  token: string;
-  auth: boolean;
-  userId: number;
+  access_token: string;
   tipo: string;
+  token_type: string;
+  usuario: {
+    id: number | string;
+    email: string;
+  };
 };
 
 // Realiza login no sistema via API Gateway

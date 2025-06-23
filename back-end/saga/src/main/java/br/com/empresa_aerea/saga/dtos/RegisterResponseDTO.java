@@ -1,5 +1,6 @@
 package br.com.empresa_aerea.saga.dtos;
 
+import br.com.empresa_aerea.saga.enums.TipoUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,13 +10,9 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClienteResponseDTO {
-
-    private Integer codigo;
-    private String cpf;
+public class RegisterResponseDTO {
     private String email;
-    private String nome;
-    private Integer saldo_milhas;
-    private EnderecoCadastroRequestDTO endereco;
-    private String senha;
+    private TipoUsuario tipo;
+    private String errorMessage;
+    private String senha; // senha gerada no ms-auth
 }

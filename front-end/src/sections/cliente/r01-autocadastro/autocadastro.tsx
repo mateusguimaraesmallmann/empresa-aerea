@@ -44,7 +44,7 @@ export function AutoCadastroView() {
     try {
       const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
       setRua(response.data.logradouro || '');
-      setBairro(response.data.bairro || '');        // <--- NOVO
+      setBairro(response.data.bairro || '');      
       setCidade(response.data.localidade || '');
       setUf(response.data.uf || '');
     } catch (error) {
@@ -60,6 +60,7 @@ export function AutoCadastroView() {
       nome: nome.trim() === '',
       email: !/^\S+@\S+\.\S+$/.test(email),
       cep: cep.replace(/\D/g, '').length !== 8,
+      uf: uf.trim().length < 2,
     };
     setErros(novosErros);
     return !Object.values(novosErros).some(Boolean);
@@ -70,9 +71,10 @@ export function AutoCadastroView() {
 
     setLoading(true);
     setErroCadastro('');
+    setSenhaGerada(''); // Limpa senha ao tentar novamente
 
     try {
-      const response = await api.post<{ senha: string }>('/saga/autocadastro', {
+      const response = await api.post('/clientes', {
         cpf: cpf.replace(/\D/g, ''),
         nome,
         email,
@@ -87,13 +89,20 @@ export function AutoCadastroView() {
           cidade,
           estado: uf,
         },
-      },
-        {
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
 
-      setSenhaGerada(response.data.senha);
+      // Resposta para debug:
+      console.log('Resposta do backend:', response.data);
+
+      // Busca a senha do campo correto
+      const senhaDaResposta =
+        response.data.senhaGerada ||
+        (response.data.cliente && response.data.cliente.senha) ||
+        '';
+
+      setSenhaGerada(senhaDaResposta);
       setAutocadastroSucesso(true);
 
       setCpf('');
@@ -260,6 +269,8 @@ export function AutoCadastroView() {
             fullWidth
             value={uf}
             onChange={(e) => setUf(e.target.value)}
+            error={erros.uf}
+            helperText={erros.uf && 'Estado é obrigatório'}
             {...propsObrigatorios}
           />
         </Grid>

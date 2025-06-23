@@ -48,16 +48,6 @@ public class ClienteService {
         }       
     }
 
-    // Método usado pelo endpoint direto (sem saga), com geração interna de senha.
-    /*public Cliente salvar(Cliente cliente) throws ClienteJaExisteException {
-        String senhaGerada = gerarSenhaAleatoria();
-        return salvar(cliente, senhaGerada);
-    }*/
-
-    private String gerarSenhaAleatoria() {
-        return UUID.randomUUID().toString().substring(0, 8);
-    }
-
     public List<Cliente> listarTodos() {
         return clienteRepository.findAll();
     }

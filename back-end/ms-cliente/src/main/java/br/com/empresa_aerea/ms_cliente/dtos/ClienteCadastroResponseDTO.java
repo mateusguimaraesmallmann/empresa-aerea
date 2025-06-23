@@ -18,5 +18,5 @@ public class ClienteCadastroResponseDTO {
     private Integer saldoMilhas;
     private EnderecoDTO endereco;
     private String errorMessage;
-    
+    private String senha; // Adicionado para o tráfego entre ms
 }

@@ -70,18 +70,19 @@ public class AuthorizationService implements UserDetailsService {
             throw new RuntimeException("E-mail já cadastrado.");
         }
 
+        String senhaGerada = gerarSenhaAleatoria(); // Gera a senha
         Usuario novo = new Usuario();
         novo.setLogin(dto.getEmail());
-        novo.setSenha(passwordEncoder.encode(gerarSenhaAleatoria()));
+        novo.setSenha(passwordEncoder.encode(senhaGerada));
         novo.setRole(dto.getTipo());
         usuarioRepository.save(novo);
         
-        return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), null);
+        return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), senhaGerada, null);
     }
 
     private String gerarSenhaAleatoria() {
         SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[8];
+        byte[] bytes = new byte[3];
         random.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }

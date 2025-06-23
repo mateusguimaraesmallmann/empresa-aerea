@@ -14,6 +14,6 @@ public class RegisterResponseDTO  {
 
     private String email;
     private TipoUsuario tipo;
+    private String senha;
     private String errorMessage;
-    
 }
