@@ -1,6 +1,5 @@
 package br.com.empresa_aerea.saga.services;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -10,10 +9,9 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,15 +27,11 @@ import br.com.empresa_aerea.saga.dtos.LoginRequestDTO;
 import br.com.empresa_aerea.saga.dtos.LoginResponseDTO;
 import br.com.empresa_aerea.saga.enums.TipoUsuario;
 import br.com.empresa_aerea.saga.producers.LoginProducer;
-import br.com.empresa_aerea.saga.util.DirectMessageListenerContainerBuilder;
 
 @Service
 public class SagaAuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(SagaAuthService.class);
-
-    @Autowired
-    private ConnectionFactory connectionFactory;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -52,27 +46,20 @@ public class SagaAuthService {
     public ResponseEntity<Object> login(LoginRequestDTO loginRequestDTO) {
         String correlationIdAuth = UUID.randomUUID().toString();
         String correlationIdCliente = UUID.randomUUID().toString();
+        String correlationIdFuncionario = UUID.randomUUID().toString();
 
         CompletableFuture<Map<String, Object>> responseFutureAuth = new CompletableFuture<>();
         CompletableFuture<Map<String, Object>> responseFutureCliente = new CompletableFuture<>();
-        //CompletableFuture<Map<String, Object>> responseFutureFuncionario = new CompletableFuture<>();
+        CompletableFuture<Map<String, Object>> responseFutureFuncionario = new CompletableFuture<>();
 
         pendingRequests.put(correlationIdAuth, responseFutureAuth);
         pendingRequests.put(correlationIdCliente, responseFutureCliente);
-
-        //DirectMessageListenerContainer containerAuth = DirectMessageListenerContainerBuilder.build(connectionFactory, SagaMessaging.RPL_AUTH_LOGIN, responseFutureAuth);
-        //DirectMessageListenerContainer containerCliente = DirectMessageListenerContainerBuilder.build(connectionFactory, SagaMessaging.RPL_AUTH_CLIENTE, responseFutureCliente);
-        //DirectMessageListenerContainer containerFuncionario = DirectMessageListenerContainerBuilder.build(connectionFactory, SagaMessaging.RPL_AUTH_FUNCIONARIO, responseFutureFuncionario);
-
-        //containerAuth.start();
-        //containerCliente.start();
-        //containerFuncionario.start();
+        pendingRequests.put(correlationIdFuncionario, responseFutureFuncionario);
 
         try {
             loginProducer.sendLogin(loginRequestDTO, correlationIdAuth);
 
             Map<String, Object> responseAuth = responseFutureAuth.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
-			//containerAuth.stop();
 
             if(responseAuth.get("errorMessage") != null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ou senha incorretos!");
@@ -81,42 +68,24 @@ public class SagaAuthService {
             AuthResponseDTO loginResponse = objectMapper.convertValue(responseAuth, AuthResponseDTO.class);
 
             if(loginResponse.getTipo().equals(TipoUsuario.CLIENTE)){
-
                 ClienteDTO clienteDTO = new ClienteDTO(null, null, loginRequestDTO.getLogin(), null, null, null);
-
-                //loginProducer.sendLoginCliente(clienteDTO);
+                
                 loginProducer.sendLoginCliente(clienteDTO, correlationIdCliente);
-
                 Map<String, Object> responseCliente = responseFutureCliente.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
-			    //containerCliente.stop();
-
                 ClienteDTO cliente = objectMapper.convertValue(responseCliente, ClienteDTO.class);
 
-                LoginResponseDTO response = new LoginResponseDTO(
-                    loginResponse.getAccess_token(),
-                    "bearer",
-                    "CLIENTE",
-                    cliente);
+                LoginResponseDTO response = new LoginResponseDTO(loginResponse.getAccess_token(),"bearer","CLIENTE",cliente);
 
                 return ResponseEntity.status(HttpStatus.OK).body(response);
-
             } else {
-                /*FuncionarioDTO funcionarioDTO = new FuncionarioDTO(null, null, loginRequestDTO.getLogin(), null, null, false);
+                FuncionarioDTO funcionarioDTO = new FuncionarioDTO(null, null, loginRequestDTO.getLogin(), null, null, false);
 
-                loginProducer.sendLoginFuncionario(funcionarioDTO);
+                loginProducer.sendLoginFuncionario(funcionarioDTO, correlationIdFuncionario);
                 Map<String, Object> responseFuncionario = responseFutureFuncionario.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
-			    containerFuncionario.stop();
-
                 FuncionarioDTO funcionario = objectMapper.convertValue(responseFuncionario, FuncionarioDTO.class);
 
-                LoginResponseDTO response = new LoginResponseDTO(
-                    loginResponse.getAccess_token(),
-                    "bearer",
-                    "FUNCIONARIO",
-                    funcionario);
-
-                return ResponseEntity.status(HttpStatus.OK).body(response);*/
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Teste fila funcionario");
+                LoginResponseDTO response = new LoginResponseDTO(loginResponse.getAccess_token(),"bearer","FUNCIONARIO",funcionario);
+                return ResponseEntity.status(HttpStatus.OK).body(response);
             }
 
         } catch (TimeoutException e) {
@@ -128,11 +97,10 @@ public class SagaAuthService {
         } finally {
             pendingRequests.remove(correlationIdAuth);
             pendingRequests.remove(correlationIdCliente);
-            //pendingRequests.remove(correlationIdFuncionario);
+            pendingRequests.remove(correlationIdFuncionario);
         }
     }
 
-    // ==================== LISTENERS DE RESPOSTAS ==========================================================================================================
     @RabbitListener(queues = SagaMessaging.QUEUE_RPL_AUTH_LOGIN)
     public void handleAuthResponse(Message message) {
         handleResponse(message);

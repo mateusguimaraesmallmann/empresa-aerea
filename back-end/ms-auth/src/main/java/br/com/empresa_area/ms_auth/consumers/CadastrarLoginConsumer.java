@@ -4,6 +4,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.Message;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.empresa_area.ms_auth.dtos.RegisterRequestDTO;
 import br.com.empresa_area.ms_auth.dtos.RegisterResponseDTO;
@@ -16,21 +21,39 @@ public class CadastrarLoginConsumer {
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
-    AuthorizationService authorizationService;
+    private AuthorizationService authorizationService;
 
     private static final String EXCHANGE_NAME = "saga-exchange";
 
     @RabbitListener(queues = "ms-auth-cadastrar-login")
-    public void cadastrarCliente(RegisterRequestDTO registerRequestCadastrarDTO) {
+    //public void cadastrarCliente(RegisterRequestDTO registerRequestCadastrarDTO) {
+    public void cadastrarLogin(Message message) throws JsonProcessingException {
         try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            RegisterRequestDTO registerRequestCadastrarDTO = objectMapper.readValue(message.getBody(), RegisterRequestDTO.class);
+
             RegisterResponseDTO registerResponseDTO = authorizationService.cadastrarLogin(registerRequestCadastrarDTO);
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", registerResponseDTO);
+
+            MessageProperties props = new MessageProperties();
+            props.setContentType("application/json");
+            props.setCorrelationId(message.getMessageProperties().getCorrelationId());
+
+            Message responseMessage = new Message(objectMapper.writeValueAsBytes(registerResponseDTO), props);
+
+            rabbitTemplate.send(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", responseMessage);
+            //rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", registerResponseDTO);
         } catch (Exception e) {
-            rabbitTemplate.convertAndSend(
-                EXCHANGE_NAME, 
-                "saga-ms-auth-cadastrar-login", 
-                new RegisterResponseDTO(null, null, null, e.getMessage())
-            );
+            RegisterResponseDTO errorResponse = new RegisterResponseDTO(null, null, null, e.getMessage());
+
+            MessageProperties props = new MessageProperties();
+            props.setContentType("application/json");
+            props.setCorrelationId(message.getMessageProperties().getCorrelationId());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            Message responseMessage = new Message(objectMapper.writeValueAsBytes(errorResponse), props);
+
+            rabbitTemplate.send(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", responseMessage);
+            //rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", new RegisterResponseDTO(null, null, null, e.getMessage()));
         }
     }
     

@@ -1,10 +1,6 @@
 package br.com.empresa_area.ms_auth.configurations;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -12,12 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableRabbit
 public class RabbitMQConfiguration {
 
     public static final String EXCHANGE = "saga-exchange";
-    public static final String RPC_QUEUE_CLIENTE = "rpc.cliente.fetch";
-    public static final String RPC_QUEUE_FUNCIONARIO = "rpc.funcionario.fetch";
 
     @Bean
     TopicExchange sagaExchange() {
@@ -25,55 +18,15 @@ public class RabbitMQConfiguration {
     }
 
     @Bean
-    Queue clienteFetchQueue() {
-        return new Queue(RPC_QUEUE_CLIENTE, true);
-    }
-
-    @Bean
-    Queue funcionarioFetchQueue() {
-        return new Queue(RPC_QUEUE_FUNCIONARIO, true);
-    }
-
-    @Bean
-    Binding bindClienteFetch(Queue clienteFetchQueue, TopicExchange ex) {
-        return BindingBuilder
-                .bind(clienteFetchQueue)
-                .to(ex)
-                .with(RPC_QUEUE_CLIENTE);
-    }
-
-    @Bean
-    Binding bindFuncionarioFetch(Queue funcionarioFetchQueue, TopicExchange ex) {
-        return BindingBuilder
-                .bind(funcionarioFetchQueue)
-                .to(ex)
-                .with(RPC_QUEUE_FUNCIONARIO);
-    }
-
-    @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory cf, Jackson2JsonMessageConverter conv) {
-        RabbitTemplate tpl = new RabbitTemplate(cf);
-        tpl.setExchange(EXCHANGE);
-        tpl.setMessageConverter(conv);
-        tpl.setReplyTimeout(5_000);
-        return tpl;
-    }
-
-    @Bean
-    public Jackson2JsonMessageConverter jsonMessageConverter() {
+    public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
     @Bean
-    public Queue usuarioCriarQueue() {
-        return new Queue("usuario.criar", true);
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, Jackson2JsonMessageConverter converter) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(converter);
+        return rabbitTemplate;
     }
 
-    @Bean
-    public Binding bindUsuarioCriar(Queue usuarioCriarQueue, TopicExchange ex) {
-        return BindingBuilder
-                .bind(usuarioCriarQueue)
-                .to(ex)
-                .with("usuario.criar");
-    }
 }
