@@ -16,12 +16,10 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+    /*private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
     @Autowired
     private AuthorizationService authorizationService;
-
-    
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginDTO loginRequest) {
@@ -30,6 +28,6 @@ public class AuthenticationController {
 
         Map<String, Object> response = authorizationService.login(loginRequest);
         return ResponseEntity.ok(response);
-    }
+    }*/
 
 }

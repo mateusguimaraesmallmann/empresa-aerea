@@ -1,4 +1,3 @@
-// Carrega variáveis .env SOMENTE fora do Docker
 if (!process.env.MS_AUTH_URL) {
   require('dotenv-safe').config();
 }
@@ -15,19 +14,17 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middlewares globais
+// ================= MIDDLEWARES GLOBAIS ==================
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cookieParser());
-//app.use(express.json());
-//app.use(express.urlencoded({ extended: false }));
 
 app.use(cors({
   origin: ['http://localhost:3039', 'http://localhost:3040', 'http://localhost:4200'],
   credentials: true,
 }));
 
-// URLs dos microsserviços
+// ================= URLs DOS MICROSSERVIÇOS ===============
 const authServiceUrl = process.env.MS_AUTH_URL;
 const clienteServiceUrl = process.env.MS_CLIENTE_URL;
 const funcionarioServiceUrl = process.env.MS_FUNCIONARIO_URL;
@@ -41,7 +38,7 @@ if (!authServiceUrl || !clienteServiceUrl || !funcionarioServiceUrl || !reservaS
   process.exit(1);
 }
 
-// ======================= Controle de Papeis ====================
+// =================== CONTROLE DE PAPÉIS ==================
 function requireRole(role) {
   return (req, res, next) => {
     if (!req.user) {
@@ -61,9 +58,9 @@ function requireRole(role) {
 app.post("/api/login",
   bodyParser.json(),
   createProxyMiddleware({
-    target: authServiceUrl,
+    target: sagaServiceUrl,
     changeOrigin: true,
-    pathRewrite: path => path.replace("/api/login", "/auth/login"),
+    pathRewrite: path => path.replace("/api/login", "/saga/auth/login"),
     onProxyReq: (proxyReq, req, res) => {
       if (req.body) {
         const bodyData = JSON.stringify(req.body);
@@ -242,6 +239,21 @@ app.patch(
   })
 );
 
+// ================== MIDDLEWARE JWT =============================
+/* LOGICA USADA POR MIM APENAS PARA OS ENDPOINTS DE LOGIN E AUTOCADASTRO
+  const requireJwt = jwt({
+  secret: process.env.JWT_SECRET,
+  algorithms: ['HS256'],
+  requestProperty: 'user'
+}).unless({
+  path: [
+    '/api/login',
+    '/api/clientes'
+  ]
+});
+*/
+
+// ================== MIDDLEWARE JWT =============================
 const requireJwt = jwt({
   secret: process.env.JWT_SECRET,
   algorithms: ['HS256'],
@@ -265,8 +277,8 @@ const requireJwt = jwt({
     /^\/api\/funcionarios\/[^/]+\/reativar$/
   ]
 });
-app.use("/api", requireJwt);
 
+app.use(requireJwt);
 // ======================= CLIENTE ===============================
 
 app.get(

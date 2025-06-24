@@ -17,5 +17,5 @@ public class ClienteResponseDTO {
     private String nome;
     private Integer saldo_milhas;
     private EnderecoCadastroRequestDTO endereco;
-    private String senha;
+
 }

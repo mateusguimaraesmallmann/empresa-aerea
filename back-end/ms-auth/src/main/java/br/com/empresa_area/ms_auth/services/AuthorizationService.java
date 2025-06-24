@@ -1,6 +1,7 @@
 package br.com.empresa_area.ms_auth.services;
 
-import br.com.empresa_area.ms_auth.dtos.LoginDTO;
+import br.com.empresa_area.ms_auth.dtos.AuthResponseDTO;
+import br.com.empresa_area.ms_auth.dtos.LoginRequestDTO;
 import br.com.empresa_area.ms_auth.dtos.RegisterRequestDTO;
 import br.com.empresa_area.ms_auth.dtos.RegisterResponseDTO;
 import br.com.empresa_area.ms_auth.models.Usuario;
@@ -8,10 +9,8 @@ import br.com.empresa_area.ms_auth.repositories.UsuarioRepository;
 import br.com.empresa_area.ms_auth.security.TokenService;
 
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,17 +21,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthorizationService implements UserDetailsService {
 
-    private final UsuarioRepository usuarioRepository;
-    private final TokenService tokenService;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired 
+    private UsuarioRepository usuarioRepository;
 
-    public AuthorizationService(UsuarioRepository usuarioRepository,
-                                TokenService tokenService,
-                                PasswordEncoder passwordEncoder) {
-        this.usuarioRepository = usuarioRepository;
-        this.tokenService = tokenService;
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -46,22 +45,16 @@ public class AuthorizationService implements UserDetailsService {
                 .build();
     }
 
-    public Map<String, Object> login(LoginDTO dto) {
-        Usuario usuario = usuarioRepository.findByEmail(dto.getLogin())
+    public AuthResponseDTO login(LoginRequestDTO loginRequestDTO) {
+        Usuario usuario = usuarioRepository.findByEmail(loginRequestDTO.getLogin())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
-        if (!passwordEncoder.matches(dto.getSenha(), usuario.getSenha())) {
-            throw new RuntimeException("Login ou senha inválidos");
+        if (!passwordEncoder.matches(loginRequestDTO.getSenha(), usuario.getSenha())) {
+            return new AuthResponseDTO(null, null, "Usuário ou senha incorretos!");
         }
 
         String token = tokenService.generateToken(usuario);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("access_token", token);
-        response.put("token_type", "bearer");
-        response.put("tipo", usuario.getTipo().toString());
-        response.put("usuario", usuario);
-
+        AuthResponseDTO response = new AuthResponseDTO(usuario.getTipo(), token, null);
         return response;
     }
 
@@ -70,21 +63,24 @@ public class AuthorizationService implements UserDetailsService {
             throw new RuntimeException("E-mail já cadastrado.");
         }
 
-        String senhaGerada = gerarSenhaAleatoria(); // Gera a senha
+        String senhaGerada = gerarSenhaAleatoria();
+        
         Usuario novo = new Usuario();
         novo.setLogin(dto.getEmail());
         novo.setSenha(passwordEncoder.encode(senhaGerada));
         novo.setRole(dto.getTipo());
-        usuarioRepository.save(novo);
         
-        return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), senhaGerada, null);
+        usuarioRepository.save(novo);
+
+        //emailService.enviarEmail(novo.getLogin(), senhaGerada);
+        
+        return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), null);
     }
 
     private String gerarSenhaAleatoria() {
         SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[3];
-        random.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        int numero = 1000 + random.nextInt(9000);
+        return String.valueOf(numero);
     }
     
 }

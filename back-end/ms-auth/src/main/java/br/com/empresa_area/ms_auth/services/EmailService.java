@@ -13,11 +13,6 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    // Método usado diretamente pelo consumidor do Rabbit
-    public void enviarEmailComSenha(String email, String senha) {
-        enviarEmail(email, senha);
-    }
-
     public void enviarEmail(String email, String password) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
 

@@ -6,13 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
-@NoArgsConstructor
+@Setter
 @AllArgsConstructor
-public class RegisterResponseDTO  {
+@NoArgsConstructor
+public class AuthResponseDTO {
 
-    private String email;
     private TipoUsuario tipo;
+    private String access_token;
     private String errorMessage;
+    
 }

@@ -1,18 +1,23 @@
 package br.com.empresa_aerea.ms_funcionario.services;
 
 import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioDTO;
+import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioResponseDTO;
 import br.com.empresa_aerea.ms_funcionario.exceptions.FuncionarioNotFoundException;
 import br.com.empresa_aerea.ms_funcionario.models.Funcionario;
 import br.com.empresa_aerea.ms_funcionario.repositories.FuncionarioRepository;
+
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -20,6 +25,9 @@ import java.util.Random;
 public class FuncionarioService {
 
     private static final Logger logger = LoggerFactory.getLogger(FuncionarioService.class);
+
+    @Autowired
+    private ModelMapper mapper;
 
     private final FuncionarioRepository funcionarioRepository;
     private final RabbitTemplate rabbitTemplate;
@@ -33,6 +41,18 @@ public class FuncionarioService {
         this.funcionarioRepository = funcionarioRepository;
         this.rabbitTemplate = rabbitTemplate;
         this.filaFuncionario = filaFuncionario;
+    }
+
+    public FuncionarioResponseDTO loginFuncionario(FuncionarioDTO funcionarioDTO) throws Exception {
+        
+        try {
+            Optional<Funcionario> funcionarioDB = funcionarioRepository.findByEmail(funcionarioDTO.getEmail());
+            FuncionarioResponseDTO funcionario = mapper.map(funcionarioDB, FuncionarioResponseDTO.class);
+            return funcionario;
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
+            throw new Exception();
+        }
     }
 
     public Funcionario salvar(@Valid FuncionarioDTO dto) {
@@ -49,13 +69,15 @@ public class FuncionarioService {
         // 2) gera senha e instancia o modelo (ID gerado pelo JPA)
         String senha = String.format("%04d", new Random().nextInt(10000));
         Funcionario funcionario = new Funcionario(
-            dto.getCpf(),
-            dto.getEmail(),
-            dto.getNome(),
-            dto.getTelefone()
-        );
+            dto.getIdFuncionario(), 
+            dto.getCpf(), 
+            dto.getEmail(), 
+            dto.getNome(), 
+            dto.getTelefone(), 
+            dto.isAtivo());
+
         funcionario.setAtivo(true);
-        funcionario.setSenha(senha);
+        //funcionario.setSenha(senha);
 
         // 3) salva no banco
         Funcionario salvo = funcionarioRepository.save(funcionario);

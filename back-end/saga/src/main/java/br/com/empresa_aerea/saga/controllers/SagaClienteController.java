@@ -22,5 +22,4 @@ public class SagaClienteController {
     public ResponseEntity<Object> cadastrarCliente(@Validated @RequestBody ClienteCadastroRequestDTO body) {
         return sagaClienteService.processarCadastroCliente(body);
     }
-
 }
