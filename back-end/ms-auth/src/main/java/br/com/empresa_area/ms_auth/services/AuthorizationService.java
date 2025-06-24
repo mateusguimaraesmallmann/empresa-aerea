@@ -31,6 +31,9 @@ public class AuthorizationService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByEmail(username)
@@ -61,21 +64,24 @@ public class AuthorizationService implements UserDetailsService {
             throw new RuntimeException("E-mail já cadastrado.");
         }
 
-        String senhaGerada = gerarSenhaAleatoria(); // Gera a senha
+        String senhaGerada = gerarSenhaAleatoria();
+        
         Usuario novo = new Usuario();
         novo.setLogin(dto.getEmail());
         novo.setSenha(passwordEncoder.encode(senhaGerada));
         novo.setRole(dto.getTipo());
-        usuarioRepository.save(novo);
         
-        return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), senhaGerada, null);
+        usuarioRepository.save(novo);
+
+        //emailService.enviarEmail(novo.getLogin(), senhaGerada);
+        
+        return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), null);
     }
 
     private String gerarSenhaAleatoria() {
         SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[3];
-        random.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        int numero = 1000 + random.nextInt(9000);
+        return String.valueOf(numero);
     }
     
 }

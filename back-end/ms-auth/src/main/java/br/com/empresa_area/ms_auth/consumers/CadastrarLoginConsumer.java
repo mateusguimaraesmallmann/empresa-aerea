@@ -26,7 +26,6 @@ public class CadastrarLoginConsumer {
     private static final String EXCHANGE_NAME = "saga-exchange";
 
     @RabbitListener(queues = "ms-auth-cadastrar-login")
-    //public void cadastrarCliente(RegisterRequestDTO registerRequestCadastrarDTO) {
     public void cadastrarLogin(Message message) throws JsonProcessingException {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -41,9 +40,8 @@ public class CadastrarLoginConsumer {
             Message responseMessage = new Message(objectMapper.writeValueAsBytes(registerResponseDTO), props);
 
             rabbitTemplate.send(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", responseMessage);
-            //rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", registerResponseDTO);
         } catch (Exception e) {
-            RegisterResponseDTO errorResponse = new RegisterResponseDTO(null, null, null, e.getMessage());
+            RegisterResponseDTO errorResponse = new RegisterResponseDTO(null, null, e.getMessage());
 
             MessageProperties props = new MessageProperties();
             props.setContentType("application/json");
@@ -53,7 +51,6 @@ public class CadastrarLoginConsumer {
             Message responseMessage = new Message(objectMapper.writeValueAsBytes(errorResponse), props);
 
             rabbitTemplate.send(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", responseMessage);
-            //rabbitTemplate.convertAndSend(EXCHANGE_NAME, "saga-ms-auth-cadastrar-login", new RegisterResponseDTO(null, null, null, e.getMessage()));
         }
     }
     

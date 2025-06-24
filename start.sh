@@ -10,7 +10,7 @@ docker-compose -f empresa-aerea-compose.yaml down -v --remove-orphans
 echo "🗑️  Limpando imagens não utilizadas, containers parados e redes não utilizadas..."
 docker system prune -af
 
-# 3. Build do front-end
+#3. Build do front-end
 #echo "🎨 Realizando build do front-end..."
 #cd ./front-end
 #npm install
