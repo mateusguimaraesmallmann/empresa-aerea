@@ -19,7 +19,7 @@ public class SagaClienteController {
     private SagaClienteService sagaClienteService;
 
     @PostMapping("/clientes")
-    public ResponseEntity<Object> cadastrarCliente(@Validated @RequestBody ClienteCadastroRequestDTO body) {
+    public ResponseEntity<?> cadastrarCliente(@Validated @RequestBody ClienteCadastroRequestDTO body) {
         return sagaClienteService.processarCadastroCliente(body);
     }
 

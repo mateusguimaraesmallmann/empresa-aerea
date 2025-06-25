@@ -21,18 +21,18 @@ public class CadastrarClienteQueue {
     }
 
     @Bean
-    public Binding bindingCadastrarCliente(@Qualifier("queueCadastrarCliente") Queue queueCadastrarCliente, TopicExchange exchange) {
-        return BindingBuilder.bind(queueCadastrarCliente).to(exchange).with(SagaMessaging.CMD_CADASTRAR_CLIENTE);
+    public Binding bindingCadastrarCliente(@Qualifier("queueCadastrarCliente") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.CMD_CADASTRAR_CLIENTE);
     }
 
-    @Bean(name = "queueCadastrarLogin")
-    public Queue queueCadastrarLogin() {
+    @Bean(name = "queueCadastrarLoginCliente")
+    public Queue queueCadastrarLoginCliente() {
         return new Queue(SagaMessaging.QUEUE_CADASTRAR_LOGIN);
     }
 
     @Bean
-    public Binding bindingCadastrarLogin(@Qualifier("queueCadastrarLogin") Queue queueCadastrarLogin, TopicExchange exchange) {
-        return BindingBuilder.bind(queueCadastrarLogin).to(exchange).with(SagaMessaging.CMD_CADASTRAR_LOGIN);
+    public Binding bindingCadastrarLoginCliente(@Qualifier("queueCadastrarLoginCliente") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.CMD_CADASTRAR_LOGIN);
     }
 
     @Bean(name = "queueRespostaCadastrarCliente")
@@ -41,18 +41,18 @@ public class CadastrarClienteQueue {
     }
 
     @Bean
-    public Binding bindingRespostaCadastrarCliente(@Qualifier("queueRespostaCadastrarCliente") Queue queueRespostaCadastrarCliente, TopicExchange exchange) {
-        return BindingBuilder.bind(queueRespostaCadastrarCliente).to(exchange).with(SagaMessaging.RPL_CADASTRAR_CLIENTE);
+    public Binding bindingRespostaCadastrarCliente(@Qualifier("queueRespostaCadastrarCliente") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.RPL_CADASTRAR_CLIENTE);
     }
 
-    @Bean(name = "queueRespostaCadastrarLogin")
-    public Queue queueRespostaCadastrarLogin() {
+    @Bean(name = "queueRespostaCadastrarLoginCliente")
+    public Queue queueRespostaCadastrarLoginCliente() {
         return new Queue(SagaMessaging.QUEUE_RPL_CADASTRAR_LOGIN);
     }
 
     @Bean
-    public Binding bindingRespostaCadastrarLogin(@Qualifier("queueRespostaCadastrarLogin") Queue queueRespostaCadastrarLogin, TopicExchange exchange) {
-        return BindingBuilder.bind(queueRespostaCadastrarLogin).to(exchange).with(SagaMessaging.RPL_CADASTRAR_LOGIN);
+    public Binding bindingRespostaCadastrarLoginCliente(@Qualifier("queueRespostaCadastrarLoginCliente") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.RPL_CADASTRAR_LOGIN);
     }
     
 }

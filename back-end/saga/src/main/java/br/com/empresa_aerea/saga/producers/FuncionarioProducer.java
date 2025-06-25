@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import br.com.empresa_aerea.saga.configurations.SagaMessaging;
 
 @Component
-public class CadastrarClienteProducer {
+public class FuncionarioProducer {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -21,12 +21,24 @@ public class CadastrarClienteProducer {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void sendCadastrarCliente(Object payload, String correlationId) {
-        sendMessage(SagaMessaging.CMD_CADASTRAR_CLIENTE, payload, correlationId);
-    }
-
     public void sendCadastrarLogin(Object payload, String correlationId) {
         sendMessage(SagaMessaging.CMD_CADASTRAR_LOGIN, payload, correlationId);
+    }
+    
+    public void sendCadastrarFuncionario(Object payload, String correlationId) {
+        sendMessage(SagaMessaging.CMD_CADASTRAR_FUNCIONARIO, payload, correlationId);
+    }
+
+    public void sendConsultaFuncionarioPorId(Object payload, String correlationId) {
+        sendMessage(SagaMessaging.CMD_CONSULTAR_FUNCIONARIO, payload, correlationId);
+    }
+
+    public void sendAlterarLogin(Object payload, String correlationId) {
+        sendMessage(SagaMessaging.CMD_ALTERAR_LOGIN, payload, correlationId);
+    }
+    
+    public void sendAlterarFuncionario(Object payload, String correlationId) {
+        sendMessage(SagaMessaging.CMD_ALTERAR_FUNCIONARIO, payload, correlationId);
     }
 
     private void sendMessage(String routingKey, Object payload, String correlationId) {
@@ -45,5 +57,5 @@ public class CadastrarClienteProducer {
             throw new RuntimeException("Erro ao enviar mensagem para " + routingKey, e);
         }
     }
-
+    
 }

@@ -7,9 +7,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FuncionarioDTO {
+    
     private Long idFuncionario;
-
-    // Remova as anotações de validação do CPF
+    
     private String cpf;
 
     @NotBlank
@@ -24,4 +24,5 @@ public class FuncionarioDTO {
     private String telefone;
 
     private boolean ativo;
+
 }

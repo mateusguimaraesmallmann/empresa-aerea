@@ -103,7 +103,60 @@ const requireJwt = jwt({
 });
 
 app.use(requireJwt);
+
 // ======================= ROTAS PRIVADAS ========================
+
+// ======================= FUNCIONARIO ===========================
+// ======================= LISTAR TODOS ==========================
+app.get(
+  '/api/funcionarios',
+  requireRole('FUNCIONARIO'),
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace("/api/funcionarios", "/ms-funcionario/funcionarios"),
+  })
+);
+
+app.get(
+  '/api/funcionarios/{codigo}',
+  requireRole('FUNCIONARIO'),
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace("/api/funcionarios", "/ms-funcionario/funcionarios/{codigo}"),
+  })
+);
+
+app.post(
+  '/api/funcionarios',
+  requireRole('FUNCIONARIO'),
+  createProxyMiddleware({
+    target: sagaServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace("/api/funcionarios", "/saga/ms-funcionario/funcionarios"),
+  })
+);
+
+app.put(
+  '/api/funcionarios/{codigo}',
+  requireRole('FUNCIONARIO'),
+  createProxyMiddleware({
+    target: sagaServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace("/api/funcionarios", "/saga/ms-funcionario/funcionarios/{codigo}"),
+  })
+);
+
+/*app.delete(
+  '/api/funcionarios',
+  requireRole('FUNCIONARIO'),
+  createProxyMiddleware({
+    target: funcionarioServiceUrl,
+    changeOrigin: true,
+    pathRewrite: path => path.replace("/api/funcionarios", "/ms-funcionario/funcionarios"),
+  })
+);*/
 
 // ======================= LOGOUT ================================
 app.post('/api/logout', function (req, res) {

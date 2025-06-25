@@ -1,83 +1,58 @@
 package br.com.empresa_aerea.ms_funcionario.controllers;
 
 import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioDTO;
-import br.com.empresa_aerea.ms_funcionario.exceptions.FuncionarioNotFoundException;
-import br.com.empresa_aerea.ms_funcionario.models.Funcionario;
+import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioListDTO;
 import br.com.empresa_aerea.ms_funcionario.services.FuncionarioService;
-import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/funcionarios")
+@RequestMapping(value = "/ms-funcionario")
 public class FuncionarioController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FuncionarioController.class);
 
     @Autowired
     private FuncionarioService funcionarioService;
 
-    /*@PostMapping
-    public ResponseEntity<Funcionario> criar(@Valid @RequestBody FuncionarioDTO dto) {
-        Funcionario criado = funcionarioService.salvar(dto);
-        return ResponseEntity.status(201).body(criado);
-    }
-
-    @GetMapping
-    public List<Funcionario> listarTodos() {
-        return funcionarioService.listarTodos();
-    }
-
-    @GetMapping("/{cpf}")
-    public ResponseEntity<Funcionario> buscarPorCpf(@PathVariable String cpf) {
+    @GetMapping("/funcionarios")
+    public ResponseEntity<?> listarTodos() {
         try {
-            Funcionario funcionario = funcionarioService.buscarPorCpf(cpf);
-            return ResponseEntity.ok(funcionario);
-        } catch (FuncionarioNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+            List<FuncionarioListDTO> lista = funcionarioService.listarTodos();
+            return ResponseEntity.ok(lista);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }   
     }
 
-    @PutMapping("/{cpf}")
-    public ResponseEntity<Funcionario> atualizar(@PathVariable String cpf, @Valid @RequestBody FuncionarioDTO dto) {
+    @GetMapping("/funcionarios/{codigo}")
+    public ResponseEntity<?> buscarPorCodigo(@PathVariable String codigo) {
         try {
-            Funcionario atualizado = funcionarioService.atualizar(cpf, dto);
-            return ResponseEntity.ok(atualizado);
-        } catch (FuncionarioNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+            FuncionarioDTO func = funcionarioService.buscarPorCodigo(codigo);
+            return ResponseEntity.ok(func);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }   
     }
 
-    @DeleteMapping("/{cpf}")
-    public ResponseEntity<Void> delete(@PathVariable String cpf) {
+    @DeleteMapping("/funcionarios/{codigoFuncionario}")
+    public ResponseEntity<?> delete() {
         try {
-            funcionarioService.remover(cpf);
-            return ResponseEntity.noContent().build();
-        } catch (FuncionarioNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+            List<FuncionarioListDTO> lista = funcionarioService.listarTodos();
+            return ResponseEntity.ok(lista);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }   
     }
 
-    @PatchMapping("/{cpf}/inativar")
-    public ResponseEntity<Funcionario> inativarFuncionario(@PathVariable String cpf) {
-        try {
-            Funcionario funcionario = funcionarioService.alterarStatus(cpf, false);
-            return ResponseEntity.ok(funcionario);
-        } catch (FuncionarioNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PatchMapping("/{cpf}/reativar")
-    public ResponseEntity<Funcionario> reativarFuncionario(@PathVariable String cpf) {
-        try {
-            Funcionario funcionario = funcionarioService.alterarStatus(cpf, true);
-            return ResponseEntity.ok(funcionario);
-        } catch (FuncionarioNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }*/
-    
 }

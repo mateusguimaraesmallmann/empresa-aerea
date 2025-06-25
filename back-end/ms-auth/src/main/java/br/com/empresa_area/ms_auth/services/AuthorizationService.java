@@ -9,7 +9,7 @@ import br.com.empresa_area.ms_auth.repositories.UsuarioRepository;
 import br.com.empresa_area.ms_auth.security.TokenService;
 
 import java.security.SecureRandom;
-import java.util.Base64;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
@@ -64,7 +64,12 @@ public class AuthorizationService implements UserDetailsService {
             throw new RuntimeException("E-mail já cadastrado.");
         }
 
-        String senhaGerada = gerarSenhaAleatoria();
+        String senhaGerada;
+        if(dto.getSenha() == null){
+            senhaGerada = gerarSenhaAleatoria();
+        }
+
+        senhaGerada= dto.getSenha();
         
         Usuario novo = new Usuario();
         novo.setLogin(dto.getEmail());
@@ -73,9 +78,15 @@ public class AuthorizationService implements UserDetailsService {
         
         usuarioRepository.save(novo);
 
-        //emailService.enviarEmail(novo.getLogin(), senhaGerada);
+        emailService.enviarEmail(novo.getLogin(), senhaGerada);
         
         return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), null);
+    }
+
+    public RegisterResponseDTO alterarLogin(RegisterRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
+            .orElseThrow(() -> new NoSuchElementException("Usuário com e-mail " + dto.getEmail() + " não encontrado."));
+
     }
 
     private String gerarSenhaAleatoria() {
