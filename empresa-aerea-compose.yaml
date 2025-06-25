@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # ================= DATA BASES =================
   mongo-db:
-    image: mongo
+    image: mongo:6.0
     container_name: mongo-db
     restart: always
     ports:

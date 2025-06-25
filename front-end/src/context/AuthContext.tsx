@@ -10,7 +10,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { loginUsuario, TokenResponse } from 'src/api/cliente/auth.api';
 
-// Tipo de usuário
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
 type Usuario = {
   email: string;
   tipo: 'CLIENTE' | 'FUNCIONARIO';
@@ -37,6 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!usuario;
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarTipo, setSnackbarTipo] = useState<'success' | 'error'>('error');
+
+  const handleSnackbarClose = () => setSnackbarOpen(false);
+
   useEffect(() => {
     if (usuario) {
       sessionStorage.setItem('usuarioLogado', JSON.stringify(usuario));
@@ -55,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           senha: password,
         });
 
-        // Salva o token no localStorage para o interceptor do Axios pegar
         localStorage.setItem('token', response.access_token);
 
         const usuarioLogado: Usuario = {
@@ -73,7 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           navigate('/tela-inicial-cliente');
         }
       } catch (error: any) {
-        alert('Usuário ou senha inválidos');
+        setSnackbarMessage('Usuário ou senha inválidos');
+        setSnackbarTipo('error');
+        setSnackbarOpen(true);
         setUsuario(undefined);
         localStorage.removeItem('token');
       }
@@ -95,7 +104,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={contextValue}>
-      {children}
+      <>
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={handleSnackbarClose}
+        >
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbarTipo}
+            sx={{
+              backgroundColor: snackbarTipo === 'error' ? '#fddede' : '#d0f2d0',
+              color: snackbarTipo === 'error' ? '#611a15' : '#1e4620',
+              width: '100%',
+            }}
+            elevation={6}
+            variant="filled"
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+        {children}
+      </>
     </AuthContext.Provider>
   );
 }
