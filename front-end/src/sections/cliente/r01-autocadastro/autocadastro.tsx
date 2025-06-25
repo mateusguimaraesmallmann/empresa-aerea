@@ -290,7 +290,7 @@ export function AutoCadastroView() {
               onClose={() => setAutocadastroSucesso(false)}
               sx={{ mb: 2 }}
             >
-              Cadastro realizado! Sua senha é: <strong>{senhaGerada}</strong>
+              Cadastro realizado!
             </Alert>
           </Grid>
         )}
