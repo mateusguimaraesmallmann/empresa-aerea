@@ -87,7 +87,7 @@ export function AutoCadastroView() {
           numero,
           complemento,
           cidade,
-          estado: uf,
+          uf,
         },
       }, {
         headers: { 'Content-Type': 'application/json' }

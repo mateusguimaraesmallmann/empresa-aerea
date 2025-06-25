@@ -86,7 +86,7 @@ public class SagaClienteService {
 
             EnderecoCadastroRequestDTO endereco = new EnderecoCadastroRequestDTO(
                 clienteResponse.getEndereco().getCep(),
-                clienteResponse.getEndereco().getEstado(),
+                clienteResponse.getEndereco().getUf(),
                 clienteResponse.getEndereco().getCidade(),
                 clienteResponse.getEndereco().getBairro(),
                 clienteResponse.getEndereco().getRua(),

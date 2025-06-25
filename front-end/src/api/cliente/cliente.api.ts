@@ -14,7 +14,7 @@ export type Cliente = {
     numero: string;
     complemento: string;
     cidade: string;
-    estado: string;
+    uf: string;
   };
 };
 
