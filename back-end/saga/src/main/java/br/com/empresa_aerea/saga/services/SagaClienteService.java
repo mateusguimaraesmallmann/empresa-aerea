@@ -77,8 +77,9 @@ public class SagaClienteService {
             String errorAuth = (String) responseAuth.get("errorMessage");
             String errorCliente = (String) responseCliente.get("errorMessage");
 
-            if (errorAuth != null || errorCliente != null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao relizar o cadastro do usuário.");
+            if ((errorAuth != null && !errorAuth.isEmpty()) || (errorCliente != null && !errorCliente.isEmpty())) {
+                String erroFinal = errorAuth != null && !errorAuth.isEmpty() ? errorAuth : errorCliente;
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erroFinal);
             }
 
             // Converte
