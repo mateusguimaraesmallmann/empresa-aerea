@@ -1,4 +1,4 @@
-INSERT INTO endereco (cep, estado, cidade, bairro, rua, numero, complemento) 
+INSERT INTO endereco (cep, uf, cidade, bairro, rua, numero, complemento) 
 VALUES
 ('82860540', 'Paraná', 'Curitiba', 'Atuba', 'Rua Juarez Antônio Bittencourt', '161', 'Casa'),
 ('81880110', 'Paraná', 'Curitiba', 'Pinheirinho', 'Rua Jocelin Walton Schiavon', '745', 'Casa'),

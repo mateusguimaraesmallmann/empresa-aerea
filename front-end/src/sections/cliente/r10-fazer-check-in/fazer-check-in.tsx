@@ -26,7 +26,7 @@ export function FazerCheckIn() {
       setLoading(true);
       setError('');
       try {
-        const reservasCliente = await listarReservasPorCliente(usuario.id);
+        const reservasCliente = await listarReservasPorCliente(Number(usuario.id));
 
         // Busca os detalhes do voo para cada reserva
         const reservasComVoos: ReservaComVoo[] = await Promise.all(
