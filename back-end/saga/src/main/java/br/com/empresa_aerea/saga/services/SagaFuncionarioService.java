@@ -1,7 +1,5 @@
 package br.com.empresa_aerea.saga.services;
 
-import static org.mockito.Mockito.timeout;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +21,7 @@ import br.com.empresa_aerea.saga.configurations.SagaMessaging;
 import br.com.empresa_aerea.saga.dtos.FuncionarioAlteracaoRequestDTO;
 import br.com.empresa_aerea.saga.dtos.FuncionarioCadastroRequestDTO;
 import br.com.empresa_aerea.saga.dtos.FuncionarioCadastroResponseDTO;
+import br.com.empresa_aerea.saga.dtos.FuncionarioConsultaRequestDTO;
 import br.com.empresa_aerea.saga.dtos.FuncionarioDTO;
 import br.com.empresa_aerea.saga.dtos.RegisterRequestDTO;
 import br.com.empresa_aerea.saga.dtos.UpdateLoginRequestDTO;
@@ -98,7 +97,9 @@ public class SagaFuncionarioService {
 
         try {
 
-            funcionarioProducer.sendConsultaFuncionarioPorId(codigo, correlationIdConsultaFuncionario);
+            FuncionarioConsultaRequestDTO request = new FuncionarioConsultaRequestDTO(Long.valueOf(codigo));
+
+            funcionarioProducer.sendConsultaFuncionarioPorId(request, correlationIdConsultaFuncionario);
 
             //Aguarda os dados atuais
             Map<String, Object> dadosFuncionarioAntigo = responseFutureConsultaFuncionario.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
@@ -113,19 +114,23 @@ public class SagaFuncionarioService {
             funcionarioProducer.sendAlterarLogin(updateLoginDTO, correlationIdAuth);
             funcionarioProducer.sendAlterarFuncionario(updateFuncionarioDTO, correlationIdFuncionario);
 
+            Map<String, Object> responseAuth = responseFutureAuth.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
+            Map<String, Object> responseFuncionario = responseFutureFuncionario.get(FUTURE_RESPONSE_TIMEOUT, TimeUnit.SECONDS);
 
+            String errorAuth = (String) responseAuth.get("errorMessage");
+            String errorFuncionario = (String) responseFuncionario.get("errorMessage");
+
+            if (errorAuth != null || errorFuncionario != null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro ao realizar a atualização do funcionário.");
+            }
+
+            FuncionarioCadastroResponseDTO response = objectMapper.convertValue(responseFuncionario, FuncionarioCadastroResponseDTO.class);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
-
+            logger.error("Erro no SagaFuncionarioService: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro ao realizar a atualização do funcionário." + e.getMessage());
         }
     }
-
-
-
-
-
-
-
-
 
     @RabbitListener(queues = SagaMessaging.QUEUE_RPL_CADASTRAR_LOGIN)
     public void handleAuthResponse(Message message) {

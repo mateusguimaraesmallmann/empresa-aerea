@@ -1,5 +1,6 @@
 package br.com.empresa_aerea.ms_funcionario.services;
 
+import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioConsultaRequestDTO;
 import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioDTO;
 import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioListDTO;
 import br.com.empresa_aerea.ms_funcionario.dtos.FuncionarioResponseDTO;
@@ -93,57 +94,52 @@ public class FuncionarioService {
         return response;
     }
 
-    /*public Funcionario salvar(@Valid FuncionarioDTO dto) {
+    public FuncionarioResponseDTO alterarFuncionario(FuncionarioDTO dto){
+        Funcionario funcionarioExistente = funcionarioRepository.findById(dto.getIdFuncionario())
+            .orElseThrow(() -> new NoSuchElementException("Funcionário não encontrado com ID: " + dto.getIdFuncionario()));
 
-        // 4) envia evento de envio de e-mail via RabbitMQ
-        String msg = String.format("Funcionário %s cadastrado. Senha: %s", salvo.getNome(), senha);
-        rabbitTemplate.convertAndSend(filaFuncionario, msg);
-        logger.debug("Publicado na fila {}: {}", filaFuncionario, msg);
+        if (!dto.getEmail().equals(funcionarioExistente.getEmail())) {
+            boolean emailEmUso = funcionarioRepository.existsByEmail(dto.getEmail());
+            if (emailEmUso) {
+                throw new IllegalArgumentException("E-mail já cadastrado: " + dto.getEmail());
+            }
+        }
 
-        return salvo;
+        funcionarioExistente.setEmail(dto.getEmail());
+        funcionarioExistente.setNome(dto.getNome());
+        funcionarioExistente.setTelefone(dto.getTelefone());
+        funcionarioExistente.setAtivo(dto.isAtivo());
+
+        Funcionario funcAtualizado = funcionarioRepository.save(funcionarioExistente);
+
+        return new FuncionarioResponseDTO(
+            funcAtualizado.getIdFuncionario(),
+            funcAtualizado.getCpf(),
+            funcAtualizado.getNome(),
+            funcAtualizado.getEmail(),
+            funcAtualizado.getTelefone(),
+            funcAtualizado.isAtivo(),
+            null);
+
     }
 
-    @Transactional(readOnly = true)
-    public Funcionario buscarPorCpf(String cpf) {
-        return funcionarioRepository.findByCpf(cpf)
-            .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
-    }
+    public FuncionarioResponseDTO consultarFuncionario(FuncionarioConsultaRequestDTO dto){
+        if (dto.getIdFuncionario() == null) {
+            throw new IllegalArgumentException("ID do funcionário não pode ser nulo.");
+        }
 
-    public Funcionario atualizar(String cpf, @Valid FuncionarioDTO dto) {
-        Funcionario existente = funcionarioRepository.findByCpf(cpf.trim())
-            .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
-    
-        // Atualiza somente os campos permitidos
-        existente.setNome(dto.getNome());
-        existente.setEmail(dto.getEmail());
-        existente.setTelefone(dto.getTelefone());
-        existente.setAtivo(dto.isAtivo());
-    
-        Funcionario atualizado = funcionarioRepository.save(existente);
-        logger.info("Funcionário atualizado: {} (CPF {})", atualizado.getNome(), cpf);
-        return atualizado;
-    }
-    
-    public void inativar(String cpf) {
-        Funcionario func = funcionarioRepository.findByCpf(cpf)
-            .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
-        func.setAtivo(false);
-        funcionarioRepository.save(func);
-        logger.info("Funcionário inativado: {} (CPF {})", func.getNome(), cpf);
-    }
+        Funcionario funcionario = funcionarioRepository.findById(dto.getIdFuncionario())
+            .orElseThrow(() -> new NoSuchElementException("Funcionário com ID " + dto.getIdFuncionario() + " não encontrado."));
 
-    public void remover(String cpf) {
-        Funcionario func = funcionarioRepository.findByCpf(cpf)
-            .orElseThrow(() -> new FuncionarioNotFoundException(cpf));
-        funcionarioRepository.delete(func);
-        logger.info("Funcionário removido fisicamente: {} (CPF {})", func.getNome(), cpf);
+        return new FuncionarioResponseDTO(
+            funcionario.getIdFuncionario(),
+            funcionario.getCpf(),
+            funcionario.getNome(),
+            funcionario.getEmail(),
+            funcionario.getTelefone(),
+            funcionario.isAtivo(),
+            null
+        );
     }
-
-    public Funcionario alterarStatus(String cpf, boolean ativo) {
-        Funcionario funcionario = funcionarioRepository.findByCpf(cpf)
-            .orElseThrow(() -> new FuncionarioNotFoundException("Funcionário não encontrado"));
-        funcionario.setAtivo(ativo);
-        return funcionarioRepository.save(funcionario);
-    }*/
 
 }

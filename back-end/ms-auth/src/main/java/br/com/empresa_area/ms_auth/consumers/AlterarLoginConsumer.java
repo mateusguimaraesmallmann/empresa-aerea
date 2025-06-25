@@ -10,8 +10,8 @@ import org.springframework.amqp.core.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.com.empresa_area.ms_auth.dtos.RegisterRequestDTO;
 import br.com.empresa_area.ms_auth.dtos.RegisterResponseDTO;
+import br.com.empresa_area.ms_auth.dtos.UpdateLoginRequestDTO;
 import br.com.empresa_area.ms_auth.services.AuthorizationService;
 
 @Component
@@ -29,9 +29,9 @@ public class AlterarLoginConsumer {
     public void cadastrarLogin(Message message) throws JsonProcessingException {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            RegisterRequestDTO registerRequestCadastrarDTO = objectMapper.readValue(message.getBody(), RegisterRequestDTO.class);
+            UpdateLoginRequestDTO updateLoginRequestDTO = objectMapper.readValue(message.getBody(), UpdateLoginRequestDTO.class);
 
-            RegisterResponseDTO registerResponseDTO = authorizationService.alterarLogin(registerRequestCadastrarDTO);
+            RegisterResponseDTO registerResponseDTO = authorizationService.alterarLogin(updateLoginRequestDTO);
 
             MessageProperties props = new MessageProperties();
             props.setContentType("application/json");

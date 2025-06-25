@@ -44,8 +44,7 @@ public class SagaFuncionarioController {
     @PutMapping("/funcionarios/{codigo}")
     public ResponseEntity<?> alterar(@Validated @RequestBody FuncionarioAlteracaoRequestDTO body, @PathVariable String codigo) {
         try {
-            ResponseEntity<?> func = sagaFuncionarioService.alterar(body, codigo);
-            return ResponseEntity.status(HttpStatus.CREATED).body(func);
+            return sagaFuncionarioService.alterar(body, codigo);
         } catch (Exception e) {
             logger.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

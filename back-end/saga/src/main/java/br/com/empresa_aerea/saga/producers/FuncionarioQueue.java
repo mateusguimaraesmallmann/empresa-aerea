@@ -55,4 +55,35 @@ public class FuncionarioQueue {
         return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.RPL_CADASTRAR_LOGIN);
     }
 
+    //========================================================================================== ALTERAR FUNCIONARIO
+    @Bean(name = "queueAlterarFuncionario")
+    public Queue queueAlterarFuncionario() {
+        return new Queue(SagaMessaging.QUEUE_ALTERAR_FUNCIONARIO);
+    }
+
+    @Bean
+    public Binding bindingAlterarFuncionario(@Qualifier("queueAlterarFuncionario") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.CMD_ALTERAR_FUNCIONARIO);
+    }
+
+    @Bean(name = "queueAlterarLogin")
+    public Queue queueAlterarLogin() {
+        return new Queue(SagaMessaging.QUEUE_ALTERAR_LOGIN);
+    }
+
+    @Bean
+    public Binding bindingAlterarLogin(@Qualifier("queueAlterarLogin") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.CMD_ALTERAR_LOGIN);
+    }
+
+    @Bean(name = "queueConsultarFuncionario")
+    public Queue queueConsultarFuncionario() {
+        return new Queue(SagaMessaging.QUEUE_CONSULTAR_FUNCIONARIO);
+    }
+
+    @Bean
+    public Binding bindingConsultarFuncionario(@Qualifier("queueConsultarFuncionario") Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(SagaMessaging.CMD_CONSULTAR_FUNCIONARIO);
+    }
+
 }

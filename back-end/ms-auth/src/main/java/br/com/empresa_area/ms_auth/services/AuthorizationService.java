@@ -4,6 +4,7 @@ import br.com.empresa_area.ms_auth.dtos.AuthResponseDTO;
 import br.com.empresa_area.ms_auth.dtos.LoginRequestDTO;
 import br.com.empresa_area.ms_auth.dtos.RegisterRequestDTO;
 import br.com.empresa_area.ms_auth.dtos.RegisterResponseDTO;
+import br.com.empresa_area.ms_auth.dtos.UpdateLoginRequestDTO;
 import br.com.empresa_area.ms_auth.models.Usuario;
 import br.com.empresa_area.ms_auth.repositories.UsuarioRepository;
 import br.com.empresa_area.ms_auth.security.TokenService;
@@ -16,6 +17,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -83,10 +85,26 @@ public class AuthorizationService implements UserDetailsService {
         return new RegisterResponseDTO(novo.getEmail(), novo.getRole(), null);
     }
 
-    public RegisterResponseDTO alterarLogin(RegisterRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
-            .orElseThrow(() -> new NoSuchElementException("Usuário com e-mail " + dto.getEmail() + " não encontrado."));
+    public RegisterResponseDTO alterarLogin(UpdateLoginRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findByEmail(dto.getEmailAntigo())
+            .orElseThrow(() -> new NoSuchElementException("Usuário com e-mail " + dto.getEmailAntigo() + " não encontrado."));
 
+        if (!dto.getEmailAntigo().equals(dto.getEmailAtual())) {
+            boolean emailJaExiste = usuarioRepository.findByEmail(dto.getEmailAtual()).isPresent();
+            if (emailJaExiste) {
+                throw new IllegalArgumentException("E-mail " + dto.getEmailAtual() + " já está em uso.");
+            }
+        }
+
+        usuario.setEmail(dto.getEmailAtual());
+
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            String senhaCriptografada = new BCryptPasswordEncoder().encode(dto.getSenha());
+            usuario.setSenha(senhaCriptografada);
+        }
+
+        Usuario user = usuarioRepository.save(usuario);
+        return new RegisterResponseDTO(user.getEmail(), user.getTipo(), null);
     }
 
     private String gerarSenhaAleatoria() {
