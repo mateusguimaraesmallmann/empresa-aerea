@@ -10,8 +10,10 @@ import {
 } from '@mui/material';
 import { DashboardContent } from 'src/layouts/dashboard/main';
 import { useRouter } from 'src/routes/hooks';
+import { useAuth } from 'src/context/AuthContext'; // ✅ ADICIONADO
 
 function ComprarMilhasView() {
+  const { usuario } = useAuth(); // ✅ PEGANDO O USUÁRIO DO CONTEXTO
   const [milhas, setMilhas] = useState(0);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -21,7 +23,7 @@ function ComprarMilhasView() {
 
   const handleCompra = async () => {
     try {
-      const id = localStorage.getItem('cliente_codigo'); // Simulado via localStorage
+      const id = usuario?.id; // ✅ SUBSTITUI localStorage.getItem()
       if (!id) throw new Error('Cliente não identificado');
 
       const { atualizarMilhasCliente } = await import('src/api/milha');
@@ -37,7 +39,7 @@ function ComprarMilhasView() {
   };
 
   const handleIrParaExtrato = () => {
-    router.push('/extrato-milhas'); // redirecionamento correto
+    router.push('/extrato-milhas');
   };
 
   const handleCloseSnackbar = () => {
